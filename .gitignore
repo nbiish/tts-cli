@@ -1,0 +1,21 @@
+# env
+.env
+.env.*
+!.env.example
+
+# venv
+venv/
+venv.bak/
+venv.bak*
+venv.*
+
+# ainish-coder
+ainish-coder
+
+# Embedded repositories and model environments  
+.model-envs/
+temp_vibevoice/
+
+# Cursor IDE
+.cursor/
+

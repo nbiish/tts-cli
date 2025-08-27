@@ -216,3 +216,22 @@ python -m tts_cli.cli_tts --help
 ---
 
 *This confirmation document verifies that the codebase is ready for immediate use and testing.*
+
+## Model Testing Commands
+
+```bash
+# Test each model individually
+python -m tts_cli.cli_tts --test-model f5-tts      # F5-TTS
+python -m tts_cli.cli_tts --test-model edge-tts    # Edge TTS
+python -m tts_cli.cli_tts --test-model higgs-audio-v2  # Higgs Audio v2
+python -m tts_cli.cli_tts --test-model dia          # Dia
+python -m tts_cli.cli_tts --test-model kyutai       # Kyutai TTS
+python -m tts_cli.cli_tts --test-model kokoro       # Kokoro TTS
+python -m tts_cli.cli_tts --test-model vibevoice    # VibeVoice
+
+# Test all models at once
+python -m tts_cli.cli_tts --test-all-models
+
+# Get platform information
+python -m tts_cli.cli_tts --platform-info
+```

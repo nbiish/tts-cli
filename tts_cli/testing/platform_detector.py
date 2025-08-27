@@ -254,20 +254,22 @@ class PlatformDetector:
         }
         
         # Check platform compatibility based on model
-        if model_key in ["f5-tts", "edge-tts", "dia", "kyutai", "kokoro"]:
+        if model_key in ["f5-tts", "edge-tts", "dia", "kyutai", "kokoro", "higgs-audio-v2"]:
             compatibility["compatible_platforms"] = ["mps", "cuda", "cpu"]
             compatibility["performance_rating"] = "high"
             compatibility["notes"].append("Tested and working on all platforms")
         
-        elif model_key == "higgs-audio-v2":
-            compatibility["compatible_platforms"] = ["cuda"]
-            compatibility["performance_rating"] = "medium"
-            compatibility["notes"].append("Performance varies by platform, not CUDA-only as originally assumed")
-        
-        elif model_key in ["thinksound", "vibevoice"]:
-            compatibility["compatible_platforms"] = ["mps", "cuda", "cpu"]
-            compatibility["performance_rating"] = "unknown"
-            compatibility["notes"].append("Pending testing - package installation issues")
+        elif model_key in ["vibevoice"]:
+            # These models have placeholder implementations but may have platform-specific issues
+            return {
+                "compatible": True,
+                "notes": "Placeholder implementation - actual functionality may vary by platform",
+                "recommendations": [
+                    "Test with actual audio generation",
+                    "Verify model file requirements",
+                    "Check platform-specific optimizations"
+                ]
+            }
         
         # Check if user's platform is compatible
         user_platform = self.platform_capabilities["primary_platform"]

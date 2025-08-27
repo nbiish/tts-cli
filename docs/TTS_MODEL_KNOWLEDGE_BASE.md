@@ -19,7 +19,7 @@ This document provides comprehensive information about each TTS model implemente
 6. **Higgs Audio v2 (Boson AI)** - DualFFN architecture, voice cloning, prosody control
 
 ### 🔄 Pending Testing/Implementation
-7. **ThinkSound (FunAudioLLM)** - MLLM reasoning, cosmic audio features
+7. **VibeVoice (Microsoft)** - Long-form conversational TTS with multi-speaker support
 8. **VibeVoice (Microsoft)** - Long-form conversations, multi-speaker, podcast-ready
 
 ---
@@ -449,14 +449,14 @@ audio = engine.generate("Hello world!", system_prompt=system_prompt)
 
 ---
 
-## 7. ThinkSound (FunAudioLLM)
+## 7. VibeVoice (Microsoft)
 
 ### Model Information
 - **Creator:** FunAudioLLM
 - **Model Type:** MLLM reasoning TTS
 - **Parameters:** Not specified
 - **License:** Research/Commercial
-- **Repository:** [ThinkSound](https://huggingface.co/FunAudioLLM/ThinkSound)
+- **Repository:** [VibeVoice](https://github.com/microsoft/VibeVoice)
 
 ### Capabilities
 - **Voice Cloning:** ✅ Yes (with reference audio)
@@ -473,45 +473,29 @@ audio = engine.generate("Hello world!", system_prompt=system_prompt)
 
 ### Installation & Dependencies
 ```bash
-# Create conda environment
-conda create -n thinksound python=3.10
-conda activate thinksound
-
-# Install FFmpeg <7 requirement
-conda install -y -c conda-forge 'ffmpeg<7'
-
-# Clone weights
-git clone https://huggingface.co/FunAudioLLM/ThinkSound ckpts
-
-# Install dependencies
-pip install -r requirements.txt
+# VibeVoice implementation details to be added
+# Package not available on PyPI, requires GitHub installation
+# Long-form conversational TTS with multi-speaker support
 ```
 
 ### Usage Patterns
 ```python
-from thinksound import ThinkSoundEngine
-
-# Initialize engine with pretrained weights
-engine = ThinkSoundEngine(ckpt_path="ckpts")
-
-# Basic generation
-audio = engine.generate("Hello world!")
-
-# Voice cloning
-audio = engine.generate("Hello world!", reference_audio="reference.wav")
+# VibeVoice implementation details to be added
+# Long-form generation up to 90 minutes
+# Multi-speaker support for up to 4 speakers
 ```
 
 ### Platform Compatibility
 - **CUDA:** ✅ Full support
 - **MPS (Apple Silicon):** ✅ Full support
 - **CPU:** ✅ Full support
-- **Memory Requirements:** High
+- **Memory Requirements:** Moderate
 
 ### Performance Characteristics
-- **Inference Speed:** Moderate
-- **Audio Quality:** Very high
-- **Reasoning Quality:** Excellent
-- **Resource Usage:** High
+- **Inference Speed:** Fast
+- **Audio Quality:** High
+- **Long-form Support:** Excellent (up to 90 minutes)
+- **Resource Usage:** Moderate
 
 ---
 

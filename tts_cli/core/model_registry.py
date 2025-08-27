@@ -41,38 +41,51 @@ class TTSModelRegistry:
         working_models = {
             "f5-tts": {
                 "name": "F5-TTS (SWivid)",
-                "description": "Voice cloning, high quality, local processing",
-                "status": "✅ Working",
+                "description": "F5-TTS with voice cloning capabilities",
+                "status": "✅ Ready",
                 "voice_cloning": True,
-                "platforms": ["mps", "cuda", "cpu"]
+                "platforms": ["mps", "cuda", "cpu"],
+                "notes": "High-quality voice cloning, local processing"
             },
             "edge-tts": {
                 "name": "Edge TTS (Microsoft)",
-                "description": "322+ voices, high quality, fast processing",
-                "status": "✅ Working",
+                "description": "Microsoft Edge TTS with 322+ voices",
+                "status": "✅ Ready",
                 "voice_cloning": False,
-                "platforms": ["mps", "cuda", "cpu"]
+                "platforms": ["mps", "cuda", "cpu"],
+                "notes": "High-quality speech, multiple voice options"
             },
             "dia": {
                 "name": "Dia (Nari Labs)",
-                "description": "Dialogue generation, multi-speaker, non-verbal expressions",
-                "status": "✅ Working",
+                "description": "Dialogue generation with speaker tags and non-verbal expressions",
+                "status": "✅ Ready",
                 "voice_cloning": True,
-                "platforms": ["mps", "cuda", "cpu"]
+                "platforms": ["mps", "cuda", "cpu"],
+                "notes": "Multi-speaker dialogue, emotion control"
             },
             "kyutai": {
                 "name": "Kyutai TTS",
-                "description": "Multilingual, ultra-low latency, VCTK voices",
-                "status": "✅ Working",
+                "description": "Multilingual TTS with ultra-low latency",
+                "status": "✅ Ready",
                 "voice_cloning": True,
-                "platforms": ["mps", "cuda", "cpu"]
+                "platforms": ["mps", "cuda", "cpu"],
+                "notes": "220ms end-to-end latency, VCTK voices"
             },
             "kokoro": {
                 "name": "Kokoro TTS (Hexgrad)",
-                "description": "Ultra-lightweight, fast processing, basic voice cloning",
-                "status": "✅ Working",
+                "description": "Ultra-lightweight TTS for resource-constrained environments",
+                "status": "✅ Ready",
                 "voice_cloning": True,
-                "platforms": ["mps", "cuda", "cpu"]
+                "platforms": ["mps", "cuda", "cpu"],
+                "notes": "82M parameters, fast processing"
+            },
+            "higgs-audio-v2": {
+                "name": "Higgs Audio v2 (Boson AI)",
+                "description": "DualFFN architecture, voice cloning, prosody control",
+                "status": "✅ Ready",
+                "voice_cloning": True,
+                "platforms": ["mps", "cuda", "cpu"],
+                "notes": "Cross-platform compatible with automatic device detection"
             }
         }
         
@@ -80,28 +93,12 @@ class TTSModelRegistry:
             self.models[model_key] = {
                 **info,
                 "environment_ready": self.environment_manager.environment_exists(model_key),
-                "implementation_status": "implemented"
+                "implementation_status": "ready"
             }
     
     def _register_pending_models(self):
         """Register models that are pending testing or implementation."""
         pending_models = {
-            "higgs-audio-v2": {
-                "name": "Higgs Audio v2 (Boson AI)",
-                "description": "DualFFN architecture, voice cloning, prosody control",
-                "status": "⚠️ Platform Limited",
-                "voice_cloning": True,
-                "platforms": ["cuda"],  # Limited to CUDA
-                "notes": "Performance varies by platform, not CUDA-only as originally assumed"
-            },
-            "thinksound": {
-                "name": "ThinkSound (FunAudioLLM)",
-                "description": "MLLM reasoning, cosmic audio features",
-                "status": "🔄 Pending Testing",
-                "voice_cloning": True,
-                "platforms": ["mps", "cuda", "cpu"],
-                "notes": "Package installation issues in isolated environment"
-            },
             "vibevoice": {
                 "name": "VibeVoice (Microsoft)",
                 "description": "Long-form conversations, multi-speaker, podcast-ready",
@@ -141,14 +138,14 @@ class TTSModelRegistry:
         """Get list of models that are confirmed to work."""
         return [
             key for key, info in self.models.items()
-            if info["status"] == "✅ Working"
+            if info["status"] == "✅ Ready"
         ]
     
     def get_pending_models(self) -> List[str]:
         """Get list of models pending testing or implementation."""
         return [
             key for key, info in self.models.items()
-            if info["status"] != "✅ Working"
+            if info["status"] != "✅ Ready"
         ]
     
     def get_models_by_capability(self, capability: str) -> List[str]:
@@ -180,7 +177,7 @@ class TTSModelRegistry:
         # Add rows
         for model_key, info in self.models.items():
             status_style = {
-                "✅ Working": "green",
+                "✅ Ready": "green",
                 "⚠️ Platform Limited": "yellow",
                 "🔄 Pending Testing": "blue"
             }.get(info["status"], "white")

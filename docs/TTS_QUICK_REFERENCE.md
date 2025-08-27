@@ -139,26 +139,7 @@ engine.save_audio(audio, 'higgs-system-test.wav')
 "
 ```
 
-### 7. ThinkSound (FunAudioLLM)
-```bash
-# Test basic functionality
-python -c "
-from thinksound import ThinkSoundEngine
-engine = ThinkSoundEngine(ckpt_path='ckpts')
-audio = engine.generate('Hello world! This is a test of ThinkSound TTS.')
-engine.save_audio(audio, 'thinksound-test.wav')
-"
-
-# Test voice cloning
-python -c "
-from thinksound import ThinkSoundEngine
-engine = ThinkSoundEngine(ckpt_path='ckpts')
-audio = engine.generate('Hello world! This is a test of voice cloning with ThinkSound TTS.', reference_audio='test-voice-clone.wav')
-engine.save_audio(audio, 'thinksound-clone-test.wav')
-"
-```
-
-### 8. VibeVoice (Microsoft)
+### 7. VibeVoice (Microsoft)
 ```bash
 # Test demo mode
 python -m vibevoice.demo
@@ -474,3 +455,105 @@ python tts_cli/cli_tts.py --test-env f5-tts
 ---
 
 *Use this guide to systematically test each TTS model and document results.*
+
+## Model Implementation Examples
+
+### 1. F5-TTS (SWivid)
+```python
+from f5_tts import F5TTS
+tts = F5TTS()
+audio = tts.generate('Hello world! This is a test of F5-TTS.')
+tts.save_audio(audio, 'f5tts-test.wav')
+```
+
+### 2. Edge TTS (Microsoft)
+```python
+import edge_tts
+import asyncio
+
+async def generate_speech():
+    communicate = edge_tts.Communicate('Hello world! This is a test of Edge TTS.', 'en-US-AriaNeural')
+    await communicate.save('edge-tts-test.wav')
+
+asyncio.run(generate_speech())
+```
+
+### 3. Dia (Nari Labs)
+```python
+from transformers import AutoTokenizer, AutoModel
+tokenizer = AutoTokenizer.from_pretrained('nari-labs/Dia-1.6B-0626')
+model = AutoModel.from_pretrained('nari-labs/Dia-1.6B-0626')
+# Implementation details to be added
+```
+
+### 4. Kyutai TTS
+```python
+import moshi_mlx
+# Implementation details to be added
+```
+
+### 5. Kokoro TTS (Hexgrad)
+```python
+from kokoro import KokoroEngine
+engine = KokoroEngine()
+audio = engine.generate('Hello world! This is a test of Kokoro TTS.')
+engine.save_audio(audio, 'kokoro-test.wav')
+```
+
+### 6. Higgs Audio v2 (Boson AI)
+```python
+from boson_multimodal import HiggsAudioServeEngine
+engine = HiggsAudioServeEngine()
+# Implementation details to be added
+```
+
+### 7. VibeVoice (Microsoft)
+```python
+from vibevoice import VibeVoiceEngine
+engine = VibeVoiceEngine()
+# Implementation details to be added
+```
+
+---
+
+## Voice Cloning Examples
+
+### 1. F5-TTS Voice Cloning
+```python
+from f5_tts import F5TTS
+tts = F5TTS()
+audio = tts.generate('Hello world! This is a test of voice cloning with F5-TTS.', reference_audio='test-voice-clone.wav')
+tts.save_audio(audio, 'f5tts-clone-test.wav')
+```
+
+### 2. Dia Voice Cloning
+```python
+from transformers import AutoTokenizer, AutoModel
+# Implementation details to be added
+```
+
+### 3. Kyutai TTS Voice Cloning
+```python
+import moshi_mlx
+# Implementation details to be added
+```
+
+### 4. Kokoro Voice Cloning
+```python
+from kokoro import KokoroEngine
+engine = KokoroEngine()
+audio = engine.generate('Hello world! This is a test of voice cloning with Kokoro TTS.', reference_audio='test-voice-clone.wav')
+engine.save_audio(audio, 'kokoro-clone-test.wav')
+```
+
+### 5. Higgs Audio v2 Voice Cloning
+```python
+from boson_multimodal import HiggsAudioServeEngine
+# Implementation details to be added
+```
+
+### 6. VibeVoice Voice Cloning
+```python
+from vibevoice import VibeVoiceEngine
+# Implementation details to be added
+```

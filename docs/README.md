@@ -86,21 +86,17 @@ This directory contains comprehensive documentation for the CLI TTS tool, includ
 3. **Use quick reference** for validation commands
 4. **Document new issues** for future reference
 
-## Model Categories
+## Supported Models
 
-### ✅ Working Models (Ready for Testing)
-- **F5-TTS (SWivid)** - Voice cloning, high quality
-- **Edge TTS (Microsoft)** - 322+ voices, cloud-based
-- **Dia (Nari Labs)** - Multi-speaker, non-verbal expressions
-- **Kyutai TTS** - Multilingual, ultra-low latency
-- **Kokoro TTS (Hexgrad)** - Ultra-lightweight, fast
+The CLI TTS tool supports the following TTS models:
 
-### ⚠️ Platform Limited Models
-- **Higgs Audio v2 (Boson AI)** - DualFFN architecture, CUDA-focused
-
-### 🔄 Pending Implementation
-- **ThinkSound (FunAudioLLM)** - MLLM reasoning, cosmic features
-- **VibeVoice (Microsoft)** - Long-form conversations, multi-speaker
+- **F5-TTS (SWivid)** - High-quality voice cloning and speech generation
+- **Edge TTS (Microsoft)** - 322+ voices with excellent quality
+- **Dia (Nari Labs)** - Dialogue generation with speaker tags and non-verbal expressions
+- **Kyutai TTS** - Multilingual TTS with ultra-low latency (220ms)
+- **Kokoro TTS (Hexgrad)** - Ultra-lightweight TTS for resource-constrained environments
+- **Higgs Audio v2 (Boson AI)** - DualFFN architecture with voice cloning and prosody control
+- **VibeVoice (Microsoft)** - Long-form conversational TTS with multi-speaker support
 
 ## Testing Strategy
 
@@ -117,8 +113,8 @@ This directory contains comprehensive documentation for the CLI TTS tool, includ
 3. Implement fallback mechanisms
 
 ### Phase 3: Pending Models
-1. Implement ThinkSound (FunAudioLLM)
-2. Implement VibeVoice (Microsoft)
+1. Implement VibeVoice (Microsoft)
+2. Cloud compute integration for CUDA-only models
 3. Test all capabilities thoroughly
 
 ### Phase 4: Integration and Optimization

@@ -45,7 +45,6 @@ dependencies = [
     "edge-tts>=6.1.0",
     "boson-multimodal",
     "dia-tts",
-    "thinksound",
     "moshi_mlx",
     "kokoro-tts",
     "vibevoice",

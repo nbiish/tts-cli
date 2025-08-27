@@ -18,7 +18,6 @@ This document provides a concise summary of all TTS models in the CLI TTS tool, 
 | **Kyutai TTS** | ✅ Working | ✅ Yes | ✅ Yes (VCTK) | ❌ No | All | 🔥 High |
 | **Kokoro TTS** | ✅ Working | ✅ Yes | ❌ No | ❌ No | All | 🔥 High |
 | **Higgs Audio v2** | ⚠️ Platform Limited | ✅ Yes | ❌ No | ❌ No | CUDA | 🔶 Medium |
-| **ThinkSound** | 🔄 Pending | ✅ Yes | ❌ No | ❌ No | All | 🔶 Medium |
 | **VibeVoice** | 🔄 Pending | ✅ Yes | ✅ Yes (4 speakers) | ❌ No | All | 🔶 Medium |
 
 **Legend:**
@@ -33,17 +32,18 @@ This document provides a concise summary of all TTS models in the CLI TTS tool, 
 ## Model Capabilities Matrix
 
 ### Core Features
-| Feature | F5-TTS | Edge TTS | Dia | Kyutai | Kokoro | Higgs | ThinkSound | VibeVoice |
-|---------|--------|----------|-----|--------|--------|-------|------------|-----------|
-| **Text-to-Speech** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Voice Cloning** | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Multi-Speaker** | ❌ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ✅ |
-| **Non-Verbal** | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| **Long-Form** | ❌ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ |
-| **Real-Time** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Feature | F5-TTS | Edge TTS | Dia | Kyutai | Kokoro | Higgs | VibeVoice |
+|---------|--------|----------|-----|--------|--------|-------|-----------|
+| **Text-to-Speech** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Voice Cloning** | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Multi-Speaker** | ❌ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ |
+| **Non-Verbal** | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| **Long-Form** | ❌ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ |
+| **Real-Time** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Cross-Platform** | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ |
 
 ### Technical Specifications
-| Specification | F5-TTS | Edge TTS | Dia | Kyutai | Kokoro | Higgs | ThinkSound | VibeVoice |
+| Specification | F5-TTS | Edge TTS | Dia | Kyutai | Kokoro | Higgs | VibeVoice |
 |---------------|--------|----------|-----|--------|--------|-------|------------|-----------|
 | **Parameters** | N/A | Various | N/A | 1.6B | 82M | N/A | N/A | 1.5B |
 | **Memory** | Moderate | Minimal | Moderate | Moderate | Very Low | High | High | High |
@@ -90,7 +90,7 @@ These models have implementation challenges that need resolution:
    - **Status:** Environment ready, API integration complete
    - **Next Step:** Test platform compatibility, implement fallbacks
 
-7. **ThinkSound (FunAudioLLM)**
+7. **VibeVoice (Microsoft)**
    - **Challenge:** Package installation in isolated environment
    - **Status:** Environment ready, package installation incomplete
    - **Next Step:** Resolve dependency issues, complete installation
@@ -142,7 +142,7 @@ These models have implementation challenges that need resolution:
 
 ### Specialized Capabilities
 - **Dia:** Non-verbal expressions (laughs, coughs, gasps)
-- **ThinkSound:** MLLM reasoning and cosmic audio features
+- **VibeVoice:** Long-form conversational TTS with multi-speaker support
 - **VibeVoice:** Long-form generation (up to 90 minutes)
 - **Kyutai:** Ultra-low latency (220ms end-to-end)
 

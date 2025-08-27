@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 """
-MultiEnvironmentManager - Manages isolated UV environments for TTS models.
+Multi-Environment Manager for TTS Models.
 
-This module provides isolated environment management to prevent dependency
-conflicts between different TTS models.
+This module manages isolated UV environments for each TTS model to prevent
+dependency conflicts and ensure clean package management.
 """
 
 import os
 import subprocess
-import tempfile
+import sys
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Dict, List, Any, Optional
 from rich.console import Console
+from rich.table import Table
 import shutil
 
 # Initialize console
@@ -48,11 +49,6 @@ class MultiEnvironmentManager:
                 "packages": ["transformers[torch]", "torch", "soundfile"],
                 "python_version": "3.12",
                 "description": "Dia dialogue generation TTS using transformers"
-            },
-            "thinksound": {
-                "packages": ["transformers[torch]", "torch", "soundfile", "librosa"],
-                "python_version": "3.10",  # ThinkSound requires Python 3.10
-                "description": "ThinkSound MLLM integration using transformers"
             },
             "kyutai": {
                 "packages": ["moshi_mlx"],
@@ -142,9 +138,6 @@ class MultiEnvironmentManager:
                     if model_key == "higgs-audio-v2" and package == "boson-multimodal":
                         # Install from GitHub for Higgs Audio v2
                         self._install_higgs_from_github(env_path)
-                    elif model_key == "thinksound" and package == "thinksound":
-                        # Install ThinkSound with conda dependencies
-                        self._install_thinksound_with_conda(env_path)
                     else:
                         console.print(f"[red]❌ Failed to install {package} from any source[/red]")
                         return False
@@ -188,27 +181,55 @@ class MultiEnvironmentManager:
             console.print(f"[red]❌ Failed to install Higgs Audio v2 from GitHub: {e}[/red]")
             raise
     
-    def _install_thinksound_with_conda(self, env_path: Path):
-        """Install ThinkSound with conda dependencies."""
+    def _install_package(self, env_path: Path, package: str, python_path: Path) -> bool:
+        """Install a package in the isolated environment."""
         try:
-            python_path = env_path.absolute() / ".venv" / "bin" / "python"
-            if not python_path.exists():
-                python_path = env_path.absolute() / ".venv" / "Scripts" / "python.exe"
-            
-            # Install ThinkSound package
-            subprocess.run(
-                ["uv", "pip", "install", "--python", str(python_path), "thinksound"],
-                cwd=env_path,
-                check=True
-            )
-            
-            # Note: FFmpeg <7 requirement would need to be handled separately
-            # as it's a system dependency, not a Python package
-            console.print("[green]✅ ThinkSound installed (FFmpeg <7 may be required)[/green]")
-            
-        except subprocess.CalledProcessError as e:
-            console.print(f"[red]❌ Failed to install ThinkSound: {e}[/red]")
-            raise
+            if package == "transformers[torch]":
+                # Install transformers with torch extras
+                result = subprocess.run(
+                    ["uv", "pip", "install", "--python", str(python_path), "transformers[torch]"],
+                    capture_output=True, text=True, cwd=env_path
+                )
+                if result.returncode != 0:
+                    console.print(f"[red]❌ Failed to install transformers[torch]: {result.stderr}[/red]")
+                    return False
+                
+                # Also install torch separately for better compatibility
+                result = subprocess.run(
+                    ["uv", "pip", "install", "--python", str(python_path), "torch"],
+                    capture_output=True, text=True, cwd=env_path
+                )
+                if result.returncode != 0:
+                    console.print(f"[red]❌ Failed to install torch: {result.stderr}[/red]")
+                    return False
+                
+                console.print("[green]✅ transformers[torch] and torch installed successfully[/green]")
+                return True
+            elif package == "boson-multimodal":
+                # Install boson-multimodal from GitHub (not available on PyPI)
+                result = subprocess.run(
+                    ["uv", "pip", "install", "--python", str(python_path), "git+https://github.com/boson-ai/boson-multimodal.git"],
+                    capture_output=True, text=True, cwd=env_path
+                )
+                if result.returncode != 0:
+                    console.print(f"[red]❌ Failed to install boson-multimodal: {result.stderr}[/red]")
+                    return False
+                console.print("[green]✅ boson-multimodal installed successfully[/green]")
+                return True
+            else:
+                # Standard package installation
+                result = subprocess.run(
+                    ["uv", "pip", "install", "--python", str(python_path), package],
+                    capture_output=True, text=True, cwd=env_path
+                )
+                if result.returncode != 0:
+                    console.print(f"[red]❌ Failed to install {package}: {result.stderr}[/red]")
+                    return False
+                console.print(f"[green]✅ {package} installed successfully[/green]")
+                return True
+        except Exception as e:
+            console.print(f"[red]❌ Error installing {package}: {e}[/red]")
+            return False
     
     def get_environment_python(self, model_key: str) -> Optional[str]:
         """Get the Python executable path for a specific model's environment."""

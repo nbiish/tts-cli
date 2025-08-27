@@ -92,3 +92,29 @@ OSError: cannot load library '/Volumes/1tb-sandisk/code/huggingface🤗/tts-stuf
 
 2025-08-26 21:20:35,786 - ERROR - Higgs Audio v2 generation failed: Higgs Audio v2 requires CUDA GPU - cannot run on Apple Silicon (MPS) or CPU
 2025-08-26 21:20:35,787 - ERROR - Speech generation failed for higgs-audio-v2: Higgs Audio v2 requires CUDA GPU - cannot run on Apple Silicon (MPS) or CPU
+2025-08-27 02:16:25,766 - ERROR - VibeVoice generation failed: Failed to load VibeVoice model: VibeVoice execution failed: /Volumes/1tb-sandisk/code-external/tts-cli/.model-envs/vibevoice-env/.venv/lib/python3.12/site-packages/transformers/utils/hub.py:105: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+APEX FusedRMSNorm not available, using native implementation
+
+2025-08-27 02:16:25,767 - ERROR - Speech generation failed for vibevoice: Failed to load VibeVoice model: VibeVoice execution failed: /Volumes/1tb-sandisk/code-external/tts-cli/.model-envs/vibevoice-env/.venv/lib/python3.12/site-packages/transformers/utils/hub.py:105: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+APEX FusedRMSNorm not available, using native implementation
+
+2025-08-27 02:29:12,978 - ERROR - VibeVoice generation failed: Failed to load VibeVoice model: Invalid format specifier ' True,
+        "low_cpu_mem_usage": True,
+    ' for object of type 'str'
+2025-08-27 02:29:12,979 - ERROR - Speech generation failed for vibevoice: Failed to load VibeVoice model: Invalid format specifier ' True,
+        "low_cpu_mem_usage": True,
+    ' for object of type 'str'
+2025-08-27 02:30:23,507 - ERROR - VibeVoice generation failed: Failed to load VibeVoice model: name 'model_exc' is not defined
+2025-08-27 02:30:23,507 - ERROR - Speech generation failed for vibevoice: Failed to load VibeVoice model: name 'model_exc' is not defined
+2025-08-27 02:31:00,611 - ERROR - VibeVoice generation failed: Failed to load VibeVoice model: VibeVoice execution failed: /Volumes/1tb-sandisk/code-external/tts-cli/.model-envs/vibevoice-env/.venv/lib/python3.12/site-packages/transformers/utils/hub.py:105: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+APEX FusedRMSNorm not available, using native implementation
+
+2025-08-27 02:31:00,612 - ERROR - Speech generation failed for vibevoice: Failed to load VibeVoice model: VibeVoice execution failed: /Volumes/1tb-sandisk/code-external/tts-cli/.model-envs/vibevoice-env/.venv/lib/python3.12/site-packages/transformers/utils/hub.py:105: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+APEX FusedRMSNorm not available, using native implementation
+
+2025-08-27 02:52:59,763 - ERROR - Higgs Audio v2 generation failed: Higgs Audio v2 requires CUDA GPU - cannot run on Apple Silicon (MPS) or CPU
+2025-08-27 02:52:59,770 - ERROR - Speech generation failed for higgs-audio-v2: Higgs Audio v2 requires CUDA GPU - cannot run on Apple Silicon (MPS) or CPU

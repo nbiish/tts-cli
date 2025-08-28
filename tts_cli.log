@@ -103,3 +103,21 @@ APEX FusedRMSNorm not available, using native implementation
 APEX FusedRMSNorm not available, using native implementation
 
 2025-08-27 20:54:03,838 - ERROR - Application error: Failed to create environment for higgs-audio-v2
+2025-08-27 21:16:30,344 - ERROR - Higgs Audio v2 generation failed: higgs-audio package not available. Install with: git clone https://github.com/boson-ai/higgs-audio.git && pip install -e .
+2025-08-27 21:16:30,350 - ERROR - Application error: higgs-audio package not available. Install with: git clone https://github.com/boson-ai/higgs-audio.git && pip install -e .
+2025-08-27 21:20:07,143 - ERROR - Higgs Audio v2 generation failed: higgs-audio package not available. Install with: git clone https://github.com/boson-ai/higgs-audio.git && pip install -e .
+2025-08-27 21:20:07,148 - ERROR - Application error: higgs-audio package not available. Install with: git clone https://github.com/boson-ai/higgs-audio.git && pip install -e .
+2025-08-27 21:50:39,516 - ERROR - Higgs Audio v2 generation failed: No result found from Higgs Audio v2 execution
+2025-08-27 21:50:39,518 - ERROR - Application error: No result found from Higgs Audio v2 execution
+2025-08-27 21:56:52,337 - ERROR - Higgs Audio v2 generation failed: Failed to run Higgs Audio v2 in isolated environment
+2025-08-27 21:56:52,341 - ERROR - Application error: Failed to run Higgs Audio v2 in isolated environment
+2025-08-27 22:15:55,514 - ERROR - Higgs Audio v2 generation failed: Failed to run Higgs Audio v2 in isolated environment
+2025-08-27 22:15:55,523 - ERROR - Application error: Failed to run Higgs Audio v2 in isolated environment
+2025-08-27 22:18:30,245 - ERROR - Higgs Audio v2 generation failed: Failed to run Higgs Audio v2 in isolated environment
+2025-08-27 22:18:30,246 - ERROR - Application error: Failed to run Higgs Audio v2 in isolated environment
+2025-08-27 22:18:57,910 - ERROR - Higgs Audio v2 generation failed: Failed to run Higgs Audio v2 in isolated environment
+2025-08-27 22:18:57,910 - ERROR - Application error: Failed to run Higgs Audio v2 in isolated environment
+2025-08-27 22:23:40,407 - ERROR - Higgs Audio v2 generation failed: Failed to run Higgs Audio v2 in isolated environment
+2025-08-27 22:23:40,407 - ERROR - Application error: Failed to run Higgs Audio v2 in isolated environment
+2025-08-27 22:24:00,756 - ERROR - Higgs Audio v2 generation failed: Failed to run Higgs Audio v2 in isolated environment
+2025-08-27 22:24:00,756 - ERROR - Application error: Failed to run Higgs Audio v2 in isolated environment

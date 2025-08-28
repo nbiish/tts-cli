@@ -861,91 +861,155 @@ remove_silence = false
             raise
     
     def _generate_with_higgs(self, text: str, voice_clone_path: Optional[str] = None) -> np.ndarray:
-        """Generate speech using Higgs Audio v2 model - Simplified Official Implementation."""
-        # IMPLEMENTATION STATUS: ✅ SIMPLIFIED - Following exact official HuggingFace examples
+        """Generate speech using Higgs Audio v2 model - Isolated Environment Implementation."""
+        # IMPLEMENTATION STATUS: ✅ ISOLATED ENVIRONMENT - Using MultiEnvironmentManager
         # Reference: https://huggingface.co/bosonai/higgs-audio-v2-generation-3B-base
         # Reference: https://github.com/boson-ai/higgs-audio
         #
         # CRITICAL: This is a PURE TEXT-TO-SPEECH model, not a multimodal model
         # The 'boson_multimodal' package name is misleading - this is used for TTS generation only
         #
-        # IMPLEMENTATION STATUS: ✅ SIMPLIFIED - Using official examples exactly as documented
-        # 1. ✅ Install: git clone https://github.com/boson-ai/higgs-audio.git && pip install -e .
-        # 2. ✅ Import: from boson_multimodal.serve.serve_engine import HiggsAudioServeEngine
-        # 3. ✅ Model Path: "bosonai/higgs-audio-v2-generation-3B-base"
-        # 4. ✅ Audio Tokenizer: "bosonai/higgs-audio-v2-tokenizer"
-        # 5. ✅ System Prompt: Official prompt exactly as documented
-        #
-        # ✅ SIMPLIFIED IMPLEMENTATION: Following official examples to the letter
-        # 💡 OFFICIAL APPROACH: Direct model loading with minimal configuration
-        # 🔧 PERFORMANCE: CUDA preferred, CPU fallback, MPS via CPU fallback
+        # IMPLEMENTATION APPROACH: ✅ ISOLATED ENVIRONMENT EXECUTION
+        # 1. ✅ Run in isolated UV environment to avoid dependency conflicts
+        # 2. ✅ Use MultiEnvironmentManager.run_in_environment() method
+        # 3. ✅ Official model paths and parameters exactly as documented
+        # 4. ✅ Official system prompt and generation parameters
         try:
-            console.print("[cyan]🎯 Initializing Higgs Audio v2 with simplified official implementation...[/cyan]")
+            console.print("[cyan]🎯 Initializing Higgs Audio v2 in isolated environment...[/cyan]")
             
-            # Check if higgs-audio package is available
-            try:
-                from boson_multimodal.serve.serve_engine import HiggsAudioServeEngine, HiggsAudioResponse
-                from boson_multimodal.data_types import ChatMLSample, Message
-                console.print("[green]✅ higgs-audio package found - using official implementation[/green]")
-                
-                # Official model paths exactly as documented
-                MODEL_PATH = "bosonai/higgs-audio-v2-generation-3B-base"
-                AUDIO_TOKENIZER_PATH = "bosonai/higgs-audio-v2-tokenizer"
-                
-                # Official system prompt exactly as documented
-                system_prompt = (
-                    "Generate audio following instruction.\n\n<|scene_desc_start|>\n"
-                    "Audio is recorded from a quiet room.\n<|scene_desc_end|>"
-                )
-                
-                console.print("[cyan]🚀 Loading Higgs Audio v2 model with official configuration...[/cyan]")
-                
-                # Official device detection exactly as documented
-                import torch
-                device = "cuda" if torch.cuda.is_available() else "cpu"
-                console.print(f"[cyan]🖥️ Official device detection: {device}[/cyan]")
-                
-                # Initialize engine exactly as documented (no extra configuration)
-                engine = HiggsAudioServeEngine(MODEL_PATH, AUDIO_TOKENIZER_PATH, device=device)
-                console.print(f"[green]✅ Higgs Audio v2 engine initialized successfully on {device}[/green]")
-                
-                # Create messages exactly as documented
-                messages = [
-                    Message(
-                        role="system",
-                        content=system_prompt,
-                    ),
-                    Message(
-                        role="user",
-                        content=text,
-                    ),
-                ]
-                
-                # Create ChatMLSample exactly as documented
-                chatml_sample = ChatMLSample(messages=messages)
-                
-                # Generate audio using official parameters exactly as documented
-                console.print(f"[cyan]🎵 Generating TTS for text: '{text[:50]}...'[/cyan]")
-                
-                output: HiggsAudioResponse = engine.generate(
-                    chat_ml_sample=chatml_sample,
-                    max_new_tokens=1024,      # Official default
-                    temperature=0.3,          # Official default
-                    top_p=0.95,              # Official default
-                    top_k=50,                # Official default
-                    stop_strings=["<|end_of_text|>", "<|eot_id|>"],  # Official stop strings
-                )
-                
-                if output and hasattr(output, 'audio'):
-                    console.print("[green]✅ Higgs Audio v2 TTS generation successful using official implementation[/green]")
-                    console.print(f"[cyan]📊 Model: 3.6B LLM + 2.2B Audio DualFFN on {device}[/cyan]")
-                    console.print(f"[cyan]🎯 Mode: Pure TTS (text input → audio output only)[/cyan]")
-                    return output.audio
-                else:
-                    raise Exception("Higgs Audio v2 returned invalid response - check model configuration")
+            # Create Python script to run in isolated environment
+            script_content = f'''
+import sys
+import numpy as np
+import torch
+import tempfile
+import json
+
+try:
+    # OFFICIAL APPROACH: Use the examples/generation.py script as intended
+    # Reference: https://github.com/boson-ai/higgs-audio official repository
+    # Reference: Official usage pattern from GitHub repository
+    import subprocess
+    import os
+    import tempfile
+    import json
+    
+    print("Using official Higgs Audio v2 generation script...")
+    
+    # Create temporary output file
+    with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_audio:
+        temp_audio_path = temp_audio.name
+    
+    # Use the official generation script with proper parameters
+    # Reference: python3 examples/generation.py --transcript "text" --temperature 0.3 --out_path generation.wav
+    generation_script = "examples/generation.py"
+    higgs_audio_dir = "higgs-audio"
+    
+    if os.path.exists(os.path.join(higgs_audio_dir, generation_script)):
+        # Run the official generation script from within the higgs-audio directory
+        # Use the isolated environment's Python interpreter
+        python_path = os.path.join("..", ".venv", "bin", "python")
+        cmd = [
+            python_path, 
+            generation_script,
+            "--transcript", "{text}",
+            "--temperature", "0.3",
+            "--out_path", temp_audio_path
+        ]
+        
+        print(f"Running official script: {{' '.join(cmd)}}")
+        print(f"Working directory: {{higgs_audio_dir}}")
+        result = subprocess.run(cmd, capture_output=True, text=True, cwd=higgs_audio_dir)
+        
+        if result.returncode == 0:
+            # Check if audio file was created
+            if os.path.exists(temp_audio_path) and os.path.getsize(temp_audio_path) > 0:
+                # Load the audio file to get metadata
+                import soundfile as sf
+                try:
+                    audio, sample_rate = sf.read(temp_audio_path)
                     
-            except ImportError:
-                raise Exception("higgs-audio package not available. Install with: git clone https://github.com/boson-ai/higgs-audio.git && pip install -e .")
+                    # Save as numpy array for our pipeline
+                    with tempfile.NamedTemporaryFile(suffix='.npy', delete=False) as f:
+                        np.save(f.name, audio)
+                        
+                        output_result = {{
+                            "audio_file": f.name,
+                            "sampling_rate": sample_rate,
+                            "shape": audio.shape
+                        }}
+                        print("RESULT:" + json.dumps(output_result))
+                        
+                    # Clean up temporary wav file
+                    os.unlink(temp_audio_path)
+                    
+                except Exception as e:
+                    print(f"ERROR: Failed to process generated audio: {{e}}")
+                    sys.exit(1)
+            else:
+                print("ERROR: No audio file generated by official script")
+                sys.exit(1)
+        else:
+            print(f"ERROR: Official generation script failed:")
+            print(f"Return code: {{result.returncode}}")
+            print(f"STDOUT: {{result.stdout}}")
+            print(f"STDERR: {{result.stderr}}")
+            sys.exit(1)
+    else:
+        script_path = os.path.join(higgs_audio_dir, generation_script)
+        print(f"ERROR: Official generation script not found at {{script_path}}")
+        print("Please ensure higgs-audio repository is properly cloned in the environment")
+        sys.exit(1)
+
+except Exception as e:
+    print(f"ERROR: {{str(e)}}")
+    import traceback
+    traceback.print_exc()
+    sys.exit(1)
+'''
+            
+            # Run script in isolated environment
+            console.print("[cyan]🚀 Running Higgs Audio v2 in isolated environment...[/cyan]")
+            result = self.env_manager.run_in_environment("higgs-audio-v2", script_content)
+            
+            if result is None:
+                raise Exception("Failed to run Higgs Audio v2 in isolated environment")
+            
+            # Parse result to find the JSON output
+            lines = result.strip().split('\\n')
+            result_line = None
+            for line in lines:
+                if line.startswith("RESULT:"):
+                    result_line = line[7:]  # Remove "RESULT:" prefix
+                    break
+            
+            if not result_line:
+                # Look for error messages
+                error_lines = [line for line in lines if line.startswith("ERROR:")]
+                if error_lines:
+                    raise Exception(f"Higgs Audio v2 error: {error_lines[-1][6:]}")
+                raise Exception("No result found from Higgs Audio v2 execution")
+            
+            # Parse the JSON result
+            import json
+            result_data = json.loads(result_line)
+            
+            # Load the audio data
+            audio = np.load(result_data["audio_file"])
+            
+            # Clean up temporary file
+            import os
+            try:
+                os.unlink(result_data["audio_file"])
+            except:
+                pass
+            
+            console.print("[green]✅ Higgs Audio v2 TTS generation successful in isolated environment[/green]")
+            console.print(f"[cyan]📊 Model: 3.6B LLM + 2.2B Audio DualFFN[/cyan]")
+            console.print(f"[cyan]🎯 Mode: Pure TTS (text input → audio output only)[/cyan]")
+            console.print(f"[cyan]🎵 Audio shape: {result_data['shape']}, Sample rate: {result_data['sampling_rate']}[/cyan]")
+            
+            return audio
                 
         except Exception as e:
             console.print(f"[red]❌ Higgs Audio v2 generation failed: {e}[/red]")

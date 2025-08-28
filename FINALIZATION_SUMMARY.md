@@ -239,6 +239,7 @@ tts-cli/
 3. **Model testing**: Use `--test-all-models` for verification
 4. **Custom configurations**: Modify `tts_cli/core/model_registry.py`
 5. **Global access**: Use `cli-tts` command from any directory
+6. **🎭 Cultural easter egg**: Run `cli-tts ?` to discover Anishinaabe traditions
 
 ### **Development**
 1. **Add new models**: Follow the established pattern

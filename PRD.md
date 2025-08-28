@@ -8,8 +8,8 @@
 
 ## USER USE EXAMPLES:
 - ```cli-tts --model 1 --text "some text" --output "some_output.wav"```
-- ```cli-tts --model ?```
-    - > """
+- ```cli-tts ?```
+"""
     ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
     ┃   ᑮᓐ ᐃᓇ ᓇᓇᐳᔓ? (Giin Inna Nanaboozhoo?)                        ┃
     ┃                                                                    ┃
@@ -128,7 +128,7 @@
 **Single Command Mode (Non-Interactive):**
 ```bash
 # ✅ WORKING MODELS (Ready for Production):
-# Basic TTS with default model (F5-TTS)
+# Basic TTS with default model (Edge TTS)
 python -m tts_cli.cli_tts --text "Hello, this is Galactic Nish News!" --output news_intro.wav
 
 # TTS with specific model (Edge TTS)

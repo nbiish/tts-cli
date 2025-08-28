@@ -84,9 +84,11 @@ echo -e "${BLUE}📁 Installing to: $INSTALL_PATH${NC}"
 
 # Create entry point script
 SCRIPT_PATH="$INSTALL_PATH/$COMMAND_NAME"
+PROJECT_VENV_PYTHON="$PROJECT_ROOT/.venv/bin/python"
 SCRIPT_CONTENT="#!/bin/bash
 # TTS CLI Entry Point
-exec python3 -m $CLI_MODULE \"\$@\"
+export PYTHONPATH=\"$PROJECT_ROOT:\$PYTHONPATH\"
+exec \"$PROJECT_VENV_PYTHON\" -m $CLI_MODULE \"\$@\"
 "
 
 echo -e "${BLUE}📝 Creating entry point script...${NC}"

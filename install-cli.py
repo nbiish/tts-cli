@@ -98,15 +98,23 @@ class TTSCLIGlobalInstaller:
     def create_entry_point_script(self, install_path):
         """Create the entry point script."""
         if self.is_windows:
+            # Use the project's virtual environment Python with absolute paths
+            project_venv_python = self.project_root / ".venv" / "Scripts" / "python.exe"
+            project_root = self.project_root
             script_content = f'''@echo off
 REM TTS CLI Entry Point
-python -m {self.cli_module} %*
+set PYTHONPATH={project_root};%PYTHONPATH%
+"{project_venv_python}" -m {self.cli_module} %*
 '''
             script_path = install_path / f"{self.command_name}.bat"
         else:
+            # Use the project's virtual environment Python with absolute paths
+            project_venv_python = self.project_root / ".venv" / "bin" / "python"
+            project_root = self.project_root
             script_content = f'''#!/bin/bash
 # TTS CLI Entry Point
-exec python3 -m {self.cli_module} "$@"
+export PYTHONPATH="{project_root}:$PYTHONPATH"
+exec "{project_venv_python}" -m {self.cli_module} "$@"
 '''
             script_path = install_path / self.command_name
         

@@ -52,7 +52,7 @@ Examples:
     
     parser.add_argument("--text", help="Text to convert to speech")
     parser.add_argument("--model", choices=["f5-tts", "edge-tts", "dia", "kyutai", "kokoro", "vibevoice"], 
-                      default="f5-tts", help="TTS model to use")
+                      default="edge-tts", help="TTS model to use")
     parser.add_argument("--voice-clone", help="Audio file for voice cloning")
     parser.add_argument("--clipboard", action="store_true", help="Read text from clipboard")
     parser.add_argument("--list-models", action="store_true", help="List available models")
@@ -67,6 +67,11 @@ Examples:
     parser.add_argument("--test-all-models", action="store_true", help="Test all models for compatibility")
     parser.add_argument("--benchmark-model", help="Benchmark specific model performance")
     parser.add_argument("--platform-info", action="store_true", help="Show detailed platform information")
+    
+    # Cultural Easter Egg: Check for "?" argument before parsing
+    if len(sys.argv) > 1 and sys.argv[1] == "?":
+        show_cultural_easter_egg()
+        return
     
     args = parser.parse_args()
     
@@ -270,6 +275,37 @@ def show_platform_info(model_registry: ModelRegistry):
         console.print("\n[cyan]🍎 Apple Silicon (MPS):[/cyan] Good performance with MPS-compatible models.")
     elif device == "cuda":
         console.print("\n[green]🚀 CUDA GPU:[/green] Optimal performance with all models.")
+
+
+def show_cultural_easter_egg():
+    """Display the cultural easter egg with Anishinaabe design."""
+    console.print(r"""
+    ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+    ┃   ᑮᓐ ᐃᓇ ᓇᓇᐳᔓ? (Giin Inna Nanaboozhoo?)                        ┃
+    ┃                                                                    ┃
+    ┃        .-''-.        .-''-.        .-''-.        .-''-.            ┃
+    ┃      .'      '.    .'      '.    .'      '.    .'      '.          ┃
+    ┃     /  .-''-.  \  /  .-''-.  \  /  .-''-.  \  /  .-''-.  \         ┃
+    ┃    |  /      \  ||  /      \  ||  /      \  ||  /      \  |        ┃
+    ┃     \ \      / /  \ \      / /  \ \      / /  \ \      / /         ┃
+    ┃      '.\    /.'    '.\    /.'    '.\    /.'    '.\    /.'          ┃
+    ┃        '-..-'        '-..-'        '-..-'        '-..-'            ┃
+    ┃                                                                    ┃
+    ┃   Supported TTS Models:                                            ┃
+    ┃    1. F5-TTS (SWivid)                                              ┃
+    ┃    2. Edge TTS (Microsoft)                                         ┃
+    ┃    3. Dia (Nari Labs)                                              ┃
+    ┃    4. Kyutai TTS                                                   ┃
+    ┃    5. Kokoro TTS (Hexgrad)                                         ┃
+    ┃    6. VibeVoice (Microsoft)                                        ┃
+    ┃                                                                    ┃
+    ┃   (ᑮᓐ ᐃᓇ ᓇᓇᐳᔓ?: "Giin Inna Nanaboozhoo?")                      ┃
+    ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+    """)
+    console.print("\n[cyan]💡 This is a cultural easter egg honoring Anishinaabe traditions![/cyan]")
+    console.print("[cyan]   The question 'Giin Inna Nanaboozhoo?' means 'Are you Nanaboozhoo?'[/cyan]")
+    console.print("[cyan]   Nanaboozhoo is a central figure in Anishinaabe storytelling and wisdom.[/cyan]")
+
 
 if __name__ == "__main__":
     main()

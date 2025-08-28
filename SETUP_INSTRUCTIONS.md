@@ -123,6 +123,9 @@ chmod +x install-cli.sh
 cli-tts --help
 cli-tts --list-models
 cli-tts --text "Hello world" --model edge-tts
+
+# 🎭 Cultural Easter Egg
+cli-tts ?                        # Discover the Anishinaabe cultural design!
 ```
 
 ## 🔧 **Model-Specific Setup Details**
@@ -180,7 +183,9 @@ python -m tts_cli.cli_tts --text "Hello world" --model f5-tts --voice-clone voic
 # 6. Test global CLI command (if installed)
 cli-tts --help
 cli-tts --list-models
-```
+
+# 7. 🎭 Discover the cultural easter egg
+cli-tts ?
 
 ## 🚨 **Troubleshooting**
 

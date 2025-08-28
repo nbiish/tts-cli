@@ -23,8 +23,11 @@ cd tts-cli
 # Run the automated setup
 python setup.py
 
+# Install CLI globally (optional but recommended)
+python install-cli.py
+
 # Test the installation
-python -m tts_cli.cli_tts --help
+cli-tts --help
 ```
 
 ### **Option 2: Manual Setup**
@@ -83,6 +86,45 @@ cd ../..
 cd ..
 ```
 
+## 🌐 **Global CLI Installation (Optional but Recommended)**
+
+After setting up the TTS CLI, you can install the `cli-tts` command globally so you can use it from anywhere on your system:
+
+### **Option 1: Python Installer (Cross-Platform)**
+```bash
+# Install globally
+python install-cli.py
+
+# Or install for current user only
+python install-cli.py --user
+
+# Uninstall if needed
+python install-cli.py --uninstall
+```
+
+### **Option 2: Shell Installer (Unix/Linux/macOS)**
+```bash
+# Install globally
+./install-cli.sh
+
+# Make executable if needed
+chmod +x install-cli.sh
+```
+
+### **What This Does:**
+- Creates a `cli-tts` command accessible from anywhere
+- Adds the command to your system PATH
+- Works across all terminals and directories
+- Provides the same functionality as `python -m tts_cli.cli_tts`
+
+### **Usage After Global Installation:**
+```bash
+# From any directory
+cli-tts --help
+cli-tts --list-models
+cli-tts --text "Hello world" --model edge-tts
+```
+
 ## 🔧 **Model-Specific Setup Details**
 
 ### **F5-TTS Environment**
@@ -120,7 +162,7 @@ cd ..
 After setup, verify everything is working:
 
 ```bash
-# 1. Test CLI tool
+# 1. Test CLI tool (module mode)
 python -m tts_cli.cli_tts --help
 
 # 2. List available models
@@ -134,6 +176,10 @@ python -m tts_cli.cli_tts --text "Hello world" --model edge-tts --output test.wa
 
 # 5. Test voice cloning (F5-TTS - requires reference audio)
 python -m tts_cli.cli_tts --text "Hello world" --model f5-tts --voice-clone voice-to-clone.wav --output cloned.wav
+
+# 6. Test global CLI command (if installed)
+cli-tts --help
+cli-tts --list-models
 ```
 
 ## 🚨 **Troubleshooting**

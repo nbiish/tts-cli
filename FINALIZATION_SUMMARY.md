@@ -16,10 +16,12 @@ All dependencies from all environments have been captured:
 - **`vibevoice-dependencies.txt`** - VibeVoice isolated environment dependencies
 
 ### **2. Setup Automation (Complete)**
-Three setup options for different user preferences:
+Multiple setup options for different user preferences:
 
 - **`setup.py`** - Python-based setup script (most robust)
 - **`setup.sh`** - Bash-based setup script (Unix/Linux/macOS)
+- **`install-cli.py`** - Global CLI installer (cross-platform)
+- **`install-cli.sh`** - Global CLI installer (Unix/Linux/macOS)
 - **`SETUP_INSTRUCTIONS.md`** - Comprehensive manual setup guide
 
 ### **3. Documentation (Complete)**
@@ -38,6 +40,9 @@ All documentation updated and finalized:
 git clone https://github.com/nbiish/tts-cli.git
 cd tts-cli
 python setup.py
+
+# Install CLI globally (optional but recommended)
+python install-cli.py
 
 # Or use shell script
 ./setup.sh
@@ -62,6 +67,16 @@ Follow the detailed instructions in `SETUP_INSTRUCTIONS.md`
 - **Pros**: Complete control, educational, troubleshooting guide
 - **Cons**: More time-consuming, manual steps
 - **Best for**: Learning, troubleshooting, custom configurations
+
+### **`install-cli.py` (Global CLI Installer)**
+- **Pros**: Cross-platform, creates global `cli-tts` command
+- **Cons**: Requires Python 3.10+
+- **Best for**: Making TTS CLI accessible from anywhere
+
+### **`install-cli.sh` (Global CLI Installer)**
+- **Pros**: Fast, lightweight, Unix-native
+- **Cons**: Unix/Linux/macOS only
+- **Best for**: Quick global CLI installation on Unix-like systems
 
 ## 📊 **What Each Script Does**
 
@@ -165,6 +180,8 @@ python -m tts_cli.cli_tts --create-environment f5-tts
 tts-cli/
 ├── setup.py                    # Python setup script
 ├── setup.sh                    # Bash setup script (executable)
+├── install-cli.py              # Global CLI installer (Python)
+├── install-cli.sh              # Global CLI installer (Bash)
 ├── SETUP_INSTRUCTIONS.md       # Comprehensive setup guide
 ├── FINALIZATION_SUMMARY.md     # This document
 ├── main-dependencies.txt       # Main tooling dependencies
@@ -212,14 +229,16 @@ tts-cli/
 ### **Immediate**
 1. **Clone repository**: `git clone https://github.com/nbiish/tts-cli.git`
 2. **Run setup**: `python setup.py` or `./setup.sh`
-3. **Test installation**: `python -m tts_cli.cli_tts --help`
-4. **Generate audio**: `python -m tts_cli.cli_tts --text "Hello" --model edge-tts`
+3. **Install globally**: `python install-cli.py` or `./install-cli.sh`
+4. **Test installation**: `cli-tts --help`
+5. **Generate audio**: `cli-tts --text "Hello" --model edge-tts`
 
 ### **Advanced Usage**
 1. **Voice cloning**: Use `--voice-clone` with supported models
 2. **Environment management**: Use `--list-environments` and related commands
 3. **Model testing**: Use `--test-all-models` for verification
 4. **Custom configurations**: Modify `tts_cli/core/model_registry.py`
+5. **Global access**: Use `cli-tts` command from any directory
 
 ### **Development**
 1. **Add new models**: Follow the established pattern

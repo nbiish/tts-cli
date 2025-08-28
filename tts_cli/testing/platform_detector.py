@@ -254,7 +254,7 @@ class PlatformDetector:
         }
         
         # Check platform compatibility based on model
-        if model_key in ["f5-tts", "edge-tts", "dia", "kyutai", "kokoro", "higgs-audio-v2"]:
+        if model_key in ["f5-tts", "edge-tts", "dia", "kyutai", "kokoro"]:
             compatibility["compatible_platforms"] = ["mps", "cuda", "cpu"]
             compatibility["performance_rating"] = "high"
             compatibility["notes"].append("Tested and working on all platforms")

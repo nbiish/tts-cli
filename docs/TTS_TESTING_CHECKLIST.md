@@ -21,7 +21,6 @@
 ### ✅ Working Models (Fully Tested)
 - [x] F5-TTS (SWivid)
 - [x] Edge TTS (Microsoft)
-- [x] Higgs Audio v2 (Boson AI) - Official implementation working
 
 ---
 
@@ -39,7 +38,6 @@
    - Production ready
 
 ### ✅ Fully Working (3/7)
-3. **Higgs Audio v2 (Boson AI)** - ✅ COMPLETE & WORKING
    - Official implementation with examples/generation.py script
    - Cross-platform compatible (CUDA, CPU, MPS)
    - High-quality 24kHz mono PCM output
@@ -281,7 +279,7 @@
 
 ---
 
-## 6. Higgs Audio v2 (Boson AI) Testing ✅ COMPLETE
+
 
 ### Environment Setup
 - [x] Isolated environment created

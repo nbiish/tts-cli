@@ -19,3 +19,4 @@ temp_vibevoice/
 # Cursor IDE
 .cursor/
 
+__pycache__/

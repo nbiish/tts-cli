@@ -16,7 +16,6 @@ This document provides comprehensive information about each TTS model implemente
 5. **Kokoro TTS (Hexgrad)** - Ultra-lightweight, fast processing, basic voice cloning
 
 ### ⚠️ Platform Limited Models
-6. **Higgs Audio v2 (Boson AI)** - DualFFN architecture, voice cloning, prosody control
 
 ### 🔄 Pending Testing/Implementation
 7. **VibeVoice (Microsoft)** - Long-form conversational TTS with multi-speaker support
@@ -376,7 +375,7 @@ audio = kokoro.generate("Hello world!", reference_audio="reference.wav")
 
 ---
 
-## 6. Higgs Audio v2 (Boson AI)
+
 
 ### Model Information
 - **Creator:** Boson AI
@@ -407,20 +406,16 @@ audio = kokoro.generate("Hello world!", reference_audio="reference.wav")
 ### Installation & Dependencies
 ```bash
 # Install via git clone (official repository) - SIMPLIFIED APPROACH
-git clone https://github.com/boson-ai/higgs-audio.git
-cd higgs-audio
 pip install -e .
 
 # Core dependencies (minimal)
 - torch
-- higgs-audio (from GitHub)
 - soundfile (for audio I/O)
 ```
 
 ### Usage Patterns (Pure TTS) - ✅ OFFICIAL IMPLEMENTATION WORKING
 ```bash
 # OFFICIAL APPROACH: Use the examples/generation.py script as intended
-# Reference: https://github.com/boson-ai/higgs-audio official repository
 
 # Install dependencies in isolated environment
 uv pip install langid jieba soundfile

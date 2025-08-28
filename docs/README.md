@@ -95,7 +95,6 @@ The CLI TTS tool supports the following TTS models:
 - **Dia (Nari Labs)** - Dialogue generation with speaker tags and non-verbal expressions
 - **Kyutai TTS** - Multilingual TTS with ultra-low latency (220ms)
 - **Kokoro TTS (Hexgrad)** - Ultra-lightweight TTS for resource-constrained environments
-- **Higgs Audio v2 (Boson AI)** - DualFFN architecture with voice cloning and prosody control
 - **VibeVoice (Microsoft)** - Long-form conversational TTS with multi-speaker support
 
 ## Testing Strategy
@@ -108,7 +107,6 @@ The CLI TTS tool supports the following TTS models:
 5. Test Kokoro TTS (Hexgrad) - Lightweight performance
 
 ### Phase 2: Platform Limited Models
-1. Test Higgs Audio v2 (Boson AI) - Platform compatibility
 2. Document platform-specific limitations
 3. Implement fallback mechanisms
 

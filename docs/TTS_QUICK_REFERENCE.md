@@ -111,25 +111,19 @@ kokoro.save_audio(audio, 'kokoro-clone-test.wav')
 "
 ```
 
-### 6. Higgs Audio v2 (Boson AI) ✅ IMPLEMENTATION COMPLETE & WORKING
-```bash
-# OFFICIAL APPROACH: Use the examples/generation.py script as intended
-# Reference: https://github.com/boson-ai/higgs-audio official repository
+#
 
 # Install dependencies in isolated environment
 uv pip install langid jieba soundfile
 
 # Test basic functionality
 python examples/generation.py \
-  --transcript "Hello world! This is a test of Higgs Audio v2." \
   --temperature 0.3 \
-  --out_path higgs-test.wav
 
 # Test with custom temperature
 python examples/generation.py \
   --transcript "This is a test with different temperature settings." \
   --temperature 0.7 \
-  --out_path higgs-temp-test.wav
 
 # Expected performance: ~3 minutes for short text (high-quality generation)
 # Output: 24kHz mono PCM WAV file
@@ -497,12 +491,7 @@ audio = engine.generate('Hello world! This is a test of Kokoro TTS.')
 engine.save_audio(audio, 'kokoro-test.wav')
 ```
 
-### 6. Higgs Audio v2 (Boson AI)
-```python
-from boson_multimodal import HiggsAudioServeEngine
-engine = HiggsAudioServeEngine()
-# Implementation details to be added
-```
+#
 
 ### 7. VibeVoice (Microsoft)
 ```python
@@ -543,9 +532,7 @@ audio = engine.generate('Hello world! This is a test of voice cloning with Kokor
 engine.save_audio(audio, 'kokoro-clone-test.wav')
 ```
 
-### 5. Higgs Audio v2 Voice Cloning
 ```python
-from boson_multimodal import HiggsAudioServeEngine
 # Implementation details to be added
 ```
 

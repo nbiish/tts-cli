@@ -41,11 +41,7 @@ class MultiEnvironmentManager:
                 "python_version": "3.12",
                 "description": "Microsoft Edge TTS with 322+ voices"
             },
-            "higgs-audio-v2": {
-                "packages": ["higgs-audio"],
-                "python_version": "3.12",
-                "description": "Higgs Audio v2 pure TTS with DualFFN architecture"
-            },
+
             "dia": {
                 "packages": ["transformers[torch]", "torch", "soundfile"],
                 "python_version": "3.12",
@@ -135,13 +131,8 @@ class MultiEnvironmentManager:
                 if install_result.returncode != 0:
                     console.print(f"[yellow]⚠️ PyPI installation failed for {package}, trying alternative sources...[/yellow]")
                     
-                    # Try alternative installation methods based on model
-                    if model_key == "higgs-audio-v2" and package == "higgs-audio":
-                        # Install from GitHub for Higgs Audio v2
-                        self._install_higgs_from_github(env_path)
-                    else:
-                        console.print(f"[red]❌ Failed to install {package} from any source[/red]")
-                        return False
+                    console.print(f"[red]❌ Failed to install {package} from any source[/red]")
+                    return False
             
             console.print(f"[green]✅ Isolated environment created successfully for {model_key}[/green]")
             return True
@@ -150,37 +141,7 @@ class MultiEnvironmentManager:
             console.print(f"[red]❌ Error creating environment for {model_key}: {e}[/red]")
             return False
     
-    def _install_higgs_from_github(self, env_path: Path):
-        """Install Higgs Audio v2 from GitHub repository."""
-        try:
-            # Clone and install from GitHub
-            subprocess.run(
-                ["git", "clone", "https://github.com/boson-ai/higgs-audio.git", "higgs-audio"],
-                cwd=env_path,
-                check=True
-            )
-            
-            python_path = env_path.absolute() / ".venv" / "bin" / "python"
-            if not python_path.exists():
-                python_path = env_path.absolute() / ".venv" / "Scripts" / "python.exe"
-            
-            subprocess.run(
-                ["uv", "pip", "install", "--python", str(python_path), "-r", "higgs-audio/requirements.txt"],
-                cwd=env_path,
-                check=True
-            )
-            
-            subprocess.run(
-                ["uv", "pip", "install", "--python", str(python_path), "-e", "higgs-audio"],
-                cwd=env_path,
-                check=True
-            )
-            
-            console.print("[green]✅ Higgs Audio v2 installed from GitHub[/green]")
-            
-        except subprocess.CalledProcessError as e:
-            console.print(f"[red]❌ Failed to install Higgs Audio v2 from GitHub: {e}[/red]")
-            raise
+
     
     def _install_package(self, env_path: Path, package: str, python_path: Path) -> bool:
         """Install a package in the isolated environment."""
@@ -206,17 +167,7 @@ class MultiEnvironmentManager:
                 
                 console.print("[green]✅ transformers[torch] and torch installed successfully[/green]")
                 return True
-            elif package == "higgs-audio":
-                # Install higgs-audio from GitHub (official repository)
-                result = subprocess.run(
-                    ["uv", "pip", "install", "--python", str(python_path), "git+https://github.com/boson-ai/higgs-audio.git"],
-                    capture_output=True, text=True, cwd=env_path
-                )
-                if result.returncode != 0:
-                    console.print(f"[red]❌ Failed to install higgs-audio: {result.stderr}[/red]")
-                    return False
-                console.print("[green]✅ higgs-audio installed successfully[/green]")
-                return True
+
             else:
                 # Standard package installation
                 result = subprocess.run(
@@ -275,6 +226,8 @@ class MultiEnvironmentManager:
                     return result.stdout
                 else:
                     console.print(f"[red]❌ Script execution failed: {result.stderr}[/red]")
+                    console.print(f"[red]STDOUT: {result.stdout}[/red]")
+                    console.print(f"[red]STDERR: {result.stderr}[/red]")
                     return None
                     
             finally:

@@ -17,7 +17,6 @@ This document provides a concise summary of all TTS models in the CLI TTS tool, 
 | **Dia** | ✅ Working | ✅ Yes | ✅ Yes (4 speakers) | ✅ Yes | All | 🔥 High |
 | **Kyutai TTS** | ✅ Working | ✅ Yes | ✅ Yes (VCTK) | ❌ No | All | 🔥 High |
 | **Kokoro TTS** | ✅ Working | ✅ Yes | ❌ No | ❌ No | All | 🔥 High |
-| **Higgs Audio v2** | ✅ Working | ✅ Yes | ❌ No | ❌ No | All | 🔥 High |
 | **VibeVoice** | 🔄 Pending | ✅ Yes | ✅ Yes (4 speakers) | ❌ No | All | 🔶 Medium |
 
 **Legend:**
@@ -32,7 +31,6 @@ This document provides a concise summary of all TTS models in the CLI TTS tool, 
 ## Model Capabilities Matrix
 
 ### Core Features
-| Feature | F5-TTS | Edge TTS | Dia | Kyutai | Kokoro | Higgs | VibeVoice |
 |---------|--------|----------|-----|--------|--------|-------|-----------|
 | **Text-to-Speech** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | **Voice Cloning** | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
@@ -43,7 +41,6 @@ This document provides a concise summary of all TTS models in the CLI TTS tool, 
 | **Cross-Platform** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 ### Technical Specifications
-| Specification | F5-TTS | Edge TTS | Dia | Kyutai | Kokoro | Higgs | VibeVoice |
 |---------------|--------|----------|-----|--------|--------|-------|------------|-----------|
 | **Parameters** | N/A | Various | N/A | 1.6B | 82M | N/A | N/A | 1.5B |
 | **Memory** | Moderate | Minimal | Moderate | Moderate | Very Low | High | High | High |
@@ -85,7 +82,6 @@ These models are fully implemented and ready for comprehensive testing:
 ### 🔶 Phase 2: Medium Priority (Needs Attention)
 These models have implementation challenges that need resolution:
 
-6. **Higgs Audio v2 (Boson AI)**
    - **Status:** ✅ **FULLY IMPLEMENTED & WORKING**
    - **Implementation:** Official GitHub repository approach with examples/generation.py script
    - **Performance:** ~3 minutes for short text (high-quality generation)
@@ -134,7 +130,6 @@ These models have implementation challenges that need resolution:
 - **Dia:** Best for multi-speaker voice cloning
 - **Kyutai:** Best for fast voice cloning
 - **Kokoro:** Best for lightweight voice cloning
-- **Higgs Audio v2:** Best for prosody control (if platform compatible)
 
 ### Multi-Speaker Models
 - **Edge TTS:** 322+ different voices (no cloning)

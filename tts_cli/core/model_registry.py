@@ -79,14 +79,7 @@ class TTSModelRegistry:
                 "platforms": ["mps", "cuda", "cpu"],
                 "notes": "82M parameters, fast processing"
             },
-            "higgs-audio-v2": {
-                "name": "Higgs Audio v2 (Boson AI)",
-                "description": "DualFFN architecture, voice cloning, prosody control",
-                "status": "✅ Ready",
-                "voice_cloning": True,
-                "platforms": ["mps", "cuda", "cpu"],
-                "notes": "Cross-platform compatible with automatic device detection"
-            }
+
         }
         
         for model_key, info in working_models.items():

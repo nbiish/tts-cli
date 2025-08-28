@@ -1,231 +1,212 @@
 #!/usr/bin/env python3
 """
-TTS Model Registry.
+Model Registry Module - TTS Model Information and Capabilities
 
-This module provides a centralized registry for all TTS models,
-managing their availability, capabilities, and implementations.
+Centralized registry of all available TTS models with their specifications,
+capabilities, and implementation status.
+
+Author: Nbiish Waabanimii-Kinawaabakizi
+Date: 2025
+Version: 2.1
 """
 
-from typing import Dict, List, Optional, Any
-from rich.console import Console
-from rich.table import Table
-from .environment_manager import MultiEnvironmentManager
+from typing import Dict, Any, List, Optional
+import torch
 
-# Initialize console
-console = Console()
-
-class TTSModelRegistry:
+class ModelRegistry:
     """
-    Centralized registry for all TTS models.
-    
-    This class manages model registration, availability checking,
-    and provides a unified interface for all TTS operations.
+    Centralized registry of all available TTS models with their specifications,
+    capabilities, and implementation status.
     """
     
     def __init__(self):
-        """Initialize the model registry."""
-        self.models = {}
-        self.environment_manager = MultiEnvironmentManager()
-        self._register_models()
-    
-    def _register_models(self):
-        """Register all available TTS models."""
-        # Working models (confirmed to work)
-        self._register_working_models()
-        
-        # Models pending testing
-        self._register_pending_models()
-    
-    def _register_working_models(self):
-        """Register models that are confirmed to work."""
-        working_models = {
+        self.models = {
             "f5-tts": {
                 "name": "F5-TTS (SWivid)",
-                "description": "F5-TTS with voice cloning capabilities",
-                "status": "✅ Ready",
+                "model_id": "SWivid/F5-TTS",
+                "description": "High-quality speech generation with flow matching and voice cloning",
+                "requirements": "Python 3.8+, PyTorch 2.0+, moderate VRAM",
+                "capabilities": ["High quality", "Voice cloning", "Flow matching", "Local processing"],
+                "status": "✅ Implemented",
                 "voice_cloning": True,
-                "platforms": ["mps", "cuda", "cpu"],
-                "notes": "High-quality voice cloning, local processing"
+                "voice_cloning_quality": "✅ High quality - produces good audio",
+                "performance": "48.11s (Slow)",
+                "platforms": ["CUDA", "MPS", "CPU"],
+                "github": "https://github.com/SWivid/F5-TTS",
+                "huggingface": "https://huggingface.co/SWivid/F5-TTS"
             },
             "edge-tts": {
                 "name": "Edge TTS (Microsoft)",
-                "description": "Microsoft Edge TTS with 322+ voices",
-                "status": "✅ Ready",
+                "model_id": "edge-tts",
+                "description": "Microsoft Edge's high-quality TTS with 322+ voices across multiple languages",
+                "requirements": "Internet connection, Python 3.7+",
+                "capabilities": ["High quality", "Multiple voices", "Multi-language", "Fast generation"],
+                "status": "✅ Implemented",
                 "voice_cloning": False,
-                "platforms": ["mps", "cuda", "cpu"],
-                "notes": "High-quality speech, multiple voice options"
+                "voice_cloning_quality": "❌ Not supported",
+                "performance": "1.62s (Fastest)",
+                "platforms": ["All platforms"],
+                "github": None,
+                "huggingface": None
             },
             "dia": {
                 "name": "Dia (Nari Labs)",
-                "description": "Dialogue generation with speaker tags and non-verbal expressions",
-                "status": "✅ Ready",
+                "model_id": "nari-labs/Dia-1.6B-0626",
+                "description": "Ultra-realistic dialogue generation in one pass with voice cloning (FIXED - now optimized)",
+                "requirements": "Python 3.8+, PyTorch 2.0+, transformers main branch",
+                "capabilities": ["Dialogue generation", "Voice cloning", "Emotion control", "Non-verbal sounds"],
+                "status": "✅ Implemented (Optimized)",
                 "voice_cloning": True,
-                "platforms": ["mps", "cuda", "cpu"],
-                "notes": "Multi-speaker dialogue, emotion control"
+                "voice_cloning_quality": "⚠️ Poor quality - produces bad audio",
+                "performance": "51.31s (Much Improved)",
+                "platforms": ["CUDA", "MPS", "CPU"],
+                "github": "https://github.com/nari-labs/dia",
+                "huggingface": "https://huggingface.co/nari-labs/Dia-1.6B-0626"
             },
             "kyutai": {
                 "name": "Kyutai TTS",
-                "description": "Multilingual TTS with ultra-low latency",
-                "status": "✅ Ready",
+                "model_id": "kyutai/tts-1.6b-en_fr",
+                "description": "1.6B parameters, multilingual (English/French), ultra-low latency (220ms)",
+                "requirements": "Python 3.8+, moshi_mlx package, voice repository",
+                "capabilities": ["Multilingual", "Ultra-low latency", "Multi-speaker", "Voice cloning"],
+                "status": "✅ Implemented",
                 "voice_cloning": True,
-                "platforms": ["mps", "cuda", "cpu"],
-                "notes": "220ms end-to-end latency, VCTK voices"
+                "voice_cloning_quality": "⚠️ Poor quality - produces bad audio",
+                "performance": "16.52s (Moderate)",
+                "platforms": ["CUDA", "MPS", "CPU"],
+                "github": "https://github.com/kyutai-labs/delayed-streams-modeling",
+                "huggingface": "https://huggingface.co/kyutai/tts-1.6b-en_fr"
             },
             "kokoro": {
-                "name": "Kokoro TTS (Hexgrad)",
-                "description": "Ultra-lightweight TTS for resource-constrained environments",
-                "status": "✅ Ready",
+                "name": "Kokoro (Hexgrad)",
+                "model_id": "hexgrad/Kokoro-82M",
+                "description": "82M parameters, ultra-lightweight, fast processing for resource-constrained environments",
+                "requirements": "Python 3.8+, kokoro package, minimal VRAM",
+                "capabilities": ["Ultra-lightweight", "Fast processing", "Basic voice cloning", "Cost-effective"],
+                "status": "✅ Implemented",
                 "voice_cloning": True,
-                "platforms": ["mps", "cuda", "cpu"],
-                "notes": "82M parameters, fast processing"
+                "voice_cloning_quality": "⚠️ Poor quality - produces bad audio",
+                "performance": "10.28s (Very Fast)",
+                "platforms": ["CUDA", "MPS", "CPU"],
+                "github": "https://github.com/hexgrad/kokoro",
+                "huggingface": "https://huggingface.co/hexgrad/Kokoro-82M"
             },
-
-        }
-        
-        for model_key, info in working_models.items():
-            self.models[model_key] = {
-                **info,
-                "environment_ready": self.environment_manager.environment_exists(model_key),
-                "implementation_status": "ready"
-            }
-    
-    def _register_pending_models(self):
-        """Register models that are pending testing or implementation."""
-        pending_models = {
             "vibevoice": {
                 "name": "VibeVoice (Microsoft)",
-                "description": "Long-form conversations, multi-speaker, podcast-ready",
-                "status": "🔄 Pending Testing",
+                "model_id": "microsoft/VibeVoice-1.5B",
+                "description": "1.5B parameters, long-form conversational TTS, multi-speaker support (up to 4 speakers)",
+                "requirements": "Python 3.8+, PyTorch 2.0+, transformers library",
+                "capabilities": ["Long-form generation", "Multi-speaker", "Natural dialogue", "Podcast-ready"],
+                "status": "❌ Apple Silicon compatibility issues",
                 "voice_cloning": True,
-                "platforms": ["mps", "cuda", "cpu"],
-                "notes": "Package not available on PyPI"
+                "voice_cloning_quality": "❓ Unknown - not tested due to compatibility issues",
+                "performance": "6.47s (Broken)",
+                "platforms": ["CUDA", "CPU"],
+                "github": "https://github.com/microsoft/VibeVoice",
+                "huggingface": "https://huggingface.co/microsoft/VibeVoice-1.5B"
             }
         }
         
-        for model_key, info in pending_models.items():
-            self.models[model_key] = {
-                **info,
-                "environment_ready": self.environment_manager.environment_exists(model_key),
-                "implementation_status": "pending"
-            }
+        self.current_model = None
+        self.device = self._get_device()
+    
+    def _get_device(self) -> str:
+        """Get the best available device for TTS generation."""
+        if torch.cuda.is_available():
+            device = "cuda"
+        elif torch.backends.mps.is_available():
+            device = "mps"
+        else:
+            device = "cpu"
+        
+        return device
     
     def list_models(self) -> List[str]:
-        """Get list of all available model keys."""
+        """List available model keys."""
         return list(self.models.keys())
     
     def get_model_info(self, model_key: str) -> Optional[Dict[str, Any]]:
         """Get information about a specific model."""
-        if model_key not in self.models:
-            return None
-        
-        model_info = self.models[model_key].copy()
-        
-        # Add environment status
-        if model_key in self.environment_manager.environments:
-            env_status = self.environment_manager.list_environments().get(model_key, {})
-            model_info["environment"] = env_status
-        
-        return model_info
-    
-    def get_working_models(self) -> List[str]:
-        """Get list of models that are confirmed to work."""
-        return [
-            key for key, info in self.models.items()
-            if info["status"] == "✅ Ready"
-        ]
-    
-    def get_pending_models(self) -> List[str]:
-        """Get list of models pending testing or implementation."""
-        return [
-            key for key, info in self.models.items()
-            if info["status"] != "✅ Ready"
-        ]
+        return self.models.get(model_key)
     
     def get_models_by_capability(self, capability: str) -> List[str]:
         """Get models that support a specific capability."""
-        if capability == "voice_cloning":
-            return [
-                key for key, info in self.models.items()
-                if info.get("voice_cloning", False)
-            ]
-        elif capability == "platform":
-            return [
-                key for key, info in self.models.items()
-                if info.get("platforms", [])
-            ]
-        return []
+        return [
+            model_key for model_key, model_info in self.models.items()
+            if capability in model_info.get("capabilities", [])
+        ]
     
-    def show_models_table(self) -> None:
-        """Display a formatted table of all models."""
-        table = Table(title="TTS Models Status")
-        
-        # Add columns
-        table.add_column("Model", style="cyan", no_wrap=True)
-        table.add_column("Status", style="bold")
-        table.add_column("Description", style="white")
-        table.add_column("Voice Cloning", style="green")
-        table.add_column("Platforms", style="blue")
-        table.add_column("Environment", style="yellow")
-        
-        # Add rows
-        for model_key, info in self.models.items():
-            status_style = {
-                "✅ Ready": "green",
-                "⚠️ Platform Limited": "yellow",
-                "🔄 Pending Testing": "blue"
-            }.get(info["status"], "white")
-            
-            voice_cloning = "✅" if info.get("voice_cloning", False) else "❌"
-            platforms = ", ".join(info.get("platforms", []))
-            environment = "✅ Ready" if info.get("environment_ready", False) else "❌ Not Created"
-            
-            table.add_row(
-                info["name"],
-                f"[{status_style}]{info['status']}[/{status_style}]",
-                info["description"],
-                voice_cloning,
-                platforms,
-                environment
-            )
-        
-        console.print(table)
+    def get_models_by_platform(self, platform: str) -> List[str]:
+        """Get models that support a specific platform."""
+        return [
+            model_key for model_key, model_info in self.models.items()
+            if platform in model_info.get("platforms", [])
+        ]
     
-    def get_model_summary(self) -> Dict[str, Any]:
-        """Get a summary of all models."""
+    def get_voice_cloning_models(self) -> List[str]:
+        """Get models that support voice cloning."""
+        return [
+            model_key for model_key, model_info in self.models.items()
+            if model_info.get("voice_cloning", False)
+        ]
+    
+    def get_device_compatible_models(self) -> List[str]:
+        """Get models compatible with the current device."""
+        return self.get_models_by_platform(self.device)
+    
+    def get_model_status_summary(self) -> Dict[str, Any]:
+        """Get a summary of all model statuses."""
         total_models = len(self.models)
-        working_models = len(self.get_working_models())
-        pending_models = len(self.get_pending_models())
-        voice_cloning_models = len(self.get_models_by_capability("voice_cloning"))
+        implemented_models = len([m for m in self.models.values() if m["status"] == "✅ Implemented"])
+        voice_cloning_models = len(self.get_voice_cloning_models())
+        device_compatible_models = len(self.get_device_compatible_models())
         
         return {
             "total_models": total_models,
-            "working_models": working_models,
-            "pending_models": pending_models,
+            "implemented_models": implemented_models,
             "voice_cloning_models": voice_cloning_models,
-            "success_rate": f"{(working_models / total_models * 100):.1f}%" if total_models > 0 else "0%"
+            "device_compatible_models": device_compatible_models,
+            "current_device": self.device.upper(),
+            "implementation_rate": f"{(implemented_models/total_models)*100:.1f}%"
         }
     
-    def update_model_status(self, model_key: str, **updates) -> bool:
-        """Update model information."""
-        if model_key not in self.models:
-            return False
+    def search_models(self, query: str) -> List[str]:
+        """Search models by name, description, or capabilities."""
+        query_lower = query.lower()
+        matching_models = []
         
-        self.models[model_key].update(updates)
-        return True
-    
-    def refresh_environment_status(self) -> None:
-        """Refresh environment status for all models."""
-        env_statuses = self.environment_manager.list_environments()
+        for model_key, model_info in self.models.items():
+            # Search in name
+            if query_lower in model_info["name"].lower():
+                matching_models.append(model_key)
+                continue
+            
+            # Search in description
+            if query_lower in model_info["description"].lower():
+                matching_models.append(model_key)
+                continue
+            
+            # Search in capabilities
+            if any(query_lower in cap.lower() for cap in model_info["capabilities"]):
+                matching_models.append(model_key)
+                continue
         
-        for model_key in self.models:
-            if model_key in env_statuses:
-                self.models[model_key]["environment_ready"] = env_statuses[model_key]["exists"]
+        return matching_models
     
-    def __str__(self) -> str:
-        """String representation of the registry."""
-        summary = self.get_model_summary()
-        return f"TTSModelRegistry({summary['working_models']}/{summary['total_models']} models working)"
-    
-    def __repr__(self) -> str:
-        """Detailed string representation of the registry."""
-        return f"{self.__class__.__name__}(models={len(self.models)})"
+    def get_model_comparison(self, model_keys: List[str]) -> Dict[str, Any]:
+        """Get a detailed comparison of specified models."""
+        comparison = {}
+        
+        for model_key in model_keys:
+            if model_key in self.models:
+                model_info = self.models[model_key]
+                comparison[model_key] = {
+                    "name": model_info["name"],
+                    "description": model_info["description"],
+                    "capabilities": model_info["capabilities"],
+                    "voice_cloning": model_info["voice_cloning"],
+                    "platforms": model_info["platforms"],
+                    "status": model_info["status"]
+                }
+        
+        return comparison

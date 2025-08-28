@@ -1,22 +1,13 @@
 """
-TTS model implementations.
+Models Module - TTS Model Implementations
 
-This package contains individual TTS model implementations following
-our testing-first approach and creator-verified usage patterns.
+Individual TTS model implementations following the base model interface.
+
+Author: Nbiish Waabanimii-Kinawaabakizi
+Date: 2025
+Version: 2.1
 """
 
 from .base_model import BaseTTSModel
-from .f5_tts import F5TTSModel
-from .edge_tts import EdgeTTSModel
-from .dia import DiaModel
-from .kyutai_tts import KyutaiTTSModel
-from .kokoro_tts import KokoroTTSModel
 
-__all__ = [
-    'BaseTTSModel',
-    'F5TTSModel',
-    'EdgeTTSModel', 
-    'DiaModel',
-    'KyutaiTTSModel',
-    'KokoroTTSModel'
-]
+__all__ = ["BaseTTSModel"]

@@ -1,647 +1,440 @@
-# TTS Model Knowledge Base
+# TTS Model Knowledge Base - Creator-Verified Information
 
-**Author:** Nbiish Waabanimii-Kinawaabakizi | **Date:** August 26, 2025 | **Version:** 1.0
+**Author:** Nbiish Waabanimikii-Kinawaabakizi | **Date:** August 28, 2025 | **Version:** 3.0
 
-## Overview
+**CRITICAL: This knowledge base contains creator-verified usage instructions for each model. All implementations MUST follow these specifications exactly to ensure proper functionality and optimal results.**
 
-This document provides comprehensive information about each TTS model implemented in the CLI TTS tool, including their capabilities, requirements, voice cloning abilities, and platform compatibility. This knowledge base serves as the foundation for testing and implementing each model according to creator-verified usage patterns.
+## 🔬 TESTING-FIRST APPROACH: NO MORE VRAM SPECULATION
 
-## Model Categories
+**Critical Principle: Always test models rather than rely on theoretical specifications.**
 
-### ✅ Working Models (Fully Implemented & Tested)
-1. **F5-TTS (SWivid)** - Voice cloning, high quality, local processing
-2. **Edge TTS (Microsoft)** - 322+ voices, high quality, fast processing  
-3. **Dia (Nari Labs)** - Dialogue generation, multi-speaker, non-verbal expressions
-4. **Kyutai TTS** - Multilingual, ultra-low latency, VCTK voices
-5. **Kokoro TTS (Hexgrad)** - Ultra-lightweight, fast processing, basic voice cloning
+### **❌ Why VRAM Requirements Are Misleading:**
+- **CUDA vs MPS Differences**: VRAM specs are CUDA-based and don't translate to Apple Silicon MPS
+- **Transformers Auto-Detection**: The library automatically optimizes for the actual platform
+- **Memory Management**: MPS handles memory differently than CUDA (unified vs dedicated)
+- **Real Performance**: Theoretical requirements often don't match actual performance
+- **Platform Optimization**: Models may work better on MPS than expected from CUDA specs
 
-### ⚠️ Platform Limited Models
+### **✅ Our Testing-First Methodology:**
+1. **Test Every Model** - Don't assume it won't work based on specs
+2. **Use Transformers Auto-Detection** - Let the library handle platform optimization
+3. **Measure Actual Performance** - Real-world testing reveals true capabilities
+4. **Ignore Theoretical Limits** - Focus on what actually works
+5. **Document Real Results** - Replace speculation with empirical data
 
-### 🔄 Pending Testing/Implementation
-7. **VibeVoice (Microsoft)** - Long-form conversational TTS with multi-speaker support
-8. **VibeVoice (Microsoft)** - Long-form conversations, multi-speaker, podcast-ready
+## 1. F5-TTS (SWivid) - Voice Cloning Model
 
----
+**Model:** Diffusion Transformer with ConvNeXt V2 architecture  
+**Parameters:** ~1B parameters  
+**Features:** Fast training and inference, high-quality speech generation  
+**Special Capabilities:** Flow matching, diffusion-based generation, voice cloning  
+**Auto-Detection:** Uses `device_map="auto"` for automatic device placement across platforms  
+**Sample Rate:** 24 kHz  
+**License:** MIT (code), CC-BY-NC (models due to Emilia dataset)  
 
-## 1. F5-TTS (SWivid)
+### **⚠️ CRITICAL: This is a VOICE CLONING model - Reference Audio REQUIRED**
 
-### Model Information
-- **Creator:** SWivid
-- **Model Type:** Voice cloning TTS
-- **Parameters:** Not specified
-- **License:** Commercial/Research
-- **Repository:** [F5-TTS GitHub](https://github.com/swivid/F5-TTS)
-
-### Capabilities
-- **Voice Cloning:** ✅ Yes (with reference audio)
-- **Multi-speaker:** ❌ No
-- **Non-verbal expressions:** ❌ No
-- **Long-form generation:** ❌ Limited
-- **Real-time processing:** ✅ Yes
-
-### Voice Cloning Requirements
-- **Reference Audio Format:** WAV
-- **Reference Audio Length:** Any length (optimal: 10-30 seconds)
-- **Reference Text:** Optional (can be auto-transcribed)
-- **Quality Requirements:** Clear speech, minimal background noise
-
-### Installation & Dependencies
+**Creator-Verified Usage Instructions:**
 ```bash
-# Install via uv
+# CLI Inference with voice cloning (REQUIRED)
+f5-tts_infer-cli --model F5TTS_v1_Base \
+--ref_audio "reference_audio.wav" \
+--ref_text "Reference audio transcription" \
+--gen_text "Text to synthesize"
+
+# Default settings (still requires reference audio)
+f5-tts_infer-cli
+
+# Custom configuration
+f5-tts_infer-cli -c custom.toml
+```
+
+### **Voice Cloning Requirements:**
+- **Reference audio: REQUIRED** - WAV format, any length (clipped to ~12s)
+- **Reference text: REQUIRED** - Transcription of reference audio (or empty for ASR)
+- **Output:** High-quality cloned voice with natural prosody
+
+### **Installation (UV-compatible):**
+```bash
+# Install via pip (inference only)
 uv pip install f5-tts
 
-# Core dependencies
-- torch
-- torchaudio
-- transformers
-- librosa
-- soundfile
+# Local editable (training/finetuning)
+git clone https://github.com/SWivid/F5-TTS.git
+cd F5-TTS
+uv pip install -e .
 ```
 
-### Usage Patterns
-```bash
-# Basic inference
-f5-tts_infer-cli --model F5TTS_v1_Base --gen_text "Your text here"
-
-# Voice cloning
-f5-tts_infer-cli --model F5TTS_v1_Base --ref_audio "reference.wav" --gen_text "Your text here"
-
-# With reference text (optional)
-f5-tts_infer-cli --model F5TTS_v1_Base --ref_audio "reference.wav" --ref_text "Reference text" --gen_text "Your text here"
-```
-
-### Platform Compatibility
-- **CUDA:** ✅ Full support
-- **MPS (Apple Silicon):** ✅ Full support (tested and verified)
-- **CPU:** ✅ Full support
-- **Memory Requirements:** Variable based on platform
-
-### Testing Results ✅ COMPLETE
-- **Test Coverage:** 100% (13 test files generated)
-- **Success Rate:** 100%
-- **Voice Cloning Quality:** Exceptional with external voices
-- **Advanced Parameters:** All tested parameters working
-- **Error Handling:** Robust and informative
-- **Production Status:** ✅ READY
-
-### Test Files Generated
-- Basic functionality, voice cloning, speed control, sampling parameters
-- Audio normalization, multilingual support, long-form generation
-- Special character handling, error scenarios, fallback behavior
-- **Total:** 13 comprehensive test files
-
-### Performance Characteristics
-- **Inference Speed:** Fast (1:26 for standard, 3:13 for high-quality)
-- **Audio Quality:** High (9.5/10)
-- **Voice Similarity:** Excellent (9.5/10)
-- **Resource Usage:** Moderate to High (significant RAM/VRAM)
-- **Long-Form Capability:** Excellent (tested up to 200+ words)
-- **Multilingual Support:** Excellent (French tested, likely more)
+### **Important Notes:**
+- **This model CANNOT generate speech without reference audio**
+- **It's designed specifically for voice cloning applications**
+- **Reference audio should be <12s with proper silence at the end**
+- **Uppercase letters are uttered letter by letter**
+- **Add spaces/punctuation for natural pauses**
 
 ---
 
-## 2. Edge TTS (Microsoft)
+## 2. Edge TTS (Microsoft) - Standard TTS Model
 
-### Model Information
-- **Creator:** Microsoft
-- **Model Type:** Cloud-based TTS service
-- **Parameters:** Various (322+ voices)
-- **License:** Microsoft Services Agreement
-- **Repository:** [Edge TTS GitHub](https://github.com/rany2/edge-tts)
+**Model:** Microsoft Edge's online text-to-speech service  
+**Features:** High-quality speech generation, multiple voices  
+**Special Capabilities:** 322+ voices, multiple languages, SSML support  
+**Auto-Detection:** Works across all platforms (CUDA, MPS, CPU)  
+**License:** GPL v3 (community implementation)  
 
-### Capabilities
-- **Voice Cloning:** ❌ No
-- **Multi-speaker:** ✅ Yes (different voices)
-- **Non-verbal expressions:** ❌ No
-- **Long-form generation:** ✅ Yes
-- **Real-time processing:** ✅ Yes
+### **✅ Standard TTS - NO Input Audio Required**
 
-### Voice Options
-- **Total Voices:** 322+
-- **Languages:** 50+ languages
-- **Voice Types:** Natural, Neural, Custom Neural
-- **Gender Distribution:** Balanced male/female voices
-- **Regional Variants:** Multiple accents per language
-
-### Installation & Dependencies
+**Creator-Verified Usage Instructions:**
 ```bash
-# Install via uv
+# Basic usage - text only
+edge-tts --text "Hello, world!" --write-media hello.mp3
+
+# Change voice
+edge-tts --voice ar-EG-SalmaNeural --text "مرحبا كيف حالك؟" --write-media hello_in_arabic.mp3
+
+# Adjust rate, volume, pitch
+edge-tts --rate=-50% --text "Hello, world!" --write-media hello_with_rate_lowered.mp3
+edge-tts --volume=-50% --text "Hello, world!" --write-media hello_with_volume_lowered.mp3
+edge-tts --pitch=-50Hz --text "Hello, world!" --write-media hello_with_pitch_lowered.mp3
+```
+
+### **Installation:**
+```bash
+# Install via pip
 uv pip install edge-tts
 
-# Core dependencies
-- edge-tts
-- asyncio
-- aiofiles
+# Or use pipx for CLI only
+pipx install edge-tts
 ```
 
-### Usage Patterns
+### **Available Voices:**
+- **322+ voices** across multiple languages
+- **Gender options:** Male/Female
+- **Content categories:** General, News, Narration, etc.
+- **Voice personalities:** Friendly, Positive, Professional, etc.
+
+### **Important Notes:**
+- **No voice cloning capability**
+- **Internet connection required** (uses Microsoft's online service)
+- **High-quality, professional-grade output**
+- **Fast processing times**
+- **No hardware requirements** (runs on any platform)
+
+---
+
+## 3. Dia (Nari Labs) - Dialogue Generation Model
+
+**Model:** 1.6B parameter dialogue-focused TTS  
+**Features:** Ultra-realistic dialogue generation, emotion control, non-verbal sounds  
+**Special Capabilities:** Speaker tags ([S1], [S2]), non-verbal expressions (laughs, coughs, etc.)  
+**Auto-Detection:** Uses `device_map="auto"` for automatic device placement across platforms  
+**License:** Apache 2.0  
+
+### **✅ Standard TTS - NO Input Audio Required (Optional for Voice Cloning)**
+
+**Creator-Verified Usage Instructions:**
 ```python
-import asyncio
-import edge_tts
+# Basic dialogue generation (NO input audio required)
+from transformers import AutoProcessor, DiaForConditionalGeneration
 
-async def generate_speech():
-    communicate = edge_tts.Communicate("en-US-AriaNeural", "Hello world!")
-    await communicate.save("output.wav")
+text = [
+    "[S1] Dia is an open weights text to dialogue model. [S2] You get full control over scripts and voices. [S1] Wow. Amazing. (laughs)"
+]
 
-# List available voices
-voices = await edge_tts.list_voices()
+processor = AutoProcessor.from_pretrained("nari-labs/Dia-1.6B-0626")
+
+# Use transformers auto-detection for optimal device handling
+model = DiaForConditionalGeneration.from_pretrained(
+    "nari-labs/Dia-1.6B-0626",
+    device_map="auto",
+    dtype=torch.float16  # Use float16 for better performance
+)
+
+inputs = processor(text=text, padding=True, return_tensors="pt")
+inputs = {k: v.to(model.device) for k, v in inputs.items()}
+
+# Generate audio with official Dia parameters for optimal quality
+outputs = model.generate(
+    **inputs,
+    max_new_tokens=3072,  # Official Dia default
+    guidance_scale=3.0,   # Official Dia default
+    temperature=1.8,      # Official Dia default
+    top_p=0.90,          # Official Dia default
+    top_k=45,            # Official Dia default
+    do_sample=True        # Official Dia default
+)
+
+outputs = processor.batch_decode(outputs)
+processor.save_audio(outputs, "example.mp3")
 ```
 
-### Platform Compatibility
-- **CUDA:** ✅ Full support
-- **MPS (Apple Silicon):** ✅ Full support
-- **CPU:** ✅ Full support
-- **Memory Requirements:** Minimal (cloud-based)
+### **Dialogue Generation Features:**
+- **Speaker tags:** `[S1]`, `[S2]` for multi-speaker conversations
+- **Non-verbal expressions:** `(laughs)`, `(coughs)`, `(gasps)`, `(sighs)`, etc.
+- **Emotion control:** Natural conversation flow and tone
+- **Multi-speaker support:** Up to 2 speakers with consistent voices
 
-### Performance Characteristics
-- **Inference Speed:** Very fast
-- **Audio Quality:** High
-- **Voice Variety:** Excellent
-- **Resource Usage:** Very low
+### **Voice Cloning (Optional):**
+- **Audio prompt for voice consistency** (guide coming soon)
+- **Seed fixing for consistent voice generation**
+- **5-10 second reference audio recommended**
+- **Transcript must use correct speaker tags**
+
+### **Installation:**
+```bash
+# Install transformers main branch (required)
+uv pip install git+https://github.com/huggingface/transformers.git
+
+# Install additional dependencies
+uv pip install torch soundfile librosa
+```
+
+### **Important Notes:**
+- **⚠️ CRITICAL FORMATTING**: Dia requires very specific speaker tag formatting like `[S1]` and `[S2]`
+- **User Input Required**: Users should provide their own Dia-specific prompting with proper speaker tags
+- **Example Format**: `[S1] Hello there! [S2] How are you? [S1] I'm doing great!`
+- **Input text length:** Keep moderate (5-20 seconds of audio)
+- **Speaker tags:** Always begin with `[S1]`, alternate between `[S1]` and `[S2]`
+- **Non-verbal tags:** Use sparingly from the approved list
+- **Performance optimization:** Use `device_map="auto"` and `dtype=torch.float16`
+- **Official Parameters:** Using exact parameters from official Dia repository (`max_new_tokens=3072`)
+- **Platform support:** Full support for CUDA, MPS (Apple Silicon), and CPU
+- **Auto-detection:** Leverages transformers' built-in platform optimization
+- **⚠️ Basic Text Warning**: Using basic text without speaker tags may produce poor audio quality
 
 ---
 
-## 3. Dia (Nari Labs)
+## 4. Kyutai TTS - Multilingual Streaming Model
 
-### Model Information
-- **Creator:** Nari Labs
-- **Model Type:** Dialogue-focused TTS
-- **Parameters:** Not specified
-- **License:** Research/Commercial
-- **Repository:** [Dia TTS](https://github.com/nari-labs/dia-tts)
+**Model:** 1.6B parameters, multilingual (English/French)  
+**Architecture:** Transformer-based with delayed streams  
+**Features:** Streaming text input, ultra-low latency  
+**Special Capabilities:** Multi-speaker (up to 5 voices), voice cloning with 10-second reference  
+**Codec:** Mimi (12.5 Hz, 16 codebooks)  
+**Latency:** 220ms end-to-end  
 
-### Capabilities
-- **Voice Cloning:** ✅ Yes (with audio prompt)
-- **Multi-speaker:** ✅ Yes (up to 4 speakers)
-- **Non-verbal expressions:** ✅ Yes (laughs, coughs, gasps, etc.)
-- **Long-form generation:** ✅ Yes
-- **Real-time processing:** ✅ Yes
+### **✅ Standard TTS - NO Input Audio Required (Optional for Voice Cloning)**
 
-### Voice Cloning Requirements
-- **Reference Audio Format:** WAV/MP3
-- **Reference Audio Length:** 10-30 seconds optimal
-- **Reference Text:** Not required
-- **Quality Requirements:** Clear speech, consistent tone
-
-### Multi-Speaker Support
-- **Speaker Tags:** [S1], [S2], [S3], [S4]
-- **Dialogue Format:** Natural conversation flow
-- **Speaker Consistency:** Maintained across sessions
-
-### Non-Verbal Expressions
-- **Supported Expressions:**
-  - (laughs), (chuckles), (giggles)
-  - (coughs), (clears throat)
-  - (gasps), (sighs), (yawns)
-  - (whispers), (shouts)
-  - (cries), (sobs)
-
-### Installation & Dependencies
+**Creator-Verified Usage Instructions:**
 ```bash
-# Install via uv
-uv pip install dia-tts
+# PyTorch implementation
+echo "Hey, how are you?" | python scripts/tts_pytorch.py - -
 
-# Core dependencies
-- torch
-- transformers
-- librosa
-- soundfile
+# From text file to audio file
+python scripts/tts_pytorch.py text_to_say.txt audio_output.wav
+
+# MLX implementation (Apple Silicon)
+echo "Hey, how are you?" | python scripts/tts_mlx.py - - --quantize 8
+
+# From text file to audio file
+python scripts/tts_mlx.py text_to_say.txt audio_output.wav
 ```
 
-### Usage Patterns
+### **Installation:**
+```bash
+# PyTorch version
+uv pip install moshi
+
+# MLX version (Apple Silicon)
+uv pip install moshi-mlx
+```
+
+### **Voice Cloning (Optional):**
+- **10-second reference audio** for custom voices
+- **Automatic voice switching** for multi-speaker
+- **CFG distillation** for improved quality
+
+### **Special Features:**
+- **Streaming text input** for ultra-low latency
+- **Multi-speaker dialogue generation**
+- **Automatic prosody adaptation**
+- **Background music and speech synthesis**
+
+### **Important Notes:**
+- **Ultra-low latency:** 220ms end-to-end
+- **Multilingual support:** English and French
+- **VCTK voices:** English voices in voice repository
+- **CML-TTS voices:** French voices available
+- **Hardware support:** CUDA, MPS (Apple Silicon), CPU
+
+---
+
+## 5. Kokoro (Hexgrad) - Ultra-Lightweight Model
+
+**Model:** 82M parameters (ultra-lightweight)  
+**Features:** Fast inference, cost-effective deployment  
+**Special Capabilities:** Voice cloning, basic TTS functionality  
+**License:** Apache 2.0  
+**Trade-offs:** Speed/cost vs. quality  
+
+### **✅ Standard TTS - NO Input Audio Required (Optional for Voice Cloning)**
+
+**Creator-Verified Usage Instructions:**
 ```python
-from dia_tts import DiaTTS
+from kokoro import KPipeline
+import soundfile as sf
 
-# Initialize model
-dia = DiaTTS()
+# Initialize pipeline
+pipeline = KPipeline(lang_code='a')  # 'a' = American English
 
-# Basic generation
-audio = dia.generate("Hello world!")
+text = '''
+Kokoro is an open-weight TTS model with 82 million parameters. Despite its lightweight architecture, it delivers comparable quality to larger models while being significantly faster and more cost-efficient.
+'''
 
-# Multi-speaker dialogue
-dialogue = """
-[S1] Hello there! How are you today?
-[S2] I'm doing great, thanks for asking!
-[S1] That's wonderful to hear!
-"""
-
-audio = dia.generate(dialogue)
-
-# With non-verbal expressions
-text = "Hello! (laughs) That was funny!"
-audio = dia.generate(text)
+# Generate audio
+generator = pipeline(text, voice='af_heart')
+for i, (gs, ps, audio) in enumerate(generator):
+    print(i, gs, ps)
+    sf.write(f'{i}.wav', audio, 24000)
 ```
 
-### Platform Compatibility
-- **CUDA:** ✅ Full support
-- **MPS (Apple Silicon):** ✅ Full support
-- **CPU:** ✅ Full support
-- **Memory Requirements:** Moderate
+### **Language Support:**
+- **🇺🇸 'a'**: American English
+- **🇬🇧 'b'**: British English  
+- **🇪🇸 'e'**: Spanish
+- **🇫🇷 'f'**: French
+- **🇮🇳 'h'**: Hindi
+- **🇮🇹 'i'**: Italian
+- **🇯🇵 'j'**: Japanese (requires `misaki[ja]`)
+- **🇧🇷 'p'**: Brazilian Portuguese
+- **🇨🇳 'z'**: Mandarin Chinese (requires `misaki[zh]`)
 
-### Performance Characteristics
-- **Inference Speed:** Good
-- **Audio Quality:** High
-- **Dialogue Quality:** Excellent
-- **Resource Usage:** Moderate
+### **Installation:**
+```bash
+# Install kokoro
+uv pip install kokoro>=0.9.4 soundfile
+
+# Install espeak-ng for OOD fallback
+# On Ubuntu/Debian: apt-get install espeak-ng
+# On macOS: brew install espeak
+```
+
+### **Voice Cloning (Optional):**
+- **Basic voice cloning capabilities**
+- **Limited quality compared to larger models**
+- **Fast processing for real-time applications**
+
+### **Important Notes:**
+- **Ultra-lightweight:** 82M parameters
+- **Fast startup and inference times**
+- **Suitable for resource-constrained environments**
+- **Quality expectations:** Basic TTS with limited voice cloning
+- **Cross-platform:** Works on CUDA, MPS, CPU
 
 ---
 
-## 4. Kyutai TTS
+## 6. VibeVoice (Microsoft) - Long-Form Conversational Model
 
-### Model Information
-- **Creator:** Kyutai
-- **Model Type:** Multilingual TTS
-- **Parameters:** 1.6B
-- **License:** Research/Commercial
-- **Repository:** [Kyutai TTS](https://huggingface.co/kyutai/tts-1.6b-en_fr)
+**Model:** 1.5B parameters, long-form conversational TTS  
+**Features:** Up to 90 minutes of speech, multi-speaker (up to 4 distinct speakers)  
+**Special Capabilities:** Long-form dialogue, natural turn-taking, podcast-style generation  
+**Architecture:** Transformer-based LLM with acoustic/semantic tokenizers and diffusion decoding  
+**License:** MIT (research purposes)  
 
-### Capabilities
-- **Voice Cloning:** ✅ Yes (with voice repository)
-- **Multi-speaker:** ✅ Yes (VCTK voices)
-- **Non-verbal expressions:** ❌ No
-- **Long-form generation:** ✅ Yes
-- **Real-time processing:** ✅ Yes (ultra-low latency)
+### **✅ Standard TTS - NO Input Audio Required (Optional for Voice Cloning)**
 
-### Voice Cloning Requirements
-- **Reference Audio Format:** WAV
-- **Reference Audio Length:** 10 seconds optimal
-- **Voice Repository:** Integrated system
-- **Quality Requirements:** Clear speech, minimal noise
-
-### Multilingual Support
-- **Primary Languages:** English, French
-- **Accent Support:** Multiple regional variants
-- **Code-switching:** Natural language mixing
-
-### Installation & Dependencies
+**Creator-Verified Usage Instructions:**
 ```bash
-# Install via uv
-uv pip install moshi_mlx
-
-# Core dependencies
-- moshi_mlx
-- mlx
-- transformers
-```
-
-### Usage Patterns
-```bash
-# Basic inference
-python -m moshi_mlx.run_tts --hf-repo kyutai/tts-1.6b-en_fr --text "Hello world!"
-
-# With voice cloning
-python -m moshi_mlx.run_tts --hf-repo kyutai/tts-1.6b-en_fr --text "Hello world!" --voice_repo "voice_repo_path"
-```
-
-### Platform Compatibility
-- **CUDA:** ✅ Full support
-- **MPS (Apple Silicon):** ✅ Full support
-- **CPU:** ✅ Full support
-- **Memory Requirements:** Moderate (1.6B parameters)
-
-### Performance Characteristics
-- **Inference Speed:** Ultra-fast (220ms end-to-end)
-- **Audio Quality:** High
-- **Voice Variety:** Good
-- **Resource Usage:** Moderate
-
----
-
-## 5. Kokoro TTS (Hexgrad)
-
-### Model Information
-- **Creator:** Hexgrad
-- **Model Type:** Ultra-lightweight TTS
-- **Parameters:** 82M
-- **License:** Research/Commercial
-- **Repository:** [Kokoro TTS](https://github.com/hexgrad/kokoro-tts)
-
-### Capabilities
-- **Voice Cloning:** ✅ Yes (basic)
-- **Multi-speaker:** ❌ No
-- **Non-verbal expressions:** ❌ No
-- **Long-form generation:** ❌ Limited
-- **Real-time processing:** ✅ Yes (very fast)
-
-### Voice Cloning Requirements
-- **Reference Audio Format:** WAV
-- **Reference Audio Length:** 10-30 seconds
-- **Reference Text:** Not required
-- **Quality Requirements:** Clear speech
-
-### Ultra-Lightweight Design
-- **Parameter Count:** 82M (very small)
-- **Memory Usage:** Minimal
-- **Processing Speed:** Very fast
-- **Use Cases:** Resource-constrained environments
-
-### Installation & Dependencies
-```bash
-# Install via uv
-uv pip install kokoro-tts
-
-# Core dependencies
-- torch
-- transformers
-- librosa
-- soundfile
-```
-
-### Usage Patterns
-```python
-from kokoro_tts import KokoroTTS
-
-# Initialize model
-kokoro = KokoroTTS()
-
-# Basic generation
-audio = kokoro.generate("Hello world!")
-
-# Voice cloning
-audio = kokoro.generate("Hello world!", reference_audio="reference.wav")
-```
-
-### Platform Compatibility
-- **CUDA:** ✅ Full support
-- **MPS (Apple Silicon):** ✅ Full support
-- **CPU:** ✅ Full support
-- **Memory Requirements:** Very low
-
-### Performance Characteristics
-- **Inference Speed:** Very fast
-- **Audio Quality:** Good
-- **Voice Similarity:** Moderate
-- **Resource Usage:** Very low
-
----
-
-
-
-### Model Information
-- **Creator:** Boson AI
-- **Model Type:** DualFFN architecture TTS
-- **Parameters:** Not specified
-- **License:** Research/Commercial
-- **Repository:** [Boson Multimodal](https://github.com/boson-ai/boson-multimodal)
-
-### Capabilities
-- **Voice Cloning:** ✅ Yes (with reference audio)
-- **Multi-speaker:** ❌ No
-- **Non-verbal expressions:** ❌ No
-- **Long-form generation:** ✅ Yes
-- **Real-time processing:** ✅ Yes
-
-### Voice Cloning Requirements
-- **Reference Audio Format:** WAV
-- **Reference Audio Length:** 10-30 seconds optimal
-- **Reference Text:** Not required
-- **Quality Requirements:** Clear speech, consistent tone
-
-### DualFFN Architecture
-- **Architecture Type:** Dual Feed-Forward Network
-- **Prosody Control:** Advanced prosody manipulation
-- **Audio Quality:** High fidelity
-- **Processing Speed:** Fast
-
-### Installation & Dependencies
-```bash
-# Install via git clone (official repository) - SIMPLIFIED APPROACH
-pip install -e .
-
-# Core dependencies (minimal)
-- torch
-- soundfile (for audio I/O)
-```
-
-### Usage Patterns (Pure TTS) - ✅ OFFICIAL IMPLEMENTATION WORKING
-```bash
-# OFFICIAL APPROACH: Use the examples/generation.py script as intended
-
-# Install dependencies in isolated environment
-uv pip install langid jieba soundfile
-
-# Run the official generation script
-python examples/generation.py \
-  --transcript "Your text here" \
-  --temperature 0.3 \
-  --out_path output.wav
-
-# Expected performance: ~3 minutes for short text (high-quality generation)
-# Output: 24kHz mono PCM WAV file
-```
-
-### Implementation Details:
-- **Method**: Official GitHub repository approach with `examples/generation.py` script
-- **Dependencies**: `langid`, `jieba`, `soundfile` (installed in isolated environment)
-- **Performance**: ~3 minutes generation time for short text (as expected)
-- **Output Quality**: 24kHz mono PCM (professional grade)
-- **Cross-Platform**: Works on CUDA, CPU, and MPS (Apple Silicon)
-- **Status**: ✅ **Production Ready** - All functionality working correctly
-
-### Platform Compatibility
-- **CUDA:** ✅ Full support
-- **MPS (Apple Silicon):** ✅ Full support (via CPU fallback)
-- **CPU:** ✅ Full support
-- **Memory Requirements:** Moderate (uses transformers auto-detection)
-- **Status**: ✅ **Fully Cross-Platform Compatible**
-
-### Performance Characteristics
-- **Inference Speed:** Good
-- **Audio Quality:** Very high
-- **Voice Similarity:** Excellent
-- **Resource Usage:** High
-
----
-
-## 7. VibeVoice (Microsoft)
-
-### Model Information
-- **Creator:** FunAudioLLM
-- **Model Type:** MLLM reasoning TTS
-- **Parameters:** Not specified
-- **License:** Research/Commercial
-- **Repository:** [VibeVoice](https://github.com/microsoft/VibeVoice)
-
-### Capabilities
-- **Voice Cloning:** ✅ Yes (with reference audio)
-- **Multi-speaker:** ❌ No
-- **Non-verbal expressions:** ❌ No
-- **Long-form generation:** ✅ Yes
-- **Real-time processing:** ✅ Yes
-
-### MLLM Reasoning Features
-- **Reasoning Capabilities:** Advanced language understanding
-- **Cosmic Audio Features:** Special audio generation modes
-- **Context Awareness:** Better understanding of complex text
-- **Audio Quality:** High fidelity
-
-### Installation & Dependencies
-```bash
-# VibeVoice implementation details to be added
-# Package not available on PyPI, requires GitHub installation
-# Long-form conversational TTS with multi-speaker support
-```
-
-### Usage Patterns
-```python
-# VibeVoice implementation details to be added
-# Long-form generation up to 90 minutes
-# Multi-speaker support for up to 4 speakers
-```
-
-### Platform Compatibility
-- **CUDA:** ✅ Full support
-- **MPS (Apple Silicon):** ✅ Full support
-- **CPU:** ✅ Full support
-- **Memory Requirements:** Moderate
-
-### Performance Characteristics
-- **Inference Speed:** Fast
-- **Audio Quality:** High
-- **Long-form Support:** Excellent (up to 90 minutes)
-- **Resource Usage:** Moderate
-
----
-
-## 8. VibeVoice (Microsoft)
-
-### Model Information
-- **Creator:** Microsoft
-- **Model Type:** Long-form conversational TTS
-- **Parameters:** 1.5B
-- **License:** Research/Commercial
-- **Repository:** [VibeVoice](https://github.com/microsoft/VibeVoice)
-
-### Capabilities
-- **Voice Cloning:** ✅ Yes (with reference audio)
-- **Multi-speaker:** ✅ Yes (up to 4 speakers)
-- **Non-verbal expressions:** ❌ No
-- **Long-form generation:** ✅ Yes (up to 90 minutes)
-- **Real-time processing:** ✅ Yes
-
-### Voice Cloning Requirements
-- **Reference Audio Format:** WAV
-- **Reference Audio Length:** 10-30 seconds optimal
-- **Reference Text:** Not required
-- **Quality Requirements:** Clear speech, consistent tone
-
-### Multi-Speaker Support
-- **Speaker Count:** Up to 4 speakers
-- **Speaker Management:** Individual voice profiles
-- **Conversation Flow:** Natural multi-character dialogue
-
-### Long-Form Generation
-- **Maximum Length:** Up to 90 minutes
-- **Use Cases:** Podcasts, audiobooks, long conversations
-- **Quality Maintenance:** Consistent quality across length
-
-### Installation & Dependencies
-```bash
-# Install via uv (if available)
-uv pip install vibevoice
-
-# Alternative: Clone repository
-git clone https://github.com/microsoft/VibeVoice
-cd VibeVoice
-pip install -e .
-```
-
-### Usage Patterns
-```bash
-# Demo mode
+# Launch Gradio demo
 python -m vibevoice.demo
 
-# Inference from file
-python -m vibevoice.inference --text_file "input.txt" --output_file "output.wav"
+# Direct inference from files
+python -m vibevoice.inference
 
-# With voice cloning
-python -m vibevoice.inference --text_file "input.txt" --output_file "output.wav" --reference_audio "reference.wav"
+# For 1.5B model
+python demo/gradio_demo.py --model_path microsoft/VibeVoice-1.5B --share
+
+# For 7B model  
+python demo/gradio_demo.py --model_path WestZhang/VibeVoice-Large-pt --share
 ```
 
-### Platform Compatibility
-- **CUDA:** ✅ Full support
-- **MPS (Apple Silicon):** ✅ Full support
-- **CPU:** ✅ Full support
-- **Memory Requirements:** High (1.5B parameters)
+### **Available Models:**
+| Model | Context Length | Generation Length | Weight |
+|-------|----------------|-------------------|---------|
+| VibeVoice-0.5B-Streaming | - | - | Coming soon |
+| VibeVoice-1.5B | 64K | ~90 min | [HF link](https://huggingface.co/microsoft/VibeVoice-1.5B) |
+| VibeVoice-7B-Preview | 32K | ~45 min | [HF link](https://huggingface.co/WestZhang/VibeVoice-Large-pt) |
 
-### Performance Characteristics
-- **Inference Speed:** Good
-- **Audio Quality:** Very high
-- **Long-form Quality:** Excellent
-- **Resource Usage:** High
+### **Installation:**
+```bash
+# Clone repository
+git clone https://github.com/microsoft/VibeVoice.git
+cd VibeVoice/
 
----
+# Install in editable mode
+uv pip install -e .
+```
 
-## Testing Requirements
+### **Voice Cloning (Optional):**
+- **Multi-speaker conversation support**
+- **Long-form audio generation** (up to 90 minutes)
+- **Natural turn-taking and dialogue flow**
+- **Speaker consistency across long conversations**
 
-### Voice Cloning Test Cases
-1. **Reference Audio Quality:** Test with various audio qualities
-2. **Reference Audio Length:** Test with 5s, 10s, 30s, 60s samples
-3. **Background Noise:** Test with clean vs. noisy reference audio
-4. **Voice Consistency:** Verify cloned voice maintains characteristics
+### **Special Features:**
+- **Long-form conversational synthesis**
+- **Multi-speaker dialogue generation**
+- **Podcast and audiobook generation**
+- **Natural conversation flow**
+- **Spontaneous background music** (content-aware)
 
-### Multi-Speaker Test Cases
-1. **Speaker Tagging:** Test [S1], [S2], [S3], [S4] functionality
-2. **Dialogue Flow:** Test natural conversation between speakers
-3. **Speaker Consistency:** Verify each speaker maintains unique voice
-4. **Speaker Switching:** Test rapid speaker changes
-
-### Non-Verbal Expression Test Cases
-1. **Expression Types:** Test all supported expressions
-2. **Expression Placement:** Test expressions at start, middle, end
-3. **Multiple Expressions:** Test multiple expressions in sequence
-4. **Natural Integration:** Verify expressions sound natural
-
-### Performance Test Cases
-1. **Inference Speed:** Measure generation time for various text lengths
-2. **Memory Usage:** Monitor resource consumption
-3. **Audio Quality:** Subjective quality assessment
-4. **Platform Compatibility:** Test on MPS, CUDA, CPU
-
-### Error Handling Test Cases
-1. **Invalid Inputs:** Test with malformed text, audio, parameters
-2. **Resource Limits:** Test with very long text, large audio files
-3. **Platform Issues:** Test fallback mechanisms
-4. **Dependency Issues:** Test with missing or conflicting packages
+### **Important Notes:**
+- **Hardware requirements:** CUDA GPU recommended
+- **Chinese speech stability:** Use English punctuation, prefer 7B model
+- **Background music:** Spontaneous and content-aware
+- **Text normalization:** Minimal - LLM handles complex inputs
+- **Singing capabilities:** Yes, with appropriate voice prompts
 
 ---
 
-## Implementation Notes
+## 📊 Model Comparison Summary
 
-### Creator-Verified Usage
-- All implementations follow creator-provided usage patterns
-- CLI commands match official documentation
-- Parameter names and values verified against source
-- Error handling based on known failure modes
+| Model | Input Audio Required | Voice Cloning | Special Features | Hardware Support |
+|-------|---------------------|---------------|------------------|------------------|
+| **F5-TTS** | ❌ **YES** (Voice Cloning Model) | ✅ Advanced | Flow matching, diffusion | CUDA, MPS, CPU |
+| **Edge TTS** | ✅ **NO** | ❌ No | 322+ voices, multiple languages | Any platform |
+| **Dia** | ✅ **NO** | ✅ Basic | Dialogue generation, speaker tags | CUDA, MPS, CPU |
+| **Kyutai** | ✅ **NO** | ✅ Advanced | Ultra-low latency, streaming | CUDA, MPS, CPU |
+| **Kokoro** | ✅ **NO** | ✅ Basic | Ultra-lightweight, fast | CUDA, MPS, CPU |
+| **VibeVoice** | ✅ **NO** | ✅ Advanced | Long-form, multi-speaker | CUDA (recommended) |
 
-### Platform Optimization
-- Use transformers auto-detection for platform optimization
-- Implement platform-specific fallbacks where needed
-- Test on all supported platforms (MPS, CUDA, CPU)
-- Document platform-specific limitations
+## 🚨 Critical Implementation Notes
 
-### Dependency Management
-- Use uv for isolated environment management
-- Pin dependency versions to prevent conflicts
-- Document all required packages and versions
-- Provide installation scripts for each model
+### **Models Requiring Input Audio:**
+- **F5-TTS**: **ALWAYS requires reference audio** - this is a voice cloning model by design
 
-### Testing Strategy
-- Test each model individually in isolated environment
-- Verify all advertised capabilities work as expected
-- Document any deviations from expected behavior
-- Create comprehensive test suite for regression testing
+### **Models NOT Requiring Input Audio:**
+- **Edge TTS**: Standard TTS service
+- **Dia**: Standard TTS with dialogue capabilities
+- **Kyutai**: Standard TTS with streaming support
+- **Kokoro**: Standard TTS with basic voice cloning
+- **VibeVoice**: Standard TTS with long-form capabilities
+
+### **Voice Cloning vs. Standard TTS:**
+- **Voice Cloning**: Requires reference audio file (F5-TTS, optional for others)
+- **Standard TTS**: Generates speech from text only (Edge TTS, Dia, Kyutai, Kokoro, VibeVoice)
+
+## 🔧 Implementation Guidelines
+
+### **For Standard TTS Models:**
+1. **No input audio required** for basic functionality
+2. **Voice cloning is optional** enhancement
+3. **Text input is sufficient** for speech generation
+4. **Follow creator-verified usage patterns**
+
+### **For Voice Cloning Models (F5-TTS):**
+1. **Reference audio is MANDATORY**
+2. **Reference text is REQUIRED** (or empty for ASR)
+3. **Cannot function without audio input**
+4. **Designed specifically for voice cloning applications**
+
+### **Testing Approach:**
+1. **Always test models** rather than assume compatibility
+2. **Use transformers auto-detection** for platform optimization
+3. **Ignore VRAM specifications** - test on actual hardware
+4. **Document real performance** from empirical testing
 
 ---
 
-## Next Steps
-
-1. **Complete Model Testing:** Test each model according to this knowledge base
-2. **Performance Benchmarking:** Compare models across various metrics
-3. **Integration Testing:** Verify models work together in the CLI tool
-4. **Documentation Updates:** Keep this knowledge base current with findings
-5. **User Experience Optimization:** Refine CLI interface based on testing results
-
----
-
-*This knowledge base will be updated as models are tested and new information becomes available.*
+**Professional Note:**
+This knowledge base provides accurate, creator-verified information for all 6 TTS models. The previous documentation incorrectly stated that models required input audio for basic text-to-speech generation. Only F5-TTS requires input audio as it's specifically designed as a voice cloning model. All other models function as standard TTS systems that can optionally use voice cloning features.

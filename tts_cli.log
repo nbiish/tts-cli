@@ -1,2 +1,235 @@
 
 
+2025-08-28 00:14:48,321 - ERROR - Application error: attempted relative import with no known parent package
+  warnings.warn(
+
+Downloading shards:   0%|          | 0/3 [00:00<?, ?it/s]
+Downloading shards: 100%|██████████| 3/3 [00:00<00:00, 8202.68it/s]
+
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]
+Loading checkpoint shards:  33%|███▎      | 1/3 [00:00<00:00,  7.32it/s]
+Loading checkpoint shards:  67%|██████▋   | 2/3 [00:00<00:00,  7.08it/s]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:00<00:00,  8.38it/s]
+
+Fetching 6 files:   0%|          | 0/6 [00:00<?, ?it/s]
+Fetching 6 files: 100%|██████████| 6/6 [00:00<00:00, 9032.96it/s]
+  WeightNorm.apply(module, name, dim)
+The 'max_batch_size' argument of StaticCache is deprecated and will be removed in v4.46. Use the more precisely named 'batch_size' argument instead.
+Traceback (most recent call last):
+  File "/var/folders/4m/xw1v22rd00s19xhp3wc_1nl80000gn/T/tmp6dayzke1.py", line 76, in generate_audio
+                                 ^^^^^^^^^^^^^^^^^^^^^^
+    outputs = self.model.generate(
+              ^^^^^^^^^^^^^^^^^^^^
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+    return super().generate(
+           ^^^^^^^^^^^^^^^^^
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+    result = self._sample(
+             ^^^^^^^^^^^^^
+    outputs = self(**model_inputs, return_dict=True)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    raise ValueError(
+ValueError: The current sequence length (1024) exceeds the maximum cache shape. Please consider increasing the cache size.
+
+2025-08-28 01:30:24,393 - ERROR - Application error: F5-TTS CLI failed: /Users/nbiish/miniconda3/lib/python3.12/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/Users/nbiish/miniconda3/lib/python3.12/site-packages/jieba/_compat.py:18: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/nbiish/miniconda3/lib/python3.12/site-packages/f5_tts/infer/infer_cli.py", line 383, in <module>
+    main()
+  File "/Users/nbiish/miniconda3/lib/python3.12/site-packages/f5_tts/infer/infer_cli.py", line 312, in main
+    voices[voice]["ref_audio"], voices[voice]["ref_text"] = preprocess_ref_audio_text(
+                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nbiish/miniconda3/lib/python3.12/site-packages/f5_tts/infer/utils_infer.py", line 300, in preprocess_ref_audio_text
+    with open(ref_audio_orig, "rb") as audio_file:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'default_ref.wav'
+
+2025-08-28 01:30:45,364 - ERROR - Application error: F5-TTS CLI failed: /Users/nbiish/miniconda3/lib/python3.12/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/Users/nbiish/miniconda3/lib/python3.12/site-packages/jieba/_compat.py:18: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/nbiish/miniconda3/lib/python3.12/site-packages/f5_tts/infer/infer_cli.py", line 383, in <module>
+    main()
+  File "/Users/nbiish/miniconda3/lib/python3.12/site-packages/f5_tts/infer/infer_cli.py", line 312, in main
+    voices[voice]["ref_audio"], voices[voice]["ref_text"] = preprocess_ref_audio_text(
+                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nbiish/miniconda3/lib/python3.12/site-packages/f5_tts/infer/utils_infer.py", line 314, in preprocess_ref_audio_text
+    aseg = AudioSegment.from_file(ref_audio_orig)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nbiish/miniconda3/lib/python3.12/site-packages/pydub/audio_segment.py", line 734, in from_file
+    audio_codec = audio_streams[0].get('codec_name')
+                  ~~~~~~~~~~~~~^^^
+IndexError: list index out of range
+
+2025-08-28 01:31:59,428 - ERROR - Application error: DiaForConditionalGeneration not available. Install transformers main branch: pip install git+https://github.com/huggingface/transformers.git
+2025-08-28 01:32:42,693 - ERROR - Application error: VibeVoice execution failed: /Volumes/1tb-sandisk/code-external/tts-cli/.model-envs/vibevoice-env/.venv/lib/python3.12/site-packages/transformers/utils/hub.py:105: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+APEX FusedRMSNorm not available, using native implementation
+
+2025-08-28 01:39:27,779 - ERROR - Application error: DiaForConditionalGeneration not available. Install transformers main branch: pip install git+https://github.com/huggingface/transformers.git
+2025-08-28 02:25:11,834 - ERROR - Application error: F5-TTS CLI failed: /Users/nbiish/miniconda3/lib/python3.12/site-packages/transformers/utils/hub.py:128: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+/Users/nbiish/miniconda3/lib/python3.12/site-packages/jieba/_compat.py:18: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  import pkg_resources
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/nbiish/miniconda3/lib/python3.12/site-packages/f5_tts/infer/infer_cli.py", line 383, in <module>
+    main()
+  File "/Users/nbiish/miniconda3/lib/python3.12/site-packages/f5_tts/infer/infer_cli.py", line 312, in main
+    voices[voice]["ref_audio"], voices[voice]["ref_text"] = preprocess_ref_audio_text(
+                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/nbiish/miniconda3/lib/python3.12/site-packages/f5_tts/infer/utils_infer.py", line 300, in preprocess_ref_audio_text
+    with open(ref_audio_orig, "rb") as audio_file:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'default_ref.wav'
+
+2025-08-28 02:27:18,207 - ERROR - Application error: DiaForConditionalGeneration not available. Install transformers main branch: pip install git+https://github.com/huggingface/transformers.git
+2025-08-28 02:32:36,354 - ERROR - Application error: VibeVoice execution failed: /Volumes/1tb-sandisk/code-external/tts-cli/.model-envs/vibevoice-env/.venv/lib/python3.12/site-packages/transformers/utils/hub.py:105: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+APEX FusedRMSNorm not available, using native implementation
+
+2025-08-28 02:36:42,975 - ERROR - Application error: VibeVoice execution failed: /Volumes/1tb-sandisk/code-external/tts-cli/.model-envs/vibevoice-env/.venv/lib/python3.12/site-packages/transformers/utils/hub.py:105: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+APEX FusedRMSNorm not available, using native implementation
+
+2025-08-28 03:24:32,351 - ERROR - Application error: VibeVoice execution failed: /Volumes/1tb-sandisk/code-external/tts-cli/.model-envs/vibevoice-env/.venv/lib/python3.12/site-packages/transformers/utils/hub.py:105: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+APEX FusedRMSNorm not available, using native implementation
+
+2025-08-28 03:35:16,565 - ERROR - Application error: VibeVoice execution failed: /Volumes/1tb-sandisk/code-external/tts-cli/.model-envs/vibevoice-env/.venv/lib/python3.12/site-packages/transformers/utils/hub.py:105: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+APEX FusedRMSNorm not available, using native implementation
+
+2025-08-28 03:41:11,591 - ERROR - Application error: VibeVoice execution failed: /Volumes/1tb-sandisk/code-external/tts-cli/.model-envs/vibevoice-env/.venv/lib/python3.12/site-packages/transformers/utils/hub.py:105: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+APEX FusedRMSNorm not available, using native implementation
+No preprocessor_config.json found at microsoft/VibeVoice-1.5B, using defaults
+The tokenizer class you load from this checkpoint is not the same type as the class this function is called from. It may result in unexpected tokenization. 
+The tokenizer class you load from this checkpoint is 'Qwen2Tokenizer'. 
+The class this function is called from is 'VibeVoiceTextTokenizerFast'.
+
+Fetching 3 files:   0%|          | 0/3 [00:00<?, ?it/s]
+Fetching 3 files:  33%|███▎      | 1/3 [02:44<05:28, 164.38s/it]
+Fetching 3 files:  67%|██████▋   | 2/3 [02:44<01:08, 68.03s/it] 
+Fetching 3 files: 100%|██████████| 3/3 [02:44<00:00, 54.99s/it]
+
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]
+Loading checkpoint shards:  33%|███▎      | 1/3 [00:07<00:14,  7.20s/it]
+Loading checkpoint shards:  67%|██████▋   | 2/3 [00:13<00:06,  6.86s/it]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:18<00:00,  6.03s/it]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:18<00:00,  6.29s/it]
+Could not parse line: 'Speaker: Hello world'
+
+2025-08-28 03:41:56,288 - ERROR - Application error: VibeVoice execution failed: /Volumes/1tb-sandisk/code-external/tts-cli/.model-envs/vibevoice-env/.venv/lib/python3.12/site-packages/transformers/utils/hub.py:105: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+APEX FusedRMSNorm not available, using native implementation
+No preprocessor_config.json found at microsoft/VibeVoice-1.5B, using defaults
+The tokenizer class you load from this checkpoint is not the same type as the class this function is called from. It may result in unexpected tokenization. 
+The tokenizer class you load from this checkpoint is 'Qwen2Tokenizer'. 
+The class this function is called from is 'VibeVoiceTextTokenizerFast'.
+
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]
+Loading checkpoint shards:  33%|███▎      | 1/3 [00:06<00:13,  6.89s/it]
+Loading checkpoint shards:  67%|██████▋   | 2/3 [00:13<00:06,  6.66s/it]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:18<00:00,  5.86s/it]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:18<00:00,  6.10s/it]
+
+2025-08-28 04:49:08,837 - ERROR - Application error: VibeVoice execution failed: /Volumes/1tb-sandisk/code-external/tts-cli/.model-envs/vibevoice-env/.venv/lib/python3.12/site-packages/transformers/utils/hub.py:105: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+APEX FusedRMSNorm not available, using native implementation
+No preprocessor_config.json found at microsoft/VibeVoice-1.5B, using defaults
+The tokenizer class you load from this checkpoint is not the same type as the class this function is called from. It may result in unexpected tokenization. 
+The tokenizer class you load from this checkpoint is 'Qwen2Tokenizer'. 
+The class this function is called from is 'VibeVoiceTextTokenizerFast'.
+
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]
+Loading checkpoint shards:  33%|███▎      | 1/3 [00:07<00:14,  7.42s/it]
+Loading checkpoint shards:  67%|██████▋   | 2/3 [00:13<00:06,  6.89s/it]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:18<00:00,  5.93s/it]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:18<00:00,  6.25s/it]
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+Traceback (most recent call last):
+  File "/var/folders/4m/xw1v22rd00s19xhp3wc_1nl80000gn/T/tmp59ujdmvr.py", line 63, in <module>
+    inputs = {k: v.to(model.device) for k, v in inputs.items()}
+                 ^^^^
+AttributeError: 'list' object has no attribute 'to'
+
+2025-08-28 04:50:04,324 - ERROR - Application error: VibeVoice execution failed: /Volumes/1tb-sandisk/code-external/tts-cli/.model-envs/vibevoice-env/.venv/lib/python3.12/site-packages/transformers/utils/hub.py:105: FutureWarning: Using `TRANSFORMERS_CACHE` is deprecated and will be removed in v5 of Transformers. Use `HF_HOME` instead.
+  warnings.warn(
+APEX FusedRMSNorm not available, using native implementation
+No preprocessor_config.json found at microsoft/VibeVoice-1.5B, using defaults
+The tokenizer class you load from this checkpoint is not the same type as the class this function is called from. It may result in unexpected tokenization. 
+The tokenizer class you load from this checkpoint is 'Qwen2Tokenizer'. 
+The class this function is called from is 'VibeVoiceTextTokenizerFast'.
+
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]
+Loading checkpoint shards:  33%|███▎      | 1/3 [00:06<00:13,  6.71s/it]
+Loading checkpoint shards:  67%|██████▋   | 2/3 [00:12<00:06,  6.42s/it]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:17<00:00,  5.76s/it]
+Loading checkpoint shards: 100%|██████████| 3/3 [00:17<00:00,  5.97s/it]
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+
+Generating:   0%|          | 0/360 [00:00<?, ?it/s]
+Generating (active: 1/1):   0%|          | 0/360 [00:00<?, ?it/s]
+Generating (active: 1/1):   0%|          | 1/360 [00:07<45:55,  7.67s/it]
+Generating (active: 1/1):   0%|          | 1/360 [00:07<45:55,  7.67s/it]
+Generating (active: 1/1):   1%|          | 2/360 [00:08<20:09,  3.38s/it]
+Generating (active: 1/1):   1%|          | 2/360 [00:08<20:09,  3.38s/it]
+Generating (active: 1/1):   1%|          | 3/360 [00:08<11:51,  1.99s/it]
+Generating (active: 1/1):   1%|          | 3/360 [00:08<11:51,  1.99s/it]
+Generating (active: 1/1):   1%|          | 4/360 [00:08<07:54,  1.33s/it]
+Generating (active: 1/1):   1%|          | 4/360 [00:08<07:54,  1.33s/it]
+Generating (active: 1/1):   1%|▏         | 5/360 [00:09<05:43,  1.03it/s]
+Generating (active: 1/1):   1%|▏         | 5/360 [00:09<05:43,  1.03it/s]
+Generating (active: 1/1):   2%|▏         | 6/360 [00:09<04:22,  1.35it/s]
+Generating (active: 1/1):   2%|▏         | 6/360 [00:09<04:22,  1.35it/s]
+Generating (active: 1/1):   2%|▏         | 7/360 [00:09<03:33,  1.65it/s]
+Generating (active: 1/1):   2%|▏         | 7/360 [00:09<03:33,  1.65it/s]
+Generating (active: 1/1):   2%|▏         | 8/360 [00:09<03:00,  1.95it/s]
+Generating (active: 1/1):   2%|▏         | 8/360 [00:09<03:00,  1.95it/s]
+Generating (active: 1/1):   2%|▎         | 9/360 [00:10<02:37,  2.23it/s]
+Generating (active: 1/1):   2%|▎         | 9/360 [00:10<02:37,  2.23it/s]
+Generating (active: 1/1):   3%|▎         | 10/360 [00:10<02:20,  2.48it/s]
+Generating (active: 1/1):   3%|▎         | 10/360 [00:10<02:20,  2.48it/s]
+Generating (active: 1/1):   3%|▎         | 11/360 [00:10<02:09,  2.70it/s]
+Generating (active: 1/1):   3%|▎         | 11/360 [00:10<02:09,  2.70it/s]
+Generating (active: 1/1):   3%|▎         | 11/360 [00:10<02:09,  2.70it/s]
+Generating (active: 1/1):   4%|▎         | 13/360 [00:11<01:18,  4.41it/s]
+Generation complete:   4%|▎         | 13/360 [00:11<01:18,  4.41it/s]     
+                                                                     
+Traceback (most recent call last):
+  File "/var/folders/4m/xw1v22rd00s19xhp3wc_1nl80000gn/T/tmpijy43xhp.py", line 94, in <module>
+    sf.write("/tmp/vibevoice_output.wav", audio, 22050)
+  File "/Volumes/1tb-sandisk/code-external/tts-cli/.model-envs/vibevoice-env/.venv/lib/python3.12/site-packages/soundfile.py", line 363, in write
+    with SoundFile(file, 'w', samplerate, channels,
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Volumes/1tb-sandisk/code-external/tts-cli/.model-envs/vibevoice-env/.venv/lib/python3.12/site-packages/soundfile.py", line 690, in __init__
+    self._file = self._open(file, mode_int, closefd)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Volumes/1tb-sandisk/code-external/tts-cli/.model-envs/vibevoice-env/.venv/lib/python3.12/site-packages/soundfile.py", line 1265, in _open
+    raise LibsndfileError(err, prefix="Error opening {0!r}: ".format(self.name))
+soundfile.LibsndfileError: Error opening '/tmp/vibevoice_output.wav': Format not recognised.
+
+2025-08-28 04:50:59,766 - ERROR - Application error: cannot access local variable 'audio' where it is not associated with a value
+2025-08-28 04:51:32,601 - ERROR - Application error: cannot access local variable 'audio' where it is not associated with a value
+2025-08-28 04:53:02,231 - ERROR - Application error: Error opening '/tmp/vibevoice_output.wav': Format not recognised.

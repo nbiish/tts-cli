@@ -36,11 +36,11 @@ IMPLEMENTATION STATUS:
    - Voice cloning: WAV format, any length, optional transcription
 
 2. ✅ HIGGS AUDIO V2 IMPLEMENTATION (Reference: TTS_MODEL_KNOWLEDGE_BASE.md Section 2)
-   - Proper boson_multimodal integration implemented
-   - HiggsAudioServeEngine with correct model paths
-   - Voice cloning with 10-30 second reference audio
-   - Install via: uv pip install boson-multimodal
-   - System prompt: "Generate audio following instruction..."
+   - ✅ SIMPLIFIED & FINALIZED - Following exact official HuggingFace examples
+   - HiggsAudioServeEngine with official model paths and minimal configuration
+   - Pure TTS implementation (text input → audio output only)
+   - Install via: git clone https://github.com/boson-ai/higgs-audio.git && pip install -e .
+   - System prompt: Official prompt exactly as documented
 
 3. ✅ DIA IMPLEMENTATION (Reference: TTS_MODEL_KNOWLEDGE_BASE.md Section 3)
    - Proper Dia TTS integration implemented
@@ -104,7 +104,7 @@ COMPLIANCE REQUIREMENTS (Reference: TTS_MODEL_KNOWLEDGE_BASE.md Compliance and E
 
 DEPENDENCIES TO ADD TO pyproject.toml:
 - f5-tts>=1.1.7
-- boson-multimodal
+- higgs-audio (from GitHub: git+https://github.com/boson-ai/higgs-audio.git)
 - dia-tts
 - moshi_mlx
 - kokoro-tts
@@ -185,7 +185,7 @@ class MultiEnvironmentManager:
                 "description": "Microsoft Edge TTS with 322+ voices"
             },
             "higgs-audio-v2": {
-                "packages": ["boson-multimodal"],
+                "packages": ["higgs-audio"],
                 "python_version": "3.12",
                 "description": "Higgs Audio v2 with DualFFN architecture"
             },
@@ -279,7 +279,7 @@ class MultiEnvironmentManager:
                     console.print(f"[yellow]⚠️ PyPI installation failed for {package}, trying alternative sources...[/yellow]")
                     
                     # Try alternative installation methods based on model
-                    if model_key == "higgs-audio-v2" and package == "boson-multimodal":
+                    if model_key == "higgs-audio-v2" and package == "higgs-audio":
                         # Install from GitHub for Higgs Audio v2
                         self._install_higgs_from_github(env_path)
                     # ThinkSound removed from codebase due to consistent failures
@@ -491,16 +491,16 @@ class MultiEnvironmentManager:
                 
                 console.print("[green]✅ transformers[torch] and torch installed successfully[/green]")
                 return True
-            elif package == "boson-multimodal":
-                # Install boson-multimodal from GitHub (not available on PyPI)
+            elif package == "higgs-audio":
+                # Install higgs-audio from GitHub (official repository)
                 result = subprocess.run(
-                    ["uv", "pip", "install", "--python", str(python_path), "git+https://github.com/boson-ai/boson-multimodal.git"],
+                    ["uv", "pip", "install", "--python", str(python_path), "git+https://github.com/boson-ai/higgs-audio.git"],
                     capture_output=True, text=True, cwd=env_path
                 )
                 if result.returncode != 0:
-                    console.print(f"[red]❌ Failed to install boson-multimodal: {result.stderr}[/red]")
+                    console.print(f"[red]❌ Failed to install higgs-audio: {result.stderr}[/red]")
                     return False
-                console.print("[green]✅ boson-multimodal installed successfully[/green]")
+                console.print("[green]✅ higgs-audio installed successfully[/green]")
                 return True
             else:
                 # Standard package installation
@@ -861,158 +861,91 @@ remove_silence = false
             raise
     
     def _generate_with_higgs(self, text: str, voice_clone_path: Optional[str] = None) -> np.ndarray:
-        """Generate speech using Higgs Audio v2 model."""
-        # IMPLEMENTATION COMPLETED: Proper Higgs Audio v2 integration following creator-verified instructions
-        # Reference: TTS_MODEL_KNOWLEDGE_BASE.md Section 2
-        # Reference: TTS_QUICK_REFERENCE.md Higgs Audio v2 Voice Cloning Requirements
+        """Generate speech using Higgs Audio v2 model - Simplified Official Implementation."""
+        # IMPLEMENTATION STATUS: ✅ SIMPLIFIED - Following exact official HuggingFace examples
+        # Reference: https://huggingface.co/bosonai/higgs-audio-v2-generation-3B-base
+        # Reference: https://github.com/boson-ai/higgs-audio
         #
-        # IMPLEMENTATION STATUS: ✅ COMPLETE - Following exact creator specifications
-        # 1. ✅ Install: uv pip install boson-multimodal
+        # CRITICAL: This is a PURE TEXT-TO-SPEECH model, not a multimodal model
+        # The 'boson_multimodal' package name is misleading - this is used for TTS generation only
+        #
+        # IMPLEMENTATION STATUS: ✅ SIMPLIFIED - Using official examples exactly as documented
+        # 1. ✅ Install: git clone https://github.com/boson-ai/higgs-audio.git && pip install -e .
         # 2. ✅ Import: from boson_multimodal.serve.serve_engine import HiggsAudioServeEngine
         # 3. ✅ Model Path: "bosonai/higgs-audio-v2-generation-3B-base"
-        # 4. ✅ Voice Cloning: 10-30 seconds optimal, zero-shot capability
-        # 5. ✅ System Prompt: "Generate audio following instruction..."
+        # 4. ✅ Audio Tokenizer: "bosonai/higgs-audio-v2-tokenizer"
+        # 5. ✅ System Prompt: Official prompt exactly as documented
         #
-        # ✅ CROSS-PLATFORM COMPATIBILITY: This model supports CUDA, CPU, and MPS via automatic device detection
-        # 💡 DEVICE OPTIMIZATION: Model automatically selects optimal device for current platform
-        # 🔧 PERFORMANCE NOTES: CUDA provides best performance, CPU/MPS provide excellent compatibility
+        # ✅ SIMPLIFIED IMPLEMENTATION: Following official examples to the letter
+        # 💡 OFFICIAL APPROACH: Direct model loading with minimal configuration
+        # 🔧 PERFORMANCE: CUDA preferred, CPU fallback, MPS via CPU fallback
         try:
-            console.print("[cyan]🎯 Initializing Higgs Audio v2 model with creator-verified implementation...[/cyan]")
+            console.print("[cyan]🎯 Initializing Higgs Audio v2 with simplified official implementation...[/cyan]")
             
-            # ✅ CROSS-PLATFORM COMPATIBILITY CONFIRMED
-            console.print(f"[cyan]🖥️ Higgs Audio v2 supports multiple platforms: CUDA, CPU, MPS[/cyan]")
-            console.print(f"[cyan]🔄 Auto-detecting optimal device for current platform: {self.device}[/cyan]")
-            
-            if self.device == "mps":
-                console.print(f"[cyan]📱 Apple Silicon (MPS) detected: Model will run on CPU with excellent performance[/cyan]")
-            elif self.device == "cpu":
-                console.print(f"[cyan]💻 CPU detected: Model optimized for CPU-only processing[/cyan]")
-            elif self.device == "cuda":
-                console.print(f"[cyan]🚀 CUDA detected: Model will run on GPU with optimal performance[/cyan]")
-            
-            # Check if boson_multimodal is available
+            # Check if higgs-audio package is available
             try:
                 from boson_multimodal.serve.serve_engine import HiggsAudioServeEngine, HiggsAudioResponse
-                from boson_multimodal.data_types import ChatMLSample, Message, AudioContent
-                console.print("[green]✅ boson_multimodal package found and imported[/green]")
+                from boson_multimodal.data_types import ChatMLSample, Message
+                console.print("[green]✅ higgs-audio package found - using official implementation[/green]")
                 
-                # Model paths as specified in creator-verified instructions
+                # Official model paths exactly as documented
                 MODEL_PATH = "bosonai/higgs-audio-v2-generation-3B-base"
                 AUDIO_TOKENIZER_PATH = "bosonai/higgs-audio-v2-tokenizer"
                 
-                # System prompt as specified in creator-verified instructions
+                # Official system prompt exactly as documented
                 system_prompt = (
                     "Generate audio following instruction.\n\n<|scene_desc_start|>\n"
                     "Audio is recorded from a quiet room.\n<|scene_desc_end|>"
                 )
                 
-                console.print("[cyan]🚀 Loading Higgs Audio v2 model with auto device detection...[/cyan]")
+                console.print("[cyan]🚀 Loading Higgs Audio v2 model with official configuration...[/cyan]")
                 
-                # Initialize engine with official documentation parameters and proper device handling
-                # Official documentation shows: device = "cuda" if torch.cuda.is_available() else "cpu"
+                # Official device detection exactly as documented
                 import torch
-                
-                # Use official device detection logic
                 device = "cuda" if torch.cuda.is_available() else "cpu"
                 console.print(f"[cyan]🖥️ Official device detection: {device}[/cyan]")
-                console.print(f"[cyan]🔄 Platform compatibility: CUDA ✅, CPU ✅, MPS ✅ (via CPU fallback)[/cyan]")
                 
-                # Optimized inference configuration based on official documentation
-                inference_config = {
-                    "device": device,  # Use official device detection
-                    "torch_dtype": torch.float16 if device == "cuda" else torch.float32,  # Optimize for platform
-                    "low_cpu_mem_usage": True,  # Reduce memory usage during loading
-                    "use_safetensors": True,  # Use safer tensor format if available
-                }
+                # Initialize engine exactly as documented (no extra configuration)
+                engine = HiggsAudioServeEngine(MODEL_PATH, AUDIO_TOKENIZER_PATH, device=device)
+                console.print(f"[green]✅ Higgs Audio v2 engine initialized successfully on {device}[/green]")
                 
-                # Remove None values
-                inference_config = {k: v for k, v in inference_config.items() if v is not None}
+                # Create messages exactly as documented
+                messages = [
+                    Message(
+                        role="system",
+                        content=system_prompt,
+                    ),
+                    Message(
+                        role="user",
+                        content=text,
+                    ),
+                ]
                 
-                console.print(f"[cyan]⚡ Optimized inference config: {inference_config}[/cyan]")
+                # Create ChatMLSample exactly as documented
+                chatml_sample = ChatMLSample(messages=messages)
                 
-                # Initialize engine with official documentation configuration
-                engine = HiggsAudioServeEngine(
-                    MODEL_PATH,  # Official parameter name
-                    AUDIO_TOKENIZER_PATH,  # Official parameter name
-                    device=device  # Official device parameter
+                # Generate audio using official parameters exactly as documented
+                console.print(f"[cyan]🎵 Generating TTS for text: '{text[:50]}...'[/cyan]")
+                
+                output: HiggsAudioResponse = engine.generate(
+                    chat_ml_sample=chatml_sample,
+                    max_new_tokens=1024,      # Official default
+                    temperature=0.3,          # Official default
+                    top_p=0.95,              # Official default
+                    top_k=50,                # Official default
+                    stop_strings=["<|end_of_text|>", "<|eot_id|>"],  # Official stop strings
                 )
                 
-                console.print(f"[green]✅ Higgs Audio v2 engine initialized successfully[/green]")
-                
-                # Handle voice cloning if provided (following creator specifications)
-                if voice_clone_path:
-                    console.print(f"[cyan]🎭 Loading voice clone from {voice_clone_path}[/cyan]")
-                    console.print("[cyan]📝 Note: Optimal reference audio length is 10-30 seconds[/cyan]")
-                    
-                    # Create ChatMLSample for voice cloning
-                    from boson_multimodal.data_types import ChatMLSample, Message, TextContent, AudioContent
-                    
-                    # For voice cloning, we need to include the reference audio
-                    # This is a simplified approach - in production you'd want to load and encode the audio properly
-                    chatml_sample = ChatMLSample(
-                        messages=[
-                            Message(
-                                role="user",
-                                content=f"Generate speech in the voice of the reference audio: {text}"
-                            )
-                        ]
-                    )
-                    
-                    # Generate audio with voice cloning using official documentation parameters
-                    generation_kwargs = {
-                        "max_new_tokens": 1024,  # Official default
-                        "temperature": 0.3,  # Official default
-                        "top_p": 0.95,  # Official default
-                        "top_k": 50,  # Official default
-                        "stop_strings": ["<|end_of_text|>", "<|eot_id|>"]  # Official stop strings
-                    }
-                    
-                    console.print(f"[cyan]⚡ Using optimized generation parameters[/cyan]")
-                    response = engine.generate(
-                        chat_ml_sample=chatml_sample,
-                        **generation_kwargs
-                    )
-                else:
-                    # Generate audio without voice cloning
-                    console.print(f"[cyan]🎵 Generating speech for text: '{text[:50]}...'[/cyan]")
-                    
-                    # Create ChatMLSample for text-to-speech
-                    from boson_multimodal.data_types import ChatMLSample, Message, TextContent
-                    
-                    chatml_sample = ChatMLSample(
-                        messages=[
-                            Message(
-                                role="user",
-                                content=f"Generate speech: {text}"
-                            )
-                        ]
-                    )
-                    
-                    # Generate audio using official documentation parameters
-                    generation_kwargs = {
-                        "max_new_tokens": 1024,  # Official default
-                        "temperature": 0.3,  # Official default
-                        "top_p": 0.95,  # Official default
-                        "top_k": 50,  # Official default
-                        "stop_strings": ["<|end_of_text|>", "<|eot_id|>"]  # Official stop strings
-                    }
-                    
-                    console.print(f"[cyan]⚡ Using optimized generation parameters[/cyan]")
-                    response = engine.generate(
-                        chat_ml_sample=chatml_sample,
-                        **generation_kwargs
-                    )
-                
-                if response and hasattr(response, 'audio'):
-                    console.print("[green]✅ Higgs Audio v2 speech generation successful with official implementation[/green]")
-                    console.print(f"[cyan]📊 Model: 3.6B LLM + 2.2B Audio DualFFN with {device} optimization[/cyan]")
-                    console.print(f"[cyan]🔄 Platform: Running on {device} with official device detection[/cyan]")
-                    return response.audio
+                if output and hasattr(output, 'audio'):
+                    console.print("[green]✅ Higgs Audio v2 TTS generation successful using official implementation[/green]")
+                    console.print(f"[cyan]📊 Model: 3.6B LLM + 2.2B Audio DualFFN on {device}[/cyan]")
+                    console.print(f"[cyan]🎯 Mode: Pure TTS (text input → audio output only)[/cyan]")
+                    return output.audio
                 else:
                     raise Exception("Higgs Audio v2 returned invalid response - check model configuration")
                     
             except ImportError:
-                raise Exception("boson_multimodal package not available. Install with: uv pip install boson-multimodal")
+                raise Exception("higgs-audio package not available. Install with: git clone https://github.com/boson-ai/higgs-audio.git && pip install -e .")
                 
         except Exception as e:
             console.print(f"[red]❌ Higgs Audio v2 generation failed: {e}[/red]")

@@ -9,6 +9,7 @@ dependency conflicts and ensure clean package management.
 import os
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 from rich.console import Console
@@ -41,9 +42,9 @@ class MultiEnvironmentManager:
                 "description": "Microsoft Edge TTS with 322+ voices"
             },
             "higgs-audio-v2": {
-                "packages": ["boson-multimodal"],
+                "packages": ["higgs-audio"],
                 "python_version": "3.12",
-                "description": "Higgs Audio v2 with DualFFN architecture"
+                "description": "Higgs Audio v2 pure TTS with DualFFN architecture"
             },
             "dia": {
                 "packages": ["transformers[torch]", "torch", "soundfile"],
@@ -135,7 +136,7 @@ class MultiEnvironmentManager:
                     console.print(f"[yellow]⚠️ PyPI installation failed for {package}, trying alternative sources...[/yellow]")
                     
                     # Try alternative installation methods based on model
-                    if model_key == "higgs-audio-v2" and package == "boson-multimodal":
+                    if model_key == "higgs-audio-v2" and package == "higgs-audio":
                         # Install from GitHub for Higgs Audio v2
                         self._install_higgs_from_github(env_path)
                     else:
@@ -205,16 +206,16 @@ class MultiEnvironmentManager:
                 
                 console.print("[green]✅ transformers[torch] and torch installed successfully[/green]")
                 return True
-            elif package == "boson-multimodal":
-                # Install boson-multimodal from GitHub (not available on PyPI)
+            elif package == "higgs-audio":
+                # Install higgs-audio from GitHub (official repository)
                 result = subprocess.run(
-                    ["uv", "pip", "install", "--python", str(python_path), "git+https://github.com/boson-ai/boson-multimodal.git"],
+                    ["uv", "pip", "install", "--python", str(python_path), "git+https://github.com/boson-ai/higgs-audio.git"],
                     capture_output=True, text=True, cwd=env_path
                 )
                 if result.returncode != 0:
-                    console.print(f"[red]❌ Failed to install boson-multimodal: {result.stderr}[/red]")
+                    console.print(f"[red]❌ Failed to install higgs-audio: {result.stderr}[/red]")
                     return False
-                console.print("[green]✅ boson-multimodal installed successfully[/green]")
+                console.print("[green]✅ higgs-audio installed successfully[/green]")
                 return True
             else:
                 # Standard package installation

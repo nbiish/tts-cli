@@ -6,13 +6,17 @@ This script provides a reliable way to run the TTS CLI from anywhere on the syst
 """
 
 import sys
+import os
 import subprocess
 
 def find_python_with_tts_cli():
     """Find a Python executable that has the tts_cli module installed."""
     # Try common Python locations where the module might be installed
     python_candidates = [
-        "/Users/nbiish/miniconda3/bin/python",  # Conda environment
+        # Common Conda locations
+        os.path.expanduser("~/miniconda3/bin/python"),
+        os.path.expanduser("~/anaconda3/bin/python"),
+        # System locations
         "/usr/local/bin/python3",
         "/opt/homebrew/bin/python3",
         "python3",

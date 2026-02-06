@@ -40,3 +40,47 @@
 1.  **Environment**: Use `uv` for dependency management.
 2.  **Testing**: Verify changes with actual audio generation tests.
 3.  **Documentation**: Keep `llms.txt/` files updated with new features and architectural decisions.
+
+## Extended Standards (from AGENTS.md)
+
+### Agent Guidelines
+*   **Approach**: Security-first, Zero Trust, Standardized
+*   **Output**: Production-ready, tested, encrypted, PQC-compliant
+
+### Coding Standards by Language
+
+| Language | Standards |
+|----------|-----------|
+| Bash | `set -euo pipefail`, `[[ ]]`, `"${var}"` |
+| Python | PEP 8, type hints, `uv`/`poetry`, `.venv` |
+| TypeScript | strict mode, ESLint, Prettier |
+| Rust | `cargo fmt`, `cargo clippy`, `Result` over panic |
+| Go | `gofmt`, `go vet`, Effective Go |
+| C++ | `clang-format`, `clang-tidy`, C++20, RAII |
+
+### Security Specification
+
+**Core Principles:**
+*   **Zero Trust**: Verify every tool call; sanitize all inputs.
+*   **Least Privilege**: Minimal permissions; scoped credentials per session.
+*   **No hardcoded secrets**: Environment variables only, accessed via secure vault.
+*   **Sandboxing**: Code execution via WASM/Firecracker only.
+*   **Tool Misuse**: Strict schema validation (Zod/Pydantic) for all inputs.
+*   **Identity Abuse**: Independent Permission Broker; short-lived tokens.
+*   **Information Disclosure**: PII Redaction; Env var only secrets.
+*   **Repudiation**: Structured immutable ledgers; remote logging.
+
+**Data Protection & Encryption:**
+*   **In Transit**: TLS 1.3+ with mTLS for inter-agent communication. Hybrid PQC Key Exchange: X25519 + ML-KEM-768 (FIPS 203).
+*   **At Rest**: AES-256-GCM for databases and file storage. Tenant-specific keys for Vector DB embeddings. Encrypted logs with strict retention and PII redaction.
+
+**Post-Quantum Cryptography (NIST FIPS Standards):**
+
+| Purpose | Standard | Algorithm | Status (2026) |
+|---------|----------|-----------|---------------|
+| Key Encapsulation | FIPS 203 | ML-KEM-768/1024 | Standard |
+| Digital Signatures | FIPS 204 | ML-DSA-65/87 | Standard |
+| Hash-Based Sig | FIPS 205 | SLH-DSA | Standard |
+
+### Git Commits
+Format: `<type>(<scope>): <description>` — feat|fix|docs|refactor|test|chore|perf|ci

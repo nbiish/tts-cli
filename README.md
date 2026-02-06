@@ -97,11 +97,35 @@ echo "Hello from pipe" | cli-tts
 cat story.txt | cli-tts
 ```
 
-### Voice Cloning
+### Voice Cloning & Audio Cleaning
+You can use a reference audio file to clone a voice. For best results, clean the audio first using our built-in tools.
 
 ```bash
-# Voice cloning with reference audio
-cli-tts --text "Hello world" --voice-clone reference.wav --output cloned.wav
+# Basic voice cloning
+cli-tts --text "Hello world" --voice-clone reference.wav
+
+# 🌟 Recommended: Clean the audio on-the-fly (Isolate Voice + Remove Silence)
+cli-tts --text "Hello world" --voice-clone reference.wav --clean-voice
+```
+
+### Audio Processing Tools
+The CLI includes powerful tools to clean and process audio files independently.
+
+**Prerequisite:** Create the audio processing environment:
+```bash
+cli-tts --create-environment audio-processing
+```
+
+**Commands:**
+```bash
+# 🧹 Full Cleanup (Demucs + VAD) - Best for voice cloning prep
+cli-tts --clean-voice input.wav --output cleaned.wav
+
+# 🎤 Isolate Vocals (Demucs) - Remove background music/noise
+cli-tts --isolate-voice input.wav --output vocals.wav
+
+# 🔇 Remove Silence (VAD) - Trim silence between speech
+cli-tts --remove-silence input.wav --output trimmed.wav
 ```
 
 ### Environment Management
@@ -127,6 +151,11 @@ cli-tts --cleanup-environment pocket-tts
 - **Available Voices**: alba, marius, javert, jean, fantine, cosette, eponine, azelma
 - **Implementation**: Kyutai Pocket TTS library
 - **Best for**: Fast local generation, CPU-only environments
+
+### 2. Audio Processing Tools (Demucs & VAD)
+- **Demucs**: Hybrid Transformer for state-of-the-art music source separation (isolates vocals).
+- **Silero VAD**: Enterprise-grade Voice Activity Detection to remove silence.
+- **Use Case**: Cleaning noisy audio for voice cloning datasets.
 
 ## 🔧 First-Time Setup
 

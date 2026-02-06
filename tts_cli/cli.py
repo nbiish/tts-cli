@@ -18,6 +18,7 @@ import pyperclip
 
 from .core.model_registry import model_registry
 from .core.environment_manager import env_manager
+from .core.audio_processor import audio_processor
 from .models.pocket_tts_model import PocketTTSModel
 
 
@@ -33,6 +34,13 @@ def create_environment(model_name: str) -> bool:
         "pocket-tts": [
             "pocket-tts",
             "scipy>=1.9.0"
+        ],
+        "audio-processing": [
+            "demucs",
+            "torch",
+            "torchaudio",
+            "numpy",
+            "soundfile"
         ]
     }
     
@@ -277,6 +285,16 @@ Examples:
                            help="Read text from clipboard")
     input_group.add_argument("--input-file", help="Read text from file")
     
+    # Audio Processing Options
+    processing_group = parser.add_argument_group("Audio Processing Options")
+    processing_group.add_argument("--isolate-voice", nargs="?", const=True, metavar="FILE",
+                                help="Isolate voice using Demucs. If FILE provided, processes that file.")
+    processing_group.add_argument("--remove-silence", nargs="?", const=True, metavar="FILE",
+                                help="Remove silence using VAD. If FILE provided, processes that file.")
+    processing_group.add_argument("--clean-voice", nargs="?", const=True, metavar="FILE",
+                                help="Full cleanup: Isolate voice (Demucs) AND remove silence (VAD).")
+    processing_group.add_argument("--process-audio", help="Process an existing audio file (independent of TTS)")
+
     # Model and voice options
     parser.add_argument("--model", default="pocket-tts", 
                        help="TTS model to use (default: pocket-tts)")
@@ -343,9 +361,156 @@ Examples:
     if args.list_voices:
         list_voices(args.model)
         return
+        
+    # Handle standalone audio processing
+    # Check if any processing input is provided
+    process_input = args.process_audio
     
+    # Check if file arguments were provided to flags
+    if isinstance(args.clean_voice, str):
+        if process_input and process_input != args.clean_voice:
+             print("❌ Error: Multiple input files specified for processing.")
+             return
+        process_input = args.clean_voice
+
+    if isinstance(args.isolate_voice, str):
+        if process_input and process_input != args.isolate_voice:
+             print("❌ Error: Multiple input files specified for processing.")
+             return
+        process_input = args.isolate_voice
+        
+    if isinstance(args.remove_silence, str):
+        if process_input and process_input != args.remove_silence:
+             print("❌ Error: Multiple input files specified for processing.")
+             return
+        process_input = args.remove_silence
+
+    if process_input:
+        if not args.output:
+            print("❌ Output file must be specified for audio processing.")
+            return
+            
+        current_path = process_input
+        final_output = args.output
+        
+        # Determine actions
+        do_isolate = bool(args.isolate_voice) or bool(args.clean_voice)
+        do_silence = bool(args.remove_silence) or bool(args.clean_voice)
+        
+        # If user just supplied input via process-audio but no flags, ask for action
+        if not (do_isolate or do_silence):
+             print("❌ No processing action specified (use --isolate-voice or --remove-silence).")
+             return
+
+        import tempfile
+        import os
+        
+        try:
+            temp_files = []
+            
+            # 1. Isolate Voice
+            if do_isolate:
+                if not audio_processor.check_availability():
+                     print("❌ Audio processing environment not found. Run: cli-tts --create-environment audio-processing")
+                     return
+                
+                print("Processing: Isolating voice...")
+                # If we also have remove_silence, we need a temp file
+                if do_silence:
+                    fd, temp_out = tempfile.mkstemp(suffix=".wav")
+                    os.close(fd)
+                    temp_files.append(temp_out)
+                    out_target = temp_out
+                else:
+                    out_target = final_output
+                
+                success = audio_processor.isolate_voice(current_path, out_target)
+                if not success:
+                    print("❌ Voice isolation failed.")
+                    return
+                current_path = out_target
+                
+            # 2. Remove Silence
+            if do_silence:
+                if not audio_processor.check_availability():
+                     print("❌ Audio processing environment not found. Run: cli-tts --create-environment audio-processing")
+                     return
+                     
+                print("Processing: Removing silence...")
+                success = audio_processor.remove_silence(current_path, final_output)
+                if not success:
+                    print("❌ Silence removal failed.")
+                    return
+            
+            print(f"✅ Audio processing complete: {final_output}")
+            
+        finally:
+            # Cleanup temp files
+            for f in temp_files:
+                if os.path.exists(f):
+                    os.unlink(f)
+        return
+
     # Handle speech generation
     text = None
+    
+    # Pre-process voice clone file if needed
+    voice_clone_path = args.voice_clone
+    temp_voice_files = []
+    
+    # Determine if we need to process the voice clone file
+    do_process_clone = False
+    if voice_clone_path:
+        if args.clean_voice or args.isolate_voice or args.remove_silence:
+            do_process_clone = True
+            
+    if do_process_clone:
+        if not audio_processor.check_availability():
+             print("❌ Audio processing environment not found for voice cloning. Run: cli-tts --create-environment audio-processing")
+             return
+        
+        print(f"Preprocessing voice clone source: {voice_clone_path}")
+        import tempfile
+        import os
+        
+        current_path = voice_clone_path
+        
+        # Determine actions
+        do_isolate = bool(args.isolate_voice) or bool(args.clean_voice)
+        do_silence = bool(args.remove_silence) or bool(args.clean_voice)
+        
+        try:
+            # 1. Isolate Voice
+            if do_isolate:
+                fd, temp_out = tempfile.mkstemp(suffix="_isolated.wav")
+                os.close(fd)
+                temp_voice_files.append(temp_out)
+                
+                success = audio_processor.isolate_voice(current_path, temp_out)
+                if not success:
+                    print("❌ Voice isolation for cloning failed.")
+                    return
+                current_path = temp_out
+                
+            # 2. Remove Silence
+            if do_silence:
+                fd, temp_out = tempfile.mkstemp(suffix="_silence_removed.wav")
+                os.close(fd)
+                temp_voice_files.append(temp_out)
+                
+                success = audio_processor.remove_silence(current_path, temp_out)
+                if not success:
+                    print("❌ Silence removal for cloning failed.")
+                    return
+                current_path = temp_out
+                
+            # Use the processed file as the voice clone source
+            voice_clone_path = current_path
+            print(f"✅ Using processed voice file: {voice_clone_path}")
+            
+        except Exception as e:
+            print(f"❌ Error processing voice clone file: {e}")
+            return
     
     # 1. Positional argument
     if args.input_text:
@@ -400,8 +565,16 @@ Examples:
             model_name=args.model,
             voice=args.voice,
             output_path=output_path,
-            voice_clone=args.voice_clone
+            voice_clone=voice_clone_path
         )
+        
+        # Cleanup temp voice files
+        for f in temp_voice_files:
+            if os.path.exists(f):
+                try:
+                    os.unlink(f)
+                except:
+                    pass
         
         if success:
             # Play audio by default

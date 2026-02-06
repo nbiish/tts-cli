@@ -2,149 +2,104 @@
 
 A modern, clean command-line TTS tool with isolated environments using the `uv` package manager. Each TTS tool runs in its own isolated environment to prevent dependency conflicts.
 
+**🌍 Use from anywhere on your system** - Once installed, the `cli-tts` command works from any directory!
+
+## 🚀 **Quick Start**
+
+```bash
+# Clone and setup (keeps everything centralized)
+git clone https://github.com/nbiish/tts-cli.git
+cd tts-cli
+./setup-global.sh
+
+# Use from anywhere!
+cd /tmp
+cli-tts --text "Hello world" --output speech.wav
+```
+
+**🎯 Centralized Design**: All model environments stay in the repo directory - no cluttering your system! Changes are immediately available everywhere.
+
 ## ⚠️ **CRITICAL IMPLEMENTATION SCOPE**
 
-**WE IMPLEMENT ONLY THE FOLLOWING 8 MODELS - NO EXCEPTIONS:**
+**WE IMPLEMENT ONLY THE FOLLOWING MODEL - NO EXCEPTIONS:**
 
-1. **Edge TTS** (uv pip install edge-tts) - Community-maintained Python package for text-to-speech conversion
-2. **VibeVoice** (Microsoft) - Microsoft's high-quality neural TTS
-3. **F5-TTS** (SWivid) - Voice cloning and synthesis model
-4. **Dia** (Nari Labs) - Multilingual TTS model
-5. **Marvis TTS** (Marvis-Labs) - Real-time voice cloning specialist
-6. **Kyutai TTS** (Kyutai) - Open-source TTS model
-7. **Kokoro** (Hexgrad) - Lightweight TTS model
-8. **Zonos** (Zyphra) - Advanced voice cloning model
+1. **Pocket TTS** (Kyutai) - Lightweight CPU-optimized TTS
 
-**ABSOLUTE RESTRICTIONS:**
-- ❌ **NO SUPPLEMENTARY MODELS** - We do not add any additional TTS models beyond these 8
-- ❌ **NO FAUX IMPLEMENTATIONS** - We do not create mock or placeholder implementations
-- ❌ **NO CUSTOM MODELS** - We do not develop or integrate custom TTS models or tools
-- ❌ **NO MODEL SUBSTITUTIONS** - We do not replace any of these 8 models with alternatives
-- ❌ **NO EXPERIMENTAL MODELS** - We do not add experimental or beta TTS models
-
-**IMPLEMENTATION RULE:** If a model from this list cannot be implemented or becomes unavailable, we remove it entirely rather than substitute it with an alternative.
+**IMPLEMENTATION RULE:** We focus exclusively on this model for optimal performance and simplicity.
 
 ## 🚀 **Current Status**
 
-### ✅ **Phase 1 Complete - Core Infrastructure & Edge TTS**
+### ✅ **Complete - Core Infrastructure & Pocket TTS**
 - **Core CLI Infrastructure**: Complete tiered architecture implemented
 - **Environment Management**: UV-based isolated environments working
 - **Model Registry**: Dynamic model loading and registration system
-- **Edge TTS**: First model implemented with fallback mechanism
-- **Audio Generation**: Working audio output (fallback for API issues)
-- **Voice Management**: Voice listing and validation working
+- **Pocket TTS Implementation**: Lightweight, CPU-optimized TTS model - **DEFAULT**
+- **Audio Generation**: Working audio output with auto-playback
+- **Voice Management**: Standard voices and voice cloning support
 - **CLI Interface**: Full command-line interface operational
-
-### ⚠️ **Edge TTS API Status**
-- **Implementation**: ✅ Complete - Uses standard edge-tts package API only
-- **Service Status**: ⚠️ Edge TTS service returning 401 errors (external service issue)
-- **Error Handling**: ✅ Fails gracefully when service unavailable (no fake audio)
-- **Testing**: ✅ Verified - CLI properly handles service failures
-
-### 🔄 **Next Phase: Additional Models**
-Ready for implementation: VibeVoice, F5-TTS, Dia, Marvis TTS, Kyutai, Kokoro, Zonos
 
 ## ✨ Features
 
-- **🔒 Isolated Environments**: Each TTS model runs in its own UV environment
-- **🎭 Multiple Models**: Support for Edge TTS, VibeVoice, F5-TTS, Dia, Marvis TTS, Kyutai, Kokoro, Zonos
-- **🎵 Voice Cloning**: High-quality voice cloning with multiple models
-- **📋 Clipboard | Text | Text File | Voice Cloning Support**: Read text directly from clipboard, text file, or voice cloning
+- **⚡ Fast CPU Inference**: Optimized for running locally on CPU
+- **🔒 Isolated Environments**: Runs in its own UV environment
+- **🎵 Voice Cloning**: Support for voice cloning via reference audio
+- **📋 Clipboard | Text | Text File Support**: Flexible input methods
+- **🔊 Auto-Playback**: Automatically plays generated audio
+- **💾 Smart Caching**: Auto-manages output files with rotation
 - **🔄 Cross-Platform**: Works on macOS, Linux, and Windows
-- **📊 Performance Benchmarking**: Compare models with built-in metrics and quality analysis
-- **🗂️ Voice Libraries**: Personal voice library management and organization
-- **⚡ Live Streaming**: Real-time audio generation with compatible models
-- **🎙️ Podcast Templates**: Optimized presets for podcast and audiobook production
-- **🔧 Model Optimization**: Automatic optimization for specific use cases
-- **🐛 Debugging Tools**: Comprehensive debugging and testing suite
 
 ## Usage
 
 ### Basic Text-to-Speech
 
 ```bash
-# Generate speech from text (uses Edge TTS by default)
-cli-tts --text "HOLAY! I just saw Nanaboozhoo run by half shape shifted!" --output holay.wav
+# Generate speech from text (plays automatically)
+cli-tts --text "Hello world"
 
-# Use specific model
-cli-tts --model dia --text "HOLAY! I just saw Nanaboozhoo run by half shape shifted!" --output holay.wav
-cli-tts --model vibevoice --text "HOLAY! I just saw Nanaboozhoo run by half shape shifted!" --output holay.wav
-cli-tts --model marvis-tts --text "HOLAY! I just saw Nanaboozhoo run by half shape shifted!" --output holay.wav
-cli-tts --model kyutai --text "HOLAY! I just saw Nanaboozhoo run by half shape shifted!" --output holay.wav
-cli-tts --model kokoro --text "HOLAY! I just saw Nanaboozhoo run by half shape shifted!" --output holay.wav
-cli-tts --model zonos --text "HOLAY! I just saw Nanaboozhoo run by half shape shifted!" --output holay.wav
+# Save to specific file (also plays)
+cli-tts --text "Hello world" --output hello.wav
+
+# Use specific voice
+cli-tts --voice alba --text "Hello world"
 ```
 
 ### Clipboard Integration
 
 ```bash
 # Read from clipboard
-cli-tts --clipboard --output speech.wav
-
-# Clipboard with specific model
-cli-tts --clipboard --model vibevoice --output speech.wav
+cli-tts --clipboard
 ```
 
 ### Voice Cloning
 
 ```bash
-# Voice cloning with F5-TTS (requires reference audio)
+# Voice cloning with reference audio
 cli-tts --text "Hello world" --voice-clone reference.wav --output cloned.wav
-
-# Voice cloning with specific model
-cli-tts --model f5-tts --text "Hello world" --voice-clone reference.wav --output cloned.wav
 ```
 
 ### Environment Management
 
 ```bash
-# List all available models and their status
+# Create environment (Required first time)
+cli-tts --create-environment pocket-tts
+
+# List available models
 cli-tts --list-models
 
-# List environment status for all models
-cli-tts --list-environments
-
-# Create isolated environment for specific model
-cli-tts --create-environment vibevoice
-
-# Test specific model compatibility
-cli-tts --test-model edge-tts
-
-# Remove specific environment
-cli-tts --cleanup-environment vibevoice
-
-# Remove all environments
-cli-tts --cleanup-all-environments
+# Remove environment
+cli-tts --cleanup-environment pocket-tts
 ```
 
 ## 🤖 Available Models
 
-### 1. Edge TTS (uv pip install edge-tts)
-- **Speed**: ⚡ Fast (~2 seconds)
-- **Quality**: ✅ High quality
-- **Voices**: 322+ voices across multiple languages
-- **Voice Cloning**: ❌ Not supported
-
-### 2. VibeVoice - Microsoft
-- **Speed**: 🚀 Moderate (~30 seconds)
-- **Quality**: ✅ High quality
-- **Features**: Long-form (up to 90 minutes), multi-speaker (4 voices)
-- **Voice Cloning**: ✅ Supported
-- **Best for**: Long-form content, podcasts, multi-speaker conversations
-
-### 3. Marvis TTS - Marvis-Labs
-- **Speed**: ⚡ Very fast (real-time streaming)
-- **Quality**: ✅ High quality, natural speech flow
-- **Features**: Real-time voice cloning (10 seconds reference audio), edge deployment
-- **Voice Cloning**: ✅ Excellent (10 seconds reference audio)
-- **Best for**: Real-time voice cloning, edge devices, streaming applications
-
-### 4. F5-TTS - SWivid
-- **Speed**: 🐌 Slow (~50 seconds)
-- **Quality**: ✅ High quality
-- **Features**: Voice cloning only (requires reference audio)
-- **Voice Cloning**: ✅ Required (reference audio needed)
-- **Best for**: High-quality voice cloning applications
+### 1. Pocket TTS (Kyutai) - DEFAULT
+- **Speed**: ⚡ **VERY FAST** - Faster than real-time on CPU
+- **Quality**: ✅ High quality, natural speech
+- **Features**: Lightweight, CPU-optimized, voice cloning
+- **Voice Cloning**: ✅ Supported (reference audio)
+- **Available Voices**: alba, marius, javert, jean, fantine, cosette, eponine, azelma
+- **Implementation**: Kyutai Pocket TTS library
+- **Best for**: Fast local generation, CPU-only environments
 
 ## 🔧 First-Time Setup
 
@@ -153,21 +108,14 @@ cli-tts --cleanup-all-environments
    python setup-cli.py
    ```
 
-2. **Create environment for Edge TTS (recommended first model)**:
+2. **Create environment**:
    ```bash
-   cli-tts --create-environment edge-tts
+   cli-tts --create-environment pocket-tts
    ```
 
 3. **Test it works**:
    ```bash
-   cli-tts --text "Test" --output test.wav
-   ```
-
-4. **Create other model environments as needed**:
-   ```bash
-   cli-tts --create-environment vibevoice
-   cli-tts --create-environment marvis-tts
-   cli-tts --create-environment f5-tts
+   cli-tts --text "Test"
    ```
 
 ## 🏗️ Architecture
@@ -180,27 +128,19 @@ TTS CLI
 ├── Model Registry (core/model_registry.py)
 ├── Environment Manager (core/environment_manager.py)
 └── Model Implementations
-    ├── EdgeTTSModel
-    ├── VibeVoiceModel
-    ├── MarvisTTSModel
-    └── F5TTSModel
+    └── PocketTTSModel
 ```
 
 ### Environment Isolation
 
-Each TTS model runs in its own isolated UV environment:
+The model runs in its own isolated UV environment:
 
 ```
 .model-envs/
-├── edge-tts-env/
-│   └── .venv/
-├── vibevoice-env/
-│   └── .venv/
-├── marvis-tts-env/
-│   └── .venv/
-└── f5-tts-env/
+└── pocket-tts-env/
     └── .venv/
 ```
+
 
 This prevents dependency conflicts between different models and ensures clean, reproducible environments.
 
@@ -283,6 +223,6 @@ cli-tts --debug --model marvis-tts --text "Test" --output debug.wav --log debug.
 # 11. Test suite:
 cli-tts --test-suite --models all --output test-results.json
 
-# 12. Long-form content (VibeVoice):
-cli-tts --text "This is a very long piece of text..."(or a large text file or a clipboard text) --model vibevoice --output long_form.wav
+# 12. Long-form content (ModelScope VibeVoice):
+cli-tts --text "This is a very long piece of text..."(or a large text file or a clipboard text) --model modelscope-vibevoice --output long_form.wav
 ```

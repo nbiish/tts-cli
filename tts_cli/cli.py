@@ -206,7 +206,19 @@ def get_cached_output_path(retention_limit: int = 9) -> str:
     """Get path for new cached audio file and manage retention."""
     # Use user's home directory for cache
     cache_dir = Path.home() / ".tts-cli" / "cache"
-    cache_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Check permissions and fallback if needed
+    try:
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        # Test write permission
+        test_file = cache_dir / f".test_{int(time.time())}"
+        test_file.touch()
+        test_file.unlink()
+    except (OSError, PermissionError):
+        # Fallback to temporary directory if home is not writable
+        import tempfile
+        cache_dir = Path(tempfile.gettempdir()) / "tts-cli-cache"
+        cache_dir.mkdir(parents=True, exist_ok=True)
     
     # Generate new filename with timestamp
     timestamp = int(time.time())
@@ -329,8 +341,8 @@ Examples:
         list_voices(args.model)
         return
     
-    # Handle speech generation (only if output is specified)
-    if args.output or args.text or args.clipboard or args.input_file:
+    # Handle speech generation (only if output is specified or we have input)
+    if args.output or args.text or args.clipboard or args.input_file or args.voice_clone:
         text = None
         
         if args.text:
@@ -353,6 +365,11 @@ Examples:
             except Exception as e:
                 print(f"❌ Failed to read file: {e}")
                 return
+        
+        # If no text provided but voice clone is present, use default text
+        if not text and args.voice_clone:
+            text = "This is a sample of the cloned voice using Pocket TTS."
+            print(f"ℹ️  No text provided. Using default text: '{text}'")
         
         if not text:
             print("❌ No text provided")

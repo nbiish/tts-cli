@@ -125,17 +125,17 @@ tts-cli --text "This is a test" --output ~/short-test.wav
 tts-cli --clipboard --output ~/long-test.wav
 
 # Model specification
-tts-cli --text "Testing specific model" --model vibevoice --output ~/model-test.wav
+tts-cli --text "Testing specific model" --model pocket-tts --output ~/model-test.wav
 ```
 
 ### Performance Verification
 
-Expected results for VibeVoice model:
+Expected results for Pocket TTS model:
 
-- **Processing**: 1.5-2.5x real-time factor
-- **Quality**: 24kHz output, natural speech
-- **File sizes**: ~100-150KB per 5 seconds of audio
-- **Hardware**: Apple MPS acceleration when available
+- **Processing**: Faster than real-time
+- **Quality**: Natural speech
+- **File sizes**: Small and efficient
+- **Hardware**: CPU optimized
 
 ## Troubleshooting
 
@@ -220,7 +220,7 @@ After installation, verify these work:
 - [ ] `tts-cli --help` shows usage information
 - [ ] `tts-cli --text "test" --output ~/test.wav` creates audio file
 - [ ] Command works from different directories (home, /tmp, etc.)
-- [ ] VibeVoice model generates speech successfully
+- [ ] Pocket TTS model generates speech successfully
 - [ ] Clipboard functionality works with copied text
 - [ ] File outputs have expected sizes and quality
 
@@ -236,8 +236,8 @@ After installation, verify these work:
 ### Dependencies
 
 - **Core**: Python 3.9+, conda environment
-- **Models**: ModelScope VibeVoice 1.5B
-- **Hardware**: Apple MPS for acceleration
+- **Models**: Pocket TTS
+- **Hardware**: CPU
 - **System**: macOS with bash/zsh shell
 
 This installation method provides reliable system-wide access to the TTS CLI while maintaining proper environment isolation and dependency management.

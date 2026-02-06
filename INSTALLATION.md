@@ -50,9 +50,7 @@ The CLI automatically manages model environments:
 
 ```bash
 # Create environment for a specific model
-cli-tts --create-environment coqui-tts
-cli-tts --create-environment vibevoice
-cli-tts --create-environment zonos
+cli-tts --create-environment pocket-tts
 
 # List all environments
 cli-tts --list-environments
@@ -77,26 +75,24 @@ cli-tts --input-file input.txt --output speech.wav
 
 ```bash
 # Use specific model
-cli-tts --model coqui-tts --text "Hello" --output hello.wav
-cli-tts --model vibevoice --text "Hello" --output hello.wav
-cli-tts --model zonos --text "Hello" --output hello.wav
+cli-tts --model pocket-tts --text "Hello" --output hello.wav
 ```
 
 ### **Voice Selection**
 
 ```bash
 # List available voices
-cli-tts --list-voices --model coqui-tts
+cli-tts --list-voices --model pocket-tts
 
 # Use specific voice
-cli-tts --model coqui-tts --voice "tts_models/en/ljspeech/tacotron2-DDC_ph" --text "Hello" --output hello.wav
+cli-tts --model pocket-tts --voice "alba" --text "Hello" --output hello.wav
 ```
 
 ### **Voice Cloning**
 
 ```bash
 # Clone a voice (requires reference audio)
-cli-tts --model coqui-tts --text "Hello" --voice-clone reference.wav --output cloned.wav
+cli-tts --model pocket-tts --text "Hello" --voice-clone reference.wav --output cloned.wav
 ```
 
 ## 🛠️ **Troubleshooting**
@@ -110,10 +106,10 @@ If you get "Model not available" errors:
 cli-tts --list-environments
 
 # Create missing environment
-cli-tts --create-environment MODEL_NAME
+cli-tts --create-environment pocket-tts
 
 # Test specific model
-cli-tts --test-model MODEL_NAME
+cli-tts --test-model pocket-tts
 ```
 
 ### **Permission Issues**
@@ -138,7 +134,7 @@ ls -la ~/.tts-cli/model-envs/
 
 # Clean up and recreate
 cli-tts --cleanup-all-environments
-cli-tts --create-environment coqui-tts
+cli-tts --create-environment pocket-tts
 ```
 
 ## 📁 **Directory Structure**
@@ -148,9 +144,7 @@ After installation, the CLI creates:
 ```
 ~/.tts-cli/
 ├── model-envs/
-│   ├── coqui-tts-env/
-│   ├── vibevoice-env/
-│   ├── zonos-env/
+│   ├── pocket-tts-env/
 │   └── environments.json
 ```
 

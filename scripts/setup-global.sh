@@ -13,9 +13,10 @@ NC='\033[0m' # No Color
 
 echo -e "${BLUE}🚀 Setting up TTS CLI for global access...${NC}"
 
-# Get the script directory (project root)
+# Get the script directory and project root
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-echo -e "${YELLOW}Project root: $SCRIPT_DIR${NC}"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+echo -e "${YELLOW}Project root: $PROJECT_ROOT${NC}"
 
 # Check if uv is installed
 if ! command -v uv &> /dev/null; then
@@ -26,24 +27,15 @@ fi
 
 # Install the package in development mode
 echo -e "${YELLOW}📦 Installing TTS CLI package...${NC}"
-cd "$SCRIPT_DIR"
+cd "$PROJECT_ROOT"
 uv pip install -e .
 
-# Create symlink for easy access (optional)
-if [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    # Create a symlink in a common location
-    SYMLINK_DIR="$HOME/.local/bin"
-    mkdir -p "$SYMLINK_DIR"
-    
-    # Check if cli-tts is already in PATH
-    if command -v cli-tts &> /dev/null; then
-        echo -e "${GREEN}✅ cli-tts is already available in PATH${NC}"
-    else
-        echo -e "${YELLOW}⚠️  cli-tts is not in PATH. Add $SYMLINK_DIR to your PATH:${NC}"
-        echo "export PATH=\"\$HOME/.local/bin:\$PATH\""
-        echo "Add this to your ~/.bashrc, ~/.zshrc, or ~/.profile"
-    fi
-fi
+# 3. Install the CLI globally using the bash wrapper approach
+echo -e "${YELLOW}🔗 Creating global link...${NC}"
+
+# Use the wrapper script from the scripts directory
+sudo cp "$SCRIPT_DIR/tts-cli-global.sh" /usr/local/bin/cli-tts
+sudo chmod +x /usr/local/bin/cli-tts
 
 # Test the installation
 echo -e "${YELLOW}🧪 Testing installation...${NC}"
@@ -67,7 +59,7 @@ echo "  cli-tts --create-environment pocket-tts  # Create model environment"
 echo "  cli-tts --list-environments             # List environments"
 echo ""
 echo -e "${YELLOW}Note: All model environments are stored in:${NC}"
-echo "  $SCRIPT_DIR/.model-envs/"
+echo "  $PROJECT_ROOT/.model-envs/"
 echo ""
 echo -e "${YELLOW}This keeps everything centralized in the repo while providing global access.${NC}"
 echo -e "${YELLOW}Changes to the code are immediately available everywhere!${NC}"

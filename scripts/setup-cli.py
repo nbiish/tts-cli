@@ -76,10 +76,18 @@ def main():
     print("🚀 Setting up TTS CLI...")
     print("=" * 50)
     
-    # Check if we're in the right directory
-    if not Path("pyproject.toml").exists():
-        print("❌ pyproject.toml not found. Please run this script from the project root.")
+    # Determine project root (parent of this script's directory)
+    script_dir = Path(__file__).parent.resolve()
+    project_root = script_dir.parent
+    
+    # Check if we're in the right directory or find project root
+    if not (project_root / "pyproject.toml").exists():
+        print(f"❌ pyproject.toml not found in {project_root}.")
         sys.exit(1)
+        
+    # Change to project root for installation
+    import os
+    os.chdir(project_root)
     
     # Check Python version
     if sys.version_info < (3, 12):

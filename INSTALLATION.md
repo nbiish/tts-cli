@@ -10,7 +10,7 @@ git clone https://github.com/nbiish/tts-cli.git
 cd tts-cli
 
 # Run the setup script (keeps everything centralized)
-./setup-global.sh
+./scripts/setup-global.sh
 ```
 
 **🎯 Benefits of Centralized Setup:**

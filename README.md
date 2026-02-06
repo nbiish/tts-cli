@@ -60,10 +60,10 @@ cli-tts --text "Hello world" --output speech.wav
 
 ## ✨ Features
 
-- **⚡ Fast CPU Inference**: Optimized for running locally on CPU
+- **⚡ Fast CPU Inference**: Optimized for running locally on CPU with `uv` acceleration
 - **🔒 Isolated Environments**: Runs in its own UV environment
 - **🎵 Voice Cloning**: Support for voice cloning via reference audio
-- **📋 Clipboard | Text | Text File Support**: Flexible input methods
+- **📋 Clipboard | Text | Text File | Pipe Support**: Flexible input methods
 - **🔊 Auto-Playback**: Automatically plays generated audio
 - **💾 Smart Caching**: Auto-manages output files with rotation
 - **🔄 Cross-Platform**: Works on macOS, Linux, and Windows
@@ -74,20 +74,27 @@ cli-tts --text "Hello world" --output speech.wav
 
 ```bash
 # Generate speech from text (plays automatically)
+cli-tts "Hello world"
+
+# Or use explicit flag
 cli-tts --text "Hello world"
 
 # Save to specific file (also plays)
-cli-tts --text "Hello world" --output hello.wav
+cli-tts "Hello world" --output hello.wav
 
 # Use specific voice
-cli-tts --voice alba --text "Hello world"
+cli-tts "Hello world" --voice alba
 ```
 
-### Clipboard Integration
+### Advanced Input Methods
 
 ```bash
 # Read from clipboard
 cli-tts --clipboard
+
+# Piped input (works with any command)
+echo "Hello from pipe" | cli-tts
+cat story.txt | cli-tts
 ```
 
 ### Voice Cloning

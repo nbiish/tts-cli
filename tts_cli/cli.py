@@ -268,8 +268,11 @@ Examples:
     )
     
     # Input options
-    input_group = parser.add_mutually_exclusive_group(required=False)
-    input_group.add_argument("--text", help="Text to convert to speech")
+    # We allow positional arguments for text, or flags
+    parser.add_argument("input_text", nargs="?", help="Text to convert to speech (optional positional argument)")
+    
+    input_group = parser.add_argument_group("Input Options")
+    input_group.add_argument("--text", help="Text to convert to speech (explicit flag)")
     input_group.add_argument("--clipboard", action="store_true", 
                            help="Read text from clipboard")
     input_group.add_argument("--input-file", help="Read text from file")
@@ -341,40 +344,51 @@ Examples:
         list_voices(args.model)
         return
     
-    # Handle speech generation (only if output is specified or we have input)
-    if args.output or args.text or args.clipboard or args.input_file or args.voice_clone:
-        text = None
-        
-        if args.text:
-            text = args.text
-        elif args.clipboard:
-            try:
-                text = pyperclip.paste()
-                if not text:
-                    print("❌ Clipboard is empty")
-                    return
-                print(f"Using text from clipboard: {text[:50]}...")
-            except Exception as e:
-                print(f"❌ Failed to read clipboard: {e}")
+    # Handle speech generation
+    text = None
+    
+    # 1. Positional argument
+    if args.input_text:
+        text = args.input_text
+    # 2. Explicit flag
+    elif args.text:
+        text = args.text
+    # 3. Clipboard
+    elif args.clipboard:
+        try:
+            text = pyperclip.paste()
+            if not text:
+                print("❌ Clipboard is empty")
                 return
-        elif args.input_file:
-            try:
-                with open(args.input_file, 'r') as f:
-                    text = f.read()
-                print(f"Using text from file: {args.input_file}")
-            except Exception as e:
-                print(f"❌ Failed to read file: {e}")
-                return
-        
-        # If no text provided but voice clone is present, use default text
-        if not text and args.voice_clone:
-            text = "This is a sample of the cloned voice using Pocket TTS."
-            print(f"ℹ️  No text provided. Using default text: '{text}'")
-        
-        if not text:
-            print("❌ No text provided")
+            print(f"Using text from clipboard: {text[:50]}...")
+        except Exception as e:
+            print(f"❌ Failed to read clipboard: {e}")
             return
+    # 4. File
+    elif args.input_file:
+        try:
+            with open(args.input_file, 'r') as f:
+                text = f.read()
+            print(f"Using text from file: {args.input_file}")
+        except Exception as e:
+            print(f"❌ Failed to read file: {e}")
+            return
+    # 5. Stdin (Piped input)
+    elif not sys.stdin.isatty():
+        try:
+            text = sys.stdin.read().strip()
+            if text:
+                print(f"Using text from stdin: {text[:50]}...")
+        except Exception:
+            pass
+            
+    # If no text provided but voice clone is present, use default text
+    if not text and args.voice_clone:
+        text = "This is a sample of the cloned voice using Pocket TTS."
+        print(f"ℹ️  No text provided. Using default text: '{text}'")
         
+    # Proceed if we have text
+    if text:
         # Determine output path
         output_path = args.output
         if not output_path:
@@ -394,8 +408,14 @@ Examples:
             play_audio(output_path)
         else:
             sys.exit(1)
-    else:
-        print("No input text or output file specified. Use --help for more options.")
+        return
+
+    # If we got here, no text was found.
+    if args.output:
+         print("❌ Output file specified but no input text provided.")
+         return
+
+    print("No input text provided. Use --help for usage.")
 
 
 if __name__ == "__main__":

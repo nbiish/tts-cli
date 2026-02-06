@@ -31,11 +31,14 @@ cd "$PROJECT_ROOT"
 uv pip install -e .
 
 # 3. Install the CLI globally using the bash wrapper approach
-echo -e "${YELLOW}🔗 Creating global link...${NC}"
+echo -e "${YELLOW}🔗 Creating global symlink...${NC}"
 
 # Use the wrapper script from the scripts directory
-sudo cp "$SCRIPT_DIR/tts-cli-global.sh" /usr/local/bin/cli-tts
-sudo chmod +x /usr/local/bin/cli-tts
+# We use symlink instead of cp so updates are immediate
+sudo ln -sf "$SCRIPT_DIR/tts-cli-global.sh" /usr/local/bin/cli-tts
+# Ensure execution permissions on the source
+chmod +x "$SCRIPT_DIR/tts-cli-global.sh"
+chmod +x "$SCRIPT_DIR/tts-cli-wrapper.py"
 
 # Test the installation
 echo -e "${YELLOW}🧪 Testing installation...${NC}"

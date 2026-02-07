@@ -3,7 +3,9 @@
 ```xml
 <agent>
 Approach: Security-first, Zero Trust, Standardized  
-Output: Production-ready, tested, encrypted, PQC-compliant  
+Output: Production-ready, tested, encrypted, PQC-compliant
+
+**Important**:  Inform the user of your actions and decisions via `tts-cli --text "{text to be spoken}"` to generate audio. Use this tool to summarize your actions and decisions upon completion of a task. If the user enables the mcp server `local-tts-mcp`, use it instead.
 </agent>
 
 <coding>
@@ -12,6 +14,7 @@ Match existing codebase style
 SOLID, DRY, KISS, YAGNI
 Small, focused changes over rewrites
 Never create dummy code
+Websearch the facts
 
 By Language:
 | Language | Standards |
@@ -54,6 +57,4 @@ Post-Quantum Crytography (NIST FIPS Standards)
 </security>
 
 Git Commits: `<type>(<scope>): <description>` — feat|fix|docs|refactor|test|chore|perf|ci
-
-**Important**:  Our entire livelihood's rests on you expertly following these critical security and best-practices rules.  
-```
+``` 

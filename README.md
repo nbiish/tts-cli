@@ -101,11 +101,21 @@ cat story.txt | cli-tts
 You can use a reference audio file to clone a voice. For best results, clean the audio first using our built-in tools.
 
 ```bash
-# Basic voice cloning
+# Basic voice cloning (one-off)
 cli-tts --text "Hello world" --voice-clone reference.wav
 
-# 🌟 Recommended: Clean the audio on-the-fly (Isolate Voice + Remove Silence)
-cli-tts --text "Hello world" --voice-clone reference.wav --clean-voice
+# 🌟 Persistent Custom Voices
+# Import a voice (automatically cleans and saves to custom_voices/)
+cli-tts --set-clone-voice path/to/my_voice.wav
+
+# List available custom voices
+cli-tts --list-clone-voices
+
+# Switch to an existing custom voice
+cli-tts --set-clone-voice my_voice.wav
+
+# Unset custom voice (return to random/default)
+cli-tts --unset-clone-voice
 ```
 
 ### Audio Processing Tools

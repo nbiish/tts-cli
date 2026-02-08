@@ -18,7 +18,11 @@
     *   Clone voices using a single reference audio file.
     *   Supports any clean WAV file as input.
     *   Auto-play functionality for cloned voices.
-3.  **Isolated Environments**:
+3.  **Persistent Custom Voices**:
+    *   **Repository-based Storage**: Custom voices are stored in `custom_voices/` at the project root for portability.
+    *   **Auto-Cleaning**: Importing a voice (`--set-clone-voice`) automatically isolates vocals and removes silence.
+    *   **Easy Management**: List, select, and unset custom voices via CLI commands.
+4.  **Isolated Environments**:
     *   Each model runs in its own `uv` virtual environment.
     *   Prevents dependency hell (e.g., conflicting torch versions).
     *   Automatic creation and management of environments.

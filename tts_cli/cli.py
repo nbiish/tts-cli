@@ -318,11 +318,93 @@ Examples:
     
     # Voice cloning
     parser.add_argument("--voice-clone", help="Reference audio file for voice cloning")
+    parser.add_argument("--set-clone-voice", help="Set a persistent clone voice from a file (cleans and saves to custom_voices/)")
+    parser.add_argument("--unset-clone-voice", action="store_true", help="Remove the persistent clone voice and return to default behavior")
     
     args = parser.parse_args()
     
     # Setup models
     setup_models()
+
+    # Handle unset-clone-voice command
+    if args.unset_clone_voice:
+        custom_voices_dir = Path("custom_voices")
+        if custom_voices_dir.exists():
+            cleaned_any = False
+            for f in custom_voices_dir.glob("*.wav"):
+                try:
+                    f.unlink()
+                    cleaned_any = True
+                except Exception as e:
+                    print(f"❌ Failed to delete {f.name}: {e}")
+            
+            if cleaned_any:
+                print("✅ Custom clone voice unset. Reverted to default random voice.")
+            else:
+                print("ℹ️  No custom clone voice was set.")
+        else:
+            print("ℹ️  No custom clone voice was set.")
+        return
+
+    # Handle set-clone-voice command
+    if args.set_clone_voice:
+        input_voice = args.set_clone_voice
+        if not Path(input_voice).exists():
+            print(f"❌ Input file not found: {input_voice}")
+            return
+
+        if not audio_processor.check_availability():
+             print("❌ Audio processing environment not found. Run: cli-tts --create-environment audio-processing")
+             return
+
+        print(f"Processing and setting clone voice from: {input_voice}")
+        
+        # Ensure custom_voices directory exists
+        custom_voices_dir = Path("custom_voices")
+        custom_voices_dir.mkdir(exist_ok=True)
+        
+        # Define output path
+        # We use a fixed name or keep original name? 
+        # User said "folder that has no file in it... drop a voice file in there"
+        # Let's clean it and save as 'default_clone.wav' to be unambiguous, 
+        # or we could just use the filename. 
+        # Let's use 'default.wav' to make auto-detection simple and consistent.
+        target_path = custom_voices_dir / "default.wav"
+        
+        # Process: Isolate -> Remove Silence
+        import tempfile
+        import os
+        
+        try:
+            # 1. Isolate Voice
+            fd, temp_isolated = tempfile.mkstemp(suffix="_isolated.wav")
+            os.close(fd)
+            
+            print("Step 1/2: Isolating voice...")
+            success = audio_processor.isolate_voice(input_voice, temp_isolated)
+            if not success:
+                print("❌ Voice isolation failed.")
+                os.unlink(temp_isolated)
+                return
+            
+            # 2. Remove Silence
+            print("Step 2/2: Removing silence...")
+            success = audio_processor.remove_silence(temp_isolated, str(target_path))
+            
+            # Cleanup temp
+            if os.path.exists(temp_isolated):
+                os.unlink(temp_isolated)
+                
+            if success:
+                print(f"✅ Clone voice set successfully! Saved to: {target_path}")
+                print("This voice will now be used by default for all generations.")
+            else:
+                print("❌ Failed to set clone voice.")
+                
+        except Exception as e:
+            print(f"❌ Error setting clone voice: {e}")
+            
+        return
     
     # Handle environment management commands
     if args.create_environment:
@@ -456,6 +538,25 @@ Examples:
     
     # Pre-process voice clone file if needed
     voice_clone_path = args.voice_clone
+    
+    # If no explicit voice or clone is set, check for a default custom voice
+    if not args.voice and not voice_clone_path:
+        custom_voices_dir = Path("custom_voices")
+        if custom_voices_dir.exists():
+            # Look for any wav file, prioritizing 'default.wav' or most recent
+            wav_files = list(custom_voices_dir.glob("*.wav"))
+            if wav_files:
+                # If default.wav exists, use it
+                default_voice = custom_voices_dir / "default.wav"
+                if default_voice.exists():
+                    voice_clone_path = str(default_voice)
+                    print(f"ℹ️  Using default clone voice: {voice_clone_path}")
+                else:
+                    # Otherwise use the most recently modified wav file
+                    latest_voice = max(wav_files, key=lambda p: p.stat().st_mtime)
+                    voice_clone_path = str(latest_voice)
+                    print(f"ℹ️  Using detected custom voice: {voice_clone_path}")
+
     temp_voice_files = []
     
     # Determine if we need to process the voice clone file

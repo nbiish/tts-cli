@@ -318,7 +318,7 @@ Examples:
     
     # Voice cloning
     parser.add_argument("--voice-clone", help="Reference audio file for voice cloning")
-    parser.add_argument("--set-clone-voice", help="Set a persistent clone voice from a file (cleans and saves to custom_voices/). Can be a path or a name in custom_voices.")
+    parser.add_argument("--set-clone-voice", help="Set a persistent clone voice from a file (saves to custom_voices/). Can be a path or a name in custom_voices.")
     parser.add_argument("--unset-clone-voice", action="store_true", help="Unset the persistent clone voice (does not delete the file)")
     parser.add_argument("--list-clone-voices", action="store_true", help="List available custom clone voices")
     
@@ -388,8 +388,12 @@ Examples:
         source_path = None
         
         # Check if input is a name in the custom voices dir
+        # Only treat as a name if it's NOT a path (no separators) and exists in the dir
+        import os
+        is_name_only = os.sep not in input_voice
         potential_path = CUSTOM_VOICES_DIR / input_voice
-        if potential_path.exists():
+        
+        if is_name_only and potential_path.exists():
             # Use existing voice
             target_name = input_voice
             print(f"ℹ️  Selecting existing custom voice: {target_name}")
@@ -420,43 +424,21 @@ Examples:
         # Define output path
         target_path = CUSTOM_VOICES_DIR / target_name
         
-        # Process: Isolate -> Remove Silence
-        import tempfile
-        import os
-        
+        # Simple copy without processing (user requested to skip auto-cleaning)
         try:
-            # 1. Isolate Voice
-            fd, temp_isolated = tempfile.mkstemp(suffix="_isolated.wav")
-            os.close(fd)
+            print(f"Importing voice file: {source_path}")
+            shutil.copy2(source_path, target_path)
             
-            print("Step 1/2: Isolating voice...")
-            success = audio_processor.isolate_voice(str(source_path), temp_isolated)
-            if not success:
-                print("❌ Voice isolation failed.")
-                os.unlink(temp_isolated)
-                return
+            print(f"✅ Clone voice imported successfully! Saved to: {target_path}")
             
-            # 2. Remove Silence
-            print("Step 2/2: Removing silence...")
-            success = audio_processor.remove_silence(temp_isolated, str(target_path))
-            
-            # Cleanup temp
-            if os.path.exists(temp_isolated):
-                os.unlink(temp_isolated)
-                
-            if success:
-                print(f"✅ Clone voice imported successfully! Saved to: {target_path}")
-                
-                # Set as active
-                try:
-                    with open(ACTIVE_VOICE_FILE, 'w') as f:
-                        f.write(target_name)
-                    print(f"✅ Voice set as active!")
-                    print("This voice will now be used by default for all generations.")
-                except Exception as e:
-                    print(f"❌ Failed to set active voice: {e}")
-            else:
-                print("❌ Failed to set clone voice.")
+            # Set as active
+            try:
+                with open(ACTIVE_VOICE_FILE, 'w') as f:
+                    f.write(target_name)
+                print(f"✅ Voice set as active!")
+                print("This voice will now be used by default for all generations.")
+            except Exception as e:
+                print(f"❌ Failed to set active voice: {e}")
                 
         except Exception as e:
             print(f"❌ Error setting clone voice: {e}")

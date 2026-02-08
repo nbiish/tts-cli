@@ -105,7 +105,7 @@ You can use a reference audio file to clone a voice. For best results, clean the
 cli-tts --text "Hello world" --voice-clone reference.wav
 
 # 🌟 Persistent Custom Voices
-# Import a voice (automatically cleans and saves to custom_voices/)
+# Import a voice (copies to custom_voices/ as-is)
 cli-tts --set-clone-voice path/to/my_voice.wav
 
 # List available custom voices

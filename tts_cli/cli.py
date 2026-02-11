@@ -20,6 +20,7 @@ from .core.model_registry import model_registry
 from .core.environment_manager import env_manager
 from .core.audio_processor import audio_processor
 from .models.pocket_tts_model import PocketTTSModel
+from .core.model_daemon import is_daemon_running, get_daemon_status, stop_daemon, LOG_PATH as DAEMON_LOG_PATH
 
 
 def setup_models() -> None:
@@ -322,10 +323,68 @@ Examples:
     parser.add_argument("--unset-clone-voice", action="store_true", help="Unset the persistent clone voice (does not delete the file)")
     parser.add_argument("--list-clone-voices", action="store_true", help="List available custom clone voices")
     
+    # Daemon management
+    daemon_group = parser.add_argument_group("Model Daemon")
+    daemon_group.add_argument("--daemon-status", action="store_true",
+                             help="Show model daemon status (PID tracking, queue depth, loaded state)")
+    daemon_group.add_argument("--daemon-stop", action="store_true",
+                             help="Stop the model daemon and unload the model from memory")
+    daemon_group.add_argument("--daemon-log", nargs="?", const=50, type=int, metavar="LINES",
+                             help="Show the last N lines of the daemon log (default: 50)")
+    
     args = parser.parse_args()
     
     # Setup models
     setup_models()
+
+    # ---- Daemon management commands ----
+    if args.daemon_status:
+        if not is_daemon_running():
+            print("Model daemon is NOT running.")
+            print("It will start automatically on next TTS request.")
+        else:
+            status = get_daemon_status()
+            if status:
+                print("Model Daemon Status")
+                print("=" * 50)
+                print(f"  Daemon PID:      {status.get('daemon_pid', '?')}")
+                print(f"  Model loaded:    {'Yes' if status.get('model_loaded') else 'No'}")
+                print(f"  Queue depth:     {status.get('queue_depth', 0)}")
+                print(f"  Idle timeout:    {status.get('idle_timeout_seconds', '?')}s")
+                pids = status.get('active_pids', [])
+                if pids:
+                    print(f"  Tracked PIDs:    {len(pids)}")
+                    for p in pids:
+                        print(f"    PID {p['pid']:>8}  requests={p['request_count']}  "
+                              f"last_seen={time.strftime('%H:%M:%S', time.localtime(p['last_seen']))}")
+                else:
+                    print("  Tracked PIDs:    (none)")
+            else:
+                print("Daemon is running but did not respond to status query.")
+        return
+
+    if args.daemon_stop:
+        if not is_daemon_running():
+            print("Model daemon is not running.")
+        else:
+            if stop_daemon():
+                print("\u2705 Daemon stopped and model unloaded from memory.")
+            else:
+                print("\u274c Failed to stop daemon.")
+        return
+
+    if args.daemon_log is not None:
+        if not DAEMON_LOG_PATH.exists():
+            print(f"No daemon log found at {DAEMON_LOG_PATH}")
+        else:
+            import collections
+            n = args.daemon_log
+            with open(DAEMON_LOG_PATH, "r", encoding="utf-8", errors="replace") as f:
+                tail = collections.deque(f, maxlen=n)
+            print(f"--- Last {len(tail)} lines of {DAEMON_LOG_PATH} ---")
+            for line in tail:
+                print(line, end="")
+        return
 
     # Define constants for custom voices
     # Use repository root for storage to ensure persistence and accessibility

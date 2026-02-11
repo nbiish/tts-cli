@@ -13,6 +13,7 @@ import subprocess
 
 from ..core.model_registry import BaseTTSModel
 from ..core.environment_manager import env_manager
+from ..core.daemon_client import daemon_generate_speech
 
 
 class PocketTTSModel(BaseTTSModel):
@@ -50,13 +51,27 @@ class PocketTTSModel(BaseTTSModel):
             voice = random.choice(self._default_voices)
             print(f"ℹ️  No voice specified. Using random voice: {voice}")
             
-        # Optimization: Try in-process generation if dependencies are met
+        # Fast path: route through the model daemon (shared model, PID-tracked)
         try:
-            import pocket_tts
-            import numpy as np
-            import scipy.io.wavfile
-            # Only print this if we are verbose, but for now it helps verify optimization
-            # print("⚡️ Fast path: Pocket TTS found in current environment. Running in-process...")
+            import pocket_tts  # noqa: F401 — verify importability
+            success = daemon_generate_speech(
+                text=text,
+                voice=voice,
+                output_path=output_path,
+                voice_clone=voice_clone,
+            )
+            if success:
+                return True
+            # Daemon failed — fall through to direct in-process generation
+            print("Daemon unavailable, falling back to direct generation…")
+        except ImportError:
+            pass
+
+        # Fallback: direct in-process generation (no daemon)
+        try:
+            import pocket_tts  # noqa: F401
+            import numpy as np  # noqa: F401
+            import scipy.io.wavfile  # noqa: F401
             self._generate_in_process(text, voice, output_path)
             return True
         except ImportError:

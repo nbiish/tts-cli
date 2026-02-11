@@ -185,23 +185,29 @@ def list_voices(model_name: str) -> None:
             print(f"  - {voice}")
 
 
-def play_audio(file_path: str) -> None:
-    """Play audio file using system default player."""
-    print(f"Playing audio: {file_path}")
+def play_audio(file_path: str, speed: float = 1.2) -> None:
+    """Play audio file using system default player at the given speed."""
+    print(f"Playing audio: {file_path} (speed: {speed}x)")
     try:
         system = platform.system()
         if system == "Darwin":  # macOS
-            subprocess.run(["afplay", file_path], check=True)
+            subprocess.run(["afplay", "--rate", str(speed), file_path], check=True)
         elif system == "Linux":
-            # Try aplay or paplay
-            if shutil.which("aplay"):
+            # Use ffplay for speed control if available, else fall back
+            if shutil.which("ffplay"):
+                subprocess.run(
+                    ["ffplay", "-nodisp", "-autoexit",
+                     "-af", f"atempo={speed}", file_path],
+                    check=True,
+                )
+            elif shutil.which("aplay"):
                 subprocess.run(["aplay", file_path], check=True)
             elif shutil.which("paplay"):
                 subprocess.run(["paplay", file_path], check=True)
             else:
-                print("❌ No audio player found (aplay/paplay)")
+                print("❌ No audio player found (ffplay/aplay/paplay)")
         elif system == "Windows":
-            # Use PowerShell to play sound
+            # Use PowerShell to play sound (no native speed control)
             subprocess.run(["powershell", "-c", f"(New-Object Media.SoundPlayer '{file_path}').PlaySync()"], check=True)
         else:
             print(f"❌ Unsupported platform for audio playback: {system}")
@@ -211,7 +217,7 @@ def play_audio(file_path: str) -> None:
         print(f"❌ Error playing audio: {e}")
 
 
-def get_cached_output_path(retention_limit: int = 9) -> str:
+def get_cached_output_path(retention_limit: int = 5) -> str:
     """Get path for new cached audio file and manage retention."""
     # Use user's home directory for cache
     cache_dir = Path.home() / ".tts-cli" / "cache"

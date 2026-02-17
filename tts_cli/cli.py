@@ -25,7 +25,7 @@ from .core.model_daemon import is_daemon_running, get_daemon_status, stop_daemon
 
 def setup_models() -> None:
     """Register all available TTS models."""
-    # Register Pocket TTS model (New compact model)
+    # Register Pocket TTS model (Compact CPU-optimized)
     model_registry.register_model("pocket-tts", PocketTTSModel)
 
 

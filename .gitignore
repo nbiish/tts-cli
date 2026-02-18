@@ -1,4 +1,5 @@
 # AINISH Coder Tooling Distribution - Git Ignore Patterns
+# PlatformIO ignore patterns
 
 # ai pair programmer files
 .cursor/
@@ -13,7 +14,12 @@
 .windsurf/
 .aider*
 .trae/
-docs/
+
+# PlatformIO ignore patterns
+.pio*
+.pio/
+*.pioenvs/
+pio.ini
 
 # Environment and configuration files
 .env
@@ -110,7 +116,6 @@ yarn-error.log
 # Security reports
 SECURITY_REPORT.md
 
-
 # ═══════════════════════════════════════════════════════════════════════════
 # Project-specific patterns (preserved from existing .gitignore)
 # ═══════════════════════════════════════════════════════════════════════════
@@ -195,6 +200,7 @@ coverage.xml
 desktop.ini
 develop-eggs/
 dmypy.json
+docs/
 docs/_build/
 docs/build/
 downloads/

@@ -26,7 +26,11 @@
     *   Each model runs in its own `uv` virtual environment.
     *   Prevents dependency hell (e.g., conflicting torch versions).
     *   Automatic creation and management of environments.
-4.  **Smart Audio Management**:
+5.  **Robust Processing**:
+    *   **Text Splitting**: Automatically chunks long text input to prevent memory errors and improve synthesis quality.
+    *   **Voice Trimming**: Automatically trims reference audio > 10s to prevent hallucinations.
+    *   **Tensor Validation**: Ensures model outputs are valid before saving.
+6.  **Smart Audio Management**:
     *   **Auto-Playback**: Automatically plays generated audio by default.
     *   **Caching**: If no output path is specified, saves to `~/.tts-cli/cache/` with rotation.
     *   **Format**: Ensures all output is 16-bit PCM WAV for maximum compatibility.

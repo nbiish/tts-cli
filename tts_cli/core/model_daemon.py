@@ -36,6 +36,9 @@ import uuid
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+import tempfile
+
+from tts_cli.core.text_utils import split_text
 
 logger = logging.getLogger("tts_cli.daemon")
 
@@ -599,6 +602,7 @@ class ModelDaemon:
         """Execute TTS inference (must be called from inference worker only)."""
         import numpy as np
         import scipy.io.wavfile  # type: ignore[import-untyped]
+        import torch
 
         model = self._model
         if model is None:
@@ -606,45 +610,118 @@ class ModelDaemon:
 
         voice_input = req.voice_clone if req.voice_clone else req.voice
         voice_is_path = Path(voice_input).exists()
+        voice_temp_file: Optional[str] = None
 
-        if voice_is_path:
-            voice_state = model.get_state_for_audio_prompt(voice_input)
-        else:
-            voice_map = {
-                "alba": "hf://kyutai/tts-voices/alba-mackenna/casual.wav",
-                "victor": "hf://kyutai/tts-voices/voice-donations/Victor_Garcia.wav",
-                "umair": "hf://kyutai/tts-voices/voice-donations/Umair.wav",
-                "vivaldi": "hf://kyutai/tts-voices/voice-donations/Vivaldi.wav",
-                "yesid": "hf://kyutai/tts-voices/voice-donations/Yesid.wav",
-                "wealthiest": "hf://kyutai/tts-voices/voice-donations/Wealthiest.wav",
-                "awais": "hf://kyutai/tts-voices/voice-donations/awais_shah.wav",
-                "gmaskell": "hf://kyutai/tts-voices/voice-donations/gmaskell92.wav",
-                "robert": "hf://kyutai/tts-voices/voice-donations/robert.wav",
-            }
-
-            if voice_input in voice_map:
-                voice_state = model.get_state_for_audio_prompt(voice_map[voice_input])
-            else:
+        try:
+            if voice_is_path:
+                # Pre-process voice file: check duration and trim if > 10s
                 try:
-                    voice_state = model.get_state_for_audio_prompt(voice_input)
-                except Exception:
+                    sr, data = scipy.io.wavfile.read(voice_input)
+                    # Handle multi-channel audio if necessary (usually take first channel or mix)
+                    # scipy read returns (rate, data). data can be 1D or 2D.
+                    duration = len(data) / sr
+                    if duration > 10.0:
+                        logger.info(
+                            "Voice input too long (%.1fs), trimming to 10.0s", duration
+                        )
+                        # Trim to 10s
+                        trimmed_data = data[: int(10.0 * sr)]
+
+                        # Create temp file
+                        tf = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
+                        voice_temp_file = tf.name
+                        tf.close()
+
+                        scipy.io.wavfile.write(voice_temp_file, sr, trimmed_data)
+                        voice_input = voice_temp_file
+                except Exception as e:
                     logger.warning(
-                        "Unknown voice '%s', falling back to 'alba'", voice_input
+                        "Failed to process voice file '%s': %s", voice_input, e
                     )
-                    voice_state = model.get_state_for_audio_prompt(voice_map["alba"])
 
-        audio = model.generate_audio(voice_state, req.text)
+            # Get voice state
+            if Path(voice_input).exists():
+                voice_state = model.get_state_for_audio_prompt(voice_input)
+            else:
+                voice_map = {
+                    "alba": "hf://kyutai/tts-voices/alba-mackenna/casual.wav",
+                    "victor": "hf://kyutai/tts-voices/voice-donations/Victor_Garcia.wav",
+                    "umair": "hf://kyutai/tts-voices/voice-donations/Umair.wav",
+                    "vivaldi": "hf://kyutai/tts-voices/voice-donations/Vivaldi.wav",
+                    "yesid": "hf://kyutai/tts-voices/voice-donations/Yesid.wav",
+                    "wealthiest": "hf://kyutai/tts-voices/voice-donations/Wealthiest.wav",
+                    "awais": "hf://kyutai/tts-voices/voice-donations/awais_shah.wav",
+                    "gmaskell": "hf://kyutai/tts-voices/voice-donations/gmaskell92.wav",
+                    "robert": "hf://kyutai/tts-voices/voice-donations/robert.wav",
+                }
 
-        # Convert and save
-        audio_data = audio.numpy()
-        if audio_data.dtype.kind == "f":
-            audio_data = (
-                (audio_data * 32767).clip(-32768, 32767).astype(np.int16)
-            )
+                if voice_input in voice_map:
+                    voice_state = model.get_state_for_audio_prompt(
+                        voice_map[voice_input]
+                    )
+                else:
+                    try:
+                        voice_state = model.get_state_for_audio_prompt(voice_input)
+                    except Exception:
+                        logger.warning(
+                            "Unknown voice '%s', falling back to 'alba'", voice_input
+                        )
+                        voice_state = model.get_state_for_audio_prompt(
+                            voice_map["alba"]
+                        )
 
-        # Ensure output directory exists
-        Path(req.output_path).parent.mkdir(parents=True, exist_ok=True)
-        scipy.io.wavfile.write(req.output_path, model.sample_rate, audio_data)
+            # Generate audio in chunks
+            chunks = split_text(req.text, max_length=200)
+            audio_segments = []
+
+            for chunk in chunks:
+                if not chunk.strip():
+                    continue
+
+                segment = model.generate_audio(voice_state, chunk)
+
+                # Validation
+                if segment is None:
+                    continue
+                if segment.numel() == 0:
+                    continue
+                if segment.dim() == 1:
+                    segment = segment.unsqueeze(0)
+
+                audio_segments.append(segment)
+
+            if not audio_segments:
+                logger.warning("No audio generated for text: '%s'", req.text)
+                return
+
+            audio = torch.cat(audio_segments, dim=1)
+
+            # Convert and save
+            audio_data = audio.cpu().numpy()
+            
+            # Ensure proper shape for wavfile.write (samples, channels)
+            if audio_data.ndim == 2 and audio_data.shape[0] == 1:
+                audio_data = audio_data.flatten()
+            elif audio_data.ndim == 2 and audio_data.shape[0] > 1:
+                # Assuming (channels, samples) -> transpose to (samples, channels)
+                audio_data = audio_data.T
+                
+            if audio_data.dtype.kind == "f":
+                audio_data = (
+                    (audio_data * 32767).clip(-32768, 32767).astype(np.int16)
+                )
+
+            # Ensure output directory exists
+            Path(req.output_path).parent.mkdir(parents=True, exist_ok=True)
+            scipy.io.wavfile.write(req.output_path, model.sample_rate, audio_data)
+
+        finally:
+            # Clean up temp file
+            if voice_temp_file and os.path.exists(voice_temp_file):
+                try:
+                    os.unlink(voice_temp_file)
+                except OSError:
+                    pass
 
     # ------------------------------------------------------------------
     # Idle timer

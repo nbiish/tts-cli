@@ -27,6 +27,12 @@
     - [x] Removal of legacy models (Coqui, Edge, VibeVoice, Zonos).
     - [x] Streamlining of `README.md` and installation guides.
 
+- [x] **Stability & Migration**:
+    - [x] Implement robust text splitting (chunking) for long inputs.
+    - [x] Add automatic voice file trimming (>10s) to prevent hallucinations.
+    - [x] Enhance tensor validation to prevent crashes.
+    - [x] Align architecture with `local-tts-mcp` best practices.
+
 ## Pending / Future Tasks
 
 - [ ] **Testing**:

@@ -1,20 +1,6 @@
 # AINISH Coder Tooling Distribution - Git Ignore Patterns
 # PlatformIO ignore patterns
 
-# ai pair programmer files
-.cursor/
-.cursorrules
-.github/copilot-instructions.md
-.github/instructions/*
-.gemini/
-.qwen/
-.claude/
-.continue/
-.clinerules/
-.windsurf/
-.aider*
-.trae/
-
 # PlatformIO ignore patterns
 .pio*
 .pio/
@@ -116,34 +102,56 @@ yarn-error.log
 # Security reports
 SECURITY_REPORT.md
 
+# Scrolls Lab runtime artifacts
+scrolls-lab/logs/
+scrolls-lab/reference/
+scrolls-lab/omni_output/
+scrolls-lab/sections/
+scrolls-lab/working/
+scrolls-lab/original/
+scrolls-lab/output/
+*.patch
+
+# Omni Extractor media files (global safety)
+**/*.jpg
+**/*.mp4
+**/*.vtt
+providers.txt
+**/providers.txt
+providers**.txt
+**/providers**.txt
+
+# Scrolls ceremony cloned repos (large)
+.scrolls-ceremony/repos/
+
+# Graphify scratch output
+graphify-out/
+
+# PQC secrets — bundle and audit log (the .env patterns above cover
+# most cases, but PQC artifacts are explicit for clarity)
+secrets.bundle.json
+secrets.bundle.json.bak.*
+audit.log
+audit.log.*
+# Local pqc-sign public keys (used for verification, not for committing)
+.pqc-keys/*.priv
+.pqc-keys/*.sk
+
+# Hermes / agent plan and context directories (auto-injected by
+# subdirectory context discovery — never intended for git)
+.hermes/
+.omx/
+.omo/
+.omp/
+
+# Agent COMMS live board — in-flight coordination, never committed.
+# The dated ledger AGENTS/{date}.COMMS.md IS committed; this sidecar is not.
+AGENTS/*.COMMS.live.md
+
 # ═══════════════════════════════════════════════════════════════════════════
 # Project-specific patterns (preserved from existing .gitignore)
 # ═══════════════════════════════════════════════════════════════════════════
 
-_build/
-._*
-.cache
-.cache/
-.classpath
-.coverage
-.dmypy.json
-.eggs/
-.eslintcache
-.hypothesis/
-.idea/
-.installed.cfg
-.model-envs/
-.mypy_cache/
-.node_repl_history
-.npm
-.project
-.Python
-.settings/
-.Spotlight-V100
-.tox/
-.Trashes
-.voice-library/
-.yarn-integrity
 *.7z
 *.aac
 *.avi
@@ -193,8 +201,47 @@ _build/
 *.xz
 *.zip
 *~
-ainish-coder/
+.Python
+.Spotlight-V100
+.Trashes
+._*
+.aider*
+.cache
+.cache/
+.classpath
+.claude/
+.clinerules/
+.continue/
+.coverage
+.cursor/
+.cursorrules
+.dmypy.json
+.eggs/
+.eslintcache
+.gemini/
+.github/copilot-instructions.md
+.github/instructions/*
+.hypothesis/
+.idea/
+.installed.cfg
+.model-envs/
+.mypy_cache/
+.node_repl_history
+.npm
+.project
+.qwen/
+.settings/
+.tox/
+.trae/
+.voice-library/
+.windsurf/
+.yarn-integrity
 AINISH-DATA/
+KNOWLEDGE_BASE/
+MANIFEST
+Thumbs.db
+_build/
+ainish-coder/
 checkpoints/
 coverage.xml
 desktop.ini
@@ -207,7 +254,6 @@ downloads/
 eggs/
 ehthumbs.db
 htmlcov/
-KNOWLEDGE_BASE/
 lib/
 lib64/
 logs/
@@ -221,7 +267,6 @@ public/
 sdist/
 site/
 temp/
-Thumbs.db
 var/
 wheels/
 yarn-debug.log*

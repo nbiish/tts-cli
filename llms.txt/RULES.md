@@ -21,9 +21,14 @@
 
 ## Implementation Rules
 
-### Pocket TTS Only
-*   We exclusively support the **Pocket TTS** model by Kyutai.
-*   Do not implement other legacy models (Coqui, Edge TTS, etc.) unless explicitly authorized.
+### Engines
+*   Default behavior is a **hybrid** engine selection (fast default + robust fallback).
+*   Prefer local-first, permissive-license engines (avoid cloud-only engines by default).
+*   Do not re-introduce legacy/unstable engines (Coqui, Edge TTS, etc.) unless explicitly authorized.
+
+### Stable CLI Contract
+*   `tts-cli --text "<msg>"` must remain stable (used by external tools as a backend).
+*   Keep output quiet by default (no stdout spam); reserve non-zero exit codes for real failures.
 
 ### File Handling
 *   **Reading**: Verify file existence before access. Use absolute paths where possible.

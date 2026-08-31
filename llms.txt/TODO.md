@@ -35,10 +35,20 @@
 
 ## Pending / Future Tasks
 
+- [x] **IndexTTS-2.5 Engine (2026-08-31)**:
+    - [x] Add `IndexTTSModel` adapter (`tts_cli/models/index_tts_model.py`).
+    - [x] Register `index-tts` in CLI; add `--lang` flag (ZH/EN/JA/ES/AR).
+    - [x] Isolated Python 3.11 `uv` env config (IndexTTS requires `<3.12`).
+    - [x] Gate behind `check_availability()` (accelerator + checkpoints); hybrid router skips it on CPU.
+    - [x] Fix `.gitignore` bare `models/` rule that was silently ignoring `tts_cli/models/*`.
+    - [ ] End-to-end test on a GPU/MPS host with downloaded checkpoints (deferred — needs hardware).
+    - [ ] Optional: wire emotion/speed kwargs (`emo_alpha`, `duration_factor`) into CLI flags.
+
 - [ ] **Testing**:
     - [ ] Add unit tests for `VoiceManager`.
-    - [ ] Add integration tests for full CLI workflow.
+    40|    - [ ] Add integration tests for full CLI workflow.
     - [ ] Add specific tests for voice cloning edge cases (e.g., corrupted audio files).
+    - [ ] Add unit tests for `IndexTTSModel` availability gating (mocked env/torch/checkpoints).
 
 - [ ] **Features**:
     - [ ] Add `--no-play` flag to optionally disable auto-playback.

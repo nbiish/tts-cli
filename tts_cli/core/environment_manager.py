@@ -71,8 +71,14 @@ class EnvironmentManager:
             # Create environment directory
             env_path.mkdir(exist_ok=True)
             
-            # Use Python 3.9 for VibeVoice due to compatibility requirements
-            python_version = "3.9" if model_name == "vibevoice" else None
+            # Per-model Python version pinning. Some engines require a Python
+            # version outside the host project's range (e.g. IndexTTS needs
+            # >=3.10,<3.12 while this project targets >=3.12).
+            model_python_versions = {
+                "vibevoice": "3.9",   # legacy compatibility
+                "index-tts": "3.11",  # IndexTTS requires >=3.10,<3.12
+            }
+            python_version = model_python_versions.get(model_name)
             
             # Initialize UV environment
             if python_version:

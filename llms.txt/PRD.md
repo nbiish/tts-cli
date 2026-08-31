@@ -18,6 +18,13 @@
     *   Clone voices using a single reference audio file.
     *   Supports any clean WAV file as input.
     *   Auto-play functionality for cloned voices.
+3.  **IndexTTS-2.5 (Optional GPU/MPS Engine)**:
+    *   Industrial-level zero-shot voice cloning (bilibili IndexTeam).
+    *   Multilingual: Chinese, English, Japanese, Spanish, Arabic (`--lang`).
+    *   Emotion control, speaking-speed control (`duration_factor`), pronunciation control (Pinyin / CMU / Kana).
+    *   **Opt-in** via `--model index-tts`; gated by accelerator availability (CUDA/MPS/XPU) + checkpoints.
+    *   CPU-first default contract preserved: hybrid `auto` router skips it on CPU-only machines.
+    *   Runs in an isolated Python 3.11 `uv` environment (IndexTTS requires `<3.12`).
 3.  **Persistent Custom Voices**:
     *   **Repository-based Storage**: Custom voices are stored in `custom_voices/` at the project root for portability.
     *   **Auto-Cleaning**: Importing a voice (`--set-clone-voice`) automatically isolates vocals and removes silence.
@@ -43,12 +50,15 @@
 
 - **Core CLI (`cli.py`)**: The main entry point handling argument parsing and orchestration.
 - **Model Registry (`core/model_registry.py`)**: Manages available TTS models.
-- **Environment Manager (`core/environment_manager.py`)**: Handles `uv` environment creation, execution, and cleanup.
+- **Environment Manager (`core/environment_manager.py`)**: Handles `uv` environment creation, execution, and cleanup. Per-model Python version pinning (e.g. IndexTTS → 3.11).
 - **Model Implementations**:
-    *   `PocketTTSModel`: Adapter for the Kyutai Pocket TTS library.
+    *   `HybridTTSModel`: Default `auto` router — KittenTTS first, PocketTTS fallback. Skips unavailable engines (e.g. IndexTTS on CPU-only machines).
+    *   `KittenTTSModel`: Fast CPU-optimized TTS, 8 expressive voices.
+    *   `PocketTTSModel`: Kyutai Pocket TTS, CPU voice cloning.
+    *   `IndexTTSModel`: IndexTTS-2.5, opt-in GPU/MPS multilingual zero-shot voice cloning. Runs in an isolated Python 3.11 env via subprocess; gated by `check_availability()`.
 
 ## Critical Constraints
 
-- **Model Scope**: STRICTLY limited to **Pocket TTS** implementation.
-- **Security**: Zero Trust principles, input validation, and safe file handling.
-- **Performance**: Optimized for CPU execution; no GPU requirements for core functionality.
+- **Model Scope**: Local-first engines only; keep dependencies isolated per engine with `uv`. Default path stays CPU-first; GPU-class engines (IndexTTS) are opt-in and gated by availability.
+- **Security**: Zero Trust principles, input validation, and safe file handling. Subprocess calls use `shell=False` and pass user input via stdin JSON (no command injection).
+- **Performance**: Core/default path optimized for CPU execution; no GPU required for default functionality. IndexTTS requires an accelerator (CUDA/MPS/XPU) and downloaded checkpoints.

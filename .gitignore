@@ -212,7 +212,8 @@ lib/
 lib64/
 logs/
 MANIFEST
-models/
+# NOTE: anchored to repo root so it does NOT match tts_cli/models/
+/models/
 nosetests.xml
 npm-debug.log*
 parts/

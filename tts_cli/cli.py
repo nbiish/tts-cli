@@ -152,29 +152,52 @@ def test_model(model_name: str) -> None:
     print(f"✅ Model {model_name} is available and ready to use")
 
 
+def _extract_suggestion(text: str) -> Optional[str]:
+    """Extract the "Next step: <suggestion>" segment from a spoken summary.
+
+    Matches the last occurrence of "Next step:" (case-insensitive) and returns
+    everything after it, stripped. Returns None if the marker is absent.
+    """
+    if not text:
+        return None
+    lower = text.lower()
+    idx = lower.rfind("next step:")
+    if idx == -1:
+        return None
+    # Move past the marker and any following whitespace/colon.
+    suggestion = text[idx + len("next step:"):].lstrip().lstrip(":").strip()
+    return suggestion or None
+
+
 def _log_to_agents_tts_comms(text: str, model_name: str, voice: Optional[str],
                             output_path: str, **kwargs) -> None:
-    """Append the spoken text to AGENTS-TTS-COMMS.txt at the repo root.
+    """Append only the suggestion portion of the spoken text to AGENTS-TTS-COMMS.txt.
 
-    Every cli-tts call is logged so the operator can read what was spoken if the
-    audio was missed, and so other agents can use prior spoken summaries as
-    context. The file is a rolling, append-only ledger (one block per call),
-    ISO-8601 timestamped, with the model, language, voice ref, and the full
-    spoken text. It is intended to be tracked in git alongside AGENTS.md.
+    The transcript is a token/context-economical ledger: it stores ONLY the
+    "Next step: <suggestion>" part of each call (the hardened-engineer
+    recommendation), not the concise summary. This keeps the file small for
+    cross-agent ingestion while preserving the actionable next-step history.
+    One line per call, ISO-8601 timestamped, with model/lang/voice. Tracked in
+    git alongside AGENTS.md. If no "Next step:" segment is present, nothing is
+    written (the call had no suggestion to record).
     """
     try:
-        # Resolve repo root from this file (tts_cli/cli.py -> repo root).
+        # Extract the suggestion: everything after the last "Next step:" marker
+        # (case-insensitive). The spoken format is "<summary>. Next step: <sug>".
+        suggestion = _extract_suggestion(text)
+        if not suggestion:
+            return  # no suggestion to record; skip silently
+
         repo_root = Path(__file__).resolve().parent.parent
         comms_path = repo_root / "AGENTS-TTS-COMMS.txt"
         ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         lang = kwargs.get("lang") or "EN"
         voice_ref = voice or "(default)"
-        # Truncate very long text in the log header; keep full text up to a cap.
-        safe_text = text if len(text) <= 2000 else text[:2000] + " …[truncated]"
+        # Cap the suggestion length to keep the ledger compact.
+        safe_suggestion = suggestion if len(suggestion) <= 1000 else suggestion[:1000] + " …[truncated]"
         block = (
             f"\n## {ts} | model={model_name} | lang={lang} | voice={voice_ref}\n"
-            f"output={output_path}\n"
-            f"{safe_text}\n"
+            f"{safe_suggestion}\n"
         )
         with open(comms_path, "a", encoding="utf-8") as f:
             f.write(block)

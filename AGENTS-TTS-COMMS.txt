@@ -1,11 +1,15 @@
-# AGENTS-TTS-COMMS.txt — durable transcript of every cli-tts spoken output.
+# AGENTS-TTS-COMMS.txt — durable transcript of every cli-tts spoken suggestion.
 #
-# Purpose: the readable counterpart to the spoken audio. The operator can catch
-# a missed readout here, and other agents can ingest prior spoken summaries as
-# context. One block per cli-tts call, ISO-8601 timestamped, with model/lang/
-# voice and the full spoken text. Appended automatically by the CLI on every
-# successful generation (see tts_cli/cli.py `_log_to_agents_tts_comms`). Track in
-# git alongside AGENTS.md. No secrets — this is a public transcript.
+# Purpose: a token-economical ledger of the "Next step: ..." hardened-engineer
+# recommendation from each cli-tts call — NOT the concise summary, so the file
+# stays small for cross-agent ingestion. One block per call, ISO-8601
+# timestamped, with model/lang/voice and the suggestion text only. Appended
+# automatically by the CLI on every successful generation that contains a
+# "Next step:" segment (see tts_cli/cli.py `_log_to_agents_tts_comms`). Track
+# in git alongside AGENTS.md. No secrets — this is a public transcript.
+#
+# Note: entries below this header predate the suggestion-only policy and may
+# contain full summaries; new entries are suggestion-only.
 
 ## 2026-08-31T19:34:00Z | model=auto | lang=EN | voice=examples/voice_01.wav
 output=/tmp/eoc_summary.wav

@@ -23,3 +23,6 @@ commit the skill in ainish-coder and run an agent there end-to-end to confirm th
 
 ## 2026-08-31T22:28:41Z
 commit the refreshed tts-cli skill in ainish-coder and run an agent there to confirm the prompt path and the new transcript format append work cross-repo.
+
+## 2026-08-31T22:30:14Z
+run the full pytest suite in ainish-coder to confirm no skill registration side effects and audit the skill for any banned primitives.

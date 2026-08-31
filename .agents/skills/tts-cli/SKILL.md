@@ -20,8 +20,9 @@ cli-tts --prompt "<1-2 sentence concise summary of what was accomplished>. Next 
 ```
 
 `--prompt` (`-p`) is an alias for `--text`. The "Next step: ..." segment is
-**mandatory** — it is appended to `AGENTS-TTS-COMMS.txt` at the repo root
-(suggestion only, ISO-8601 timestamped) for cross-agent context. Calls with no
+**mandatory** — it is appended to `AGENTS-TTS-COMMS.txt` at the repo root (one
+entry per call: the ISO-8601 date-time, a newline, then the suggestion text
+only — no model/lang/voice metadata) for cross-agent context. Calls with no
 "Next step:" segment still speak but write nothing to the transcript.
 
 Keep stdout quiet — the spoken audio IS the channel; do not dump logs.

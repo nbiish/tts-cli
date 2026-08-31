@@ -41,11 +41,12 @@ cli-tts --text "Hello world" --output speech.wav
 
 ## ⚠️ **CRITICAL IMPLEMENTATION SCOPE**
 
-**WE IMPLEMENT ONLY THE FOLLOWING MODEL - NO EXCEPTIONS:**
+**WE IMPLEMENT THE FOLLOWING ENGINES - NO EXCEPTIONS:**
 
-1. **IndexTTS-2.5** (bilibili IndexTeam) - Industrial-level zero-shot multilingual voice-cloning TTS
+1. **PocketTTS** (Kyutai) - Fast default. Zero-shot voice cloning, cross-platform CPU (+ Apple Silicon MPS / CUDA). No accelerator required.
+2. **IndexTTS-2.5** (bilibili IndexTeam) - Quality tier. Industrial-level zero-shot multilingual voice-cloning TTS (GPU/MPS).
 
-**IMPLEMENTATION RULE:** IndexTTS-2.5 is the sole engine. It requires an accelerator (CUDA/MPS/XPU — Apple Silicon MPS supported) and downloaded checkpoints. There is no CPU fallback engine.
+**IMPLEMENTATION RULE:** PocketTTS is the fast default (`auto` / `pocket-tts`); IndexTTS-2.5 is the `--quality` tier (and `--model index-tts` for the GGUF path). All engines run one-shot in an isolated `uv` env and fully unload from RAM/VRAM after each call.
 
 ## 🚀 **Current Status**
 
@@ -142,26 +143,36 @@ cli-tts --remove-silence input.wav --output trimmed.wav
 ### Environment Management
 
 ```bash
-# Create environment (Required first time — Python 3.11 + indextts)
-cli-tts --create-environment index-tts
+# Create environment (Required first time)
+cli-tts --create-environment pocket-tts   # fast default (CPU + MPS/CUDA)
+cli-tts --create-environment index-tts    # IndexTTS-2.5 quality tier
 
 # List available models
 cli-tts --list-models
 
 # Remove environment
-cli-tts --cleanup-environment index-tts
+cli-tts --cleanup-environment pocket-tts
 ```
 
 ## 🤖 Available Models
 
-### 1. IndexTTS-2.5 (bilibili IndexTeam) - SOLE ENGINE
-- **Speed**: ⚡ Fast on GPU/MPS (0.8B params)
+### 1. PocketTTS (Kyutai) — FAST DEFAULT (`auto` / `pocket-tts`)
+- **Speed**: ⚡ Fastest open zero-shot-cloning engine (2026 Picovoice benchmark: ~1.7s first-audio). Cold ~11.6s, RTF ~1.1 on Apple Silicon CPU.
+- **Quality**: ✅ Natural zero-shot voice cloning from a single reference clip
+- **Features**: Streaming, cross-platform CPU + MPS/CUDA, European languages (EN/ES/IT/DE/PT/FR)
+- **Voice Cloning**: ✅ Zero-shot (single reference audio); bundled `examples/default_voice.wav` fallback
+- **Implementation**: Kyutai PocketTTS, runs in an isolated Python 3.11 `uv` env via subprocess
+- **Requirements**: None (CPU); optional MPS/CUDA for speed. Weights download from HF on first run.
+- **Best for**: Fast agent voice summaries on any OS, zero-shot cloning without an accelerator.
+
+### 2. IndexTTS-2.5 (bilibili IndexTeam) — QUALITY TIER (`--quality` / `index-tts` / `index-tts-quality`)
+- **Speed**: `index-tts` (GGUF Q8 via audio.cpp, Metal/CUDA/Vulkan/CPU) cold ~43s; `index-tts-quality` (full Python, MPS/CUDA) cold ~142s
 - **Quality**: ✅ Industrial-level natural speech, zero-shot voice cloning
 - **Features**: Multilingual (ZH/EN/JA/ES/AR), emotion control, speaking-speed control, pronunciation control
 - **Voice Cloning**: ✅ Zero-shot (single reference audio)
 - **Implementation**: IndexTTS-2.5, runs in an isolated Python 3.11 `uv` env via subprocess
-- **Requirements**: Accelerator (CUDA/MPS/XPU) + downloaded checkpoints
-- **Best for**: High-quality local voice cloning on accelerated hardware
+- **Requirements**: `index-tts` — audio.cpp + GGUF + backend; `index-tts-quality` — accelerator (CUDA/MPS/XPU) + checkpoints
+- **Best for**: Highest-fidelity multilingual cloning on accelerated hardware
 
 ### 2. Audio Processing Tools (Demucs & VAD)
 - **Demucs**: Hybrid Transformer for state-of-the-art music source separation (isolates vocals).
@@ -177,7 +188,7 @@ cli-tts --cleanup-environment index-tts
 
 2. **Create environment**:
    ```bash
-   cli-tts --create-environment index-tts
+   cli-tts --create-environment pocket-tts   # fast default
    ```
 
 3. **Test it works**:
@@ -195,7 +206,9 @@ TTS CLI
 ├── Model Registry (core/model_registry.py)
 ├── Environment Manager (core/environment_manager.py)
 └── Model Implementations
-    └── IndexTTSModel  (IndexTTS-2.5, sole engine)
+    ├── PocketTTSModel      (PocketTTS, fast default)
+    ├── IndexTTSGGUFModel   (IndexTTS-2.5 GGUF, audio.cpp)
+    └── IndexTTSModel       (IndexTTS-2.5, quality tier)
 ```
 
 ### Environment Isolation

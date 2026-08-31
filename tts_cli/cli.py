@@ -20,6 +20,7 @@ import pyperclip
 from .core.model_registry import model_registry
 from .core.environment_manager import env_manager
 from .core.audio_processor import audio_processor
+from .models.pocket_tts_model import PocketTTSModel
 from .models.index_tts_gguf_model import IndexTTSGGUFModel
 from .models.index_tts_model import IndexTTSModel
 
@@ -27,25 +28,34 @@ from .models.index_tts_model import IndexTTSModel
 def setup_models() -> None:
     """Register all available TTS models.
 
-    IndexTTS-2.5 is the sole engine family, exposed in two tiers:
-      - ``index-tts`` / ``auto`` (default): the GGUF Q8 path via audio.cpp on
-        Metal — the fast default (cold ~43s, RTF ~5.1 on Apple Silicon).
-      - ``index-tts-quality``: the full-precision Python IndexTTS-2.5 path on
-        MPS — slower (cold ~142s, RTF ~17.2) but full dtype. Selected by passing
-        ``--quality`` to the default model, or by naming it directly.
-
-    Both tiers run one-shot in a subprocess that exits immediately after writing
-    the output WAV — no daemon, no warm cache, no model state held in RAM/VRAM
-    between calls.
+    Three tiers, all one-shot (subprocess exits immediately after writing the
+    output WAV — no daemon, no warm cache, no model state held in RAM/VRAM):
+      - ``pocket-tts`` / ``auto`` (default): Kyutai PocketTTS — zero-shot voice
+        cloning, cross-platform CPU (+ MPS/CUDA). Fast default (cold ~11.6s,
+        RTF ~1.1 on Apple Silicon CPU; ~1.7s first-audio in the 2026 Picovoice
+        on-device benchmark).
+      - ``index-tts``: IndexTTS-2.5 Q8 GGUF via audio.cpp (Metal/CUDA/Vulkan/CPU)
+        — explicit fast IndexTTS path (cold ~43s, RTF ~5.1).
+      - ``index-tts-quality``: full-precision Python IndexTTS-2.5 (MPS/CUDA) —
+        the highest-quality tier (cold ~142s, RTF ~17.2). Selected by passing
+        ``--quality``, or by naming it directly.
     """
-    model_registry.register_model("index-tts", IndexTTSGGUFModel)        # fast default (GGUF Q8, Metal)
-    model_registry.register_model("auto", IndexTTSGGUFModel)               # alias for index-tts
-    model_registry.register_model("index-tts-quality", IndexTTSModel)      # --quality (full Python, MPS)
+    model_registry.register_model("pocket-tts", PocketTTSModel)            # fast default (CPU+MPS/CUDA, cloning)
+    model_registry.register_model("auto", PocketTTSModel)                  # alias for pocket-tts
+    model_registry.register_model("index-tts", IndexTTSGGUFModel)          # explicit fast IndexTTS (GGUF Q8)
+    model_registry.register_model("index-tts-quality", IndexTTSModel)      # --quality (full Python IndexTTS)
 
 
 def create_environment(model_name: str) -> bool:
     """Create environment for a specific model."""
     model_configs = {
+        # PocketTTS (fast default): cross-platform CPU (+ MPS/CUDA). Installed
+        # from GitHub (not on PyPI). Pulls torch + soundfile as dependencies.
+        "pocket-tts": [
+            "pocket-tts @ git+https://github.com/kyutai-labs/pocket-tts.git",
+            "soundfile",
+            "numpy",
+        ],
         # IndexTTS-2.5: runs on Python 3.11 (pinned in environment_manager).
         # `indextts` pulls torch as a dependency. On Apple Silicon the default
         # PyPI torch wheel provides MPS acceleration; on CUDA hosts install
@@ -356,9 +366,9 @@ Examples:
 
     # Model and voice options
     parser.add_argument("--model", default="auto",
-                       help="TTS model to use: auto (default, alias for index-tts) or index-tts (IndexTTS-2.5 GGUF, fast) or index-tts-quality (full Python, --quality)")
+                       help="TTS model to use: auto (default, alias for pocket-tts) or pocket-tts (fast default, CPU+MPS/CUDA, cloning) or index-tts (IndexTTS-2.5 GGUF) or index-tts-quality (full Python, --quality)")
     parser.add_argument("--quality", action="store_true",
-                       help="Use the full-precision Python IndexTTS-2.5 (MPS) instead of the fast GGUF default. Slower but higher quality.")
+                       help="Use the full-precision Python IndexTTS-2.5 (MPS/CUDA) instead of the fast PocketTTS default. Slower but highest quality.")
     parser.add_argument("--voice", help="Reference WAV path for zero-shot voice cloning (IndexTTS)")
     parser.add_argument("--lang", default=None,
                        help="Language for multilingual engines (index-tts): ZH, EN, JA, ES, AR. Default: EN")
@@ -764,10 +774,11 @@ Examples:
         if not output_path:
             output_path = get_cached_output_path()
         
-        # Resolve the effective model. `--quality` upgrades the fast GGUF default
-        # (index-tts / auto) to the full-precision Python IndexTTS-2.5 path.
+        # Resolve the effective model. `--quality` upgrades the fast default
+        # (pocket-tts / auto) or the IndexTTS GGUF tier to the full-precision
+        # Python IndexTTS-2.5 path (highest quality).
         effective_model = args.model
-        if getattr(args, "quality", False) and args.model in ("auto", "index-tts"):
+        if getattr(args, "quality", False) and args.model in ("auto", "pocket-tts", "index-tts"):
             effective_model = "index-tts-quality"
 
         # Generate speech

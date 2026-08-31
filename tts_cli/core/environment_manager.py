@@ -76,6 +76,7 @@ class EnvironmentManager:
             # >=3.10,<3.12 while this project targets >=3.12).
             model_python_versions = {
                 "index-tts": "3.11",  # IndexTTS requires >=3.10,<3.12
+                "pocket-tts": "3.11",  # PocketTTS tested on 3.11; shares the pin
             }
             python_version = model_python_versions.get(model_name)
             

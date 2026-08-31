@@ -7,6 +7,7 @@ the tiered composition architecture as a Matter component.
 """
 
 import argparse
+import os
 import sys
 import subprocess
 import shutil
@@ -21,6 +22,7 @@ from .core.model_registry import model_registry
 from .core.environment_manager import env_manager
 from .core.audio_processor import audio_processor
 from .models.pocket_tts_model import PocketTTSModel
+from .models.kitten_tts_model import KittenTTSModel
 from .models.index_tts_gguf_model import IndexTTSGGUFModel
 from .models.index_tts_model import IndexTTSModel
 
@@ -28,22 +30,80 @@ from .models.index_tts_model import IndexTTSModel
 def setup_models() -> None:
     """Register all available TTS models.
 
-    Three tiers, all one-shot (subprocess exits immediately after writing the
-    output WAV — no daemon, no warm cache, no model state held in RAM/VRAM):
-      - ``pocket-tts`` / ``auto`` (default): Kyutai PocketTTS — zero-shot voice
-        cloning, cross-platform CPU (+ MPS/CUDA). Fast default (cold ~11.6s,
-        RTF ~1.1 on Apple Silicon CPU; ~1.7s first-audio in the 2026 Picovoice
-        on-device benchmark).
-      - ``index-tts``: IndexTTS-2.5 Q8 GGUF via audio.cpp (Metal/CUDA/Vulkan/CPU)
-        — explicit fast IndexTTS path (cold ~43s, RTF ~5.1).
-      - ``index-tts-quality``: full-precision Python IndexTTS-2.5 (MPS/CUDA) —
-        the highest-quality tier (cold ~142s, RTF ~17.2). Selected by passing
-        ``--quality``, or by naming it directly.
+    Five selectable engines, all one-shot (subprocess exits immediately after
+    writing the output WAV — no daemon, no warm cache, no model state held in
+    RAM/VRAM). ``auto`` resolves to the user-configured default (see
+    ``--set-default``), falling back to ``pocket-tts``:
+      - ``pocket-tts`` (default): Kyutai PocketTTS — zero-shot voice cloning,
+        cross-platform CPU (+ MPS/CUDA). Cold ~11.6s, RTF ~1.1.
+      - ``kitten-tts-nano``: 15M int8 ONNX, CPU, fixed voices. Cold ~7.9s, RTF ~0.47.
+      - ``kitten-tts-mini``: 80M ONNX, CPU, fixed voices. Cold ~9.5s, RTF ~0.66.
+      - ``index-tts``: IndexTTS-2.5 Q8 GGUF via audio.cpp (Metal/CUDA/Vulkan/CPU). Cold ~43s.
+      - ``index-tts-quality``: full-precision Python IndexTTS-2.5 (MPS/CUDA) — the
+        highest-quality tier. Selected by ``--quality`` or by naming it directly.
     """
-    model_registry.register_model("pocket-tts", PocketTTSModel)            # fast default (CPU+MPS/CUDA, cloning)
-    model_registry.register_model("auto", PocketTTSModel)                  # alias for pocket-tts
-    model_registry.register_model("index-tts", IndexTTSGGUFModel)          # explicit fast IndexTTS (GGUF Q8)
+    model_registry.register_model("pocket-tts", PocketTTSModel)            # default (CPU+MPS/CUDA, cloning)
+    model_registry.register_model("kitten-tts-nano", KittenTTSModel)       # ultra-light CPU, fixed voices (15M int8)
+    model_registry.register_model("kitten-tts-mini", KittenTTSModel)      # light CPU, fixed voices (80M)
+    model_registry.register_model("index-tts", IndexTTSGGUFModel)          # IndexTTS GGUF (audio.cpp)
     model_registry.register_model("index-tts-quality", IndexTTSModel)      # --quality (full Python IndexTTS)
+    # `auto` resolves to the configured default at generation time (see
+    # resolve_default_model), so register it as a thin alias that is never
+    # instantiated directly for env lookups.
+    model_registry.register_model("auto", PocketTTSModel)                  # alias (overridden at runtime)
+
+
+# --- Default-model selection (user-configurable; `auto` resolves to this) ---
+DEFAULT_MODEL_FALLBACK = "pocket-tts"
+# Selectable engines for --set-default / --list.
+SELECTABLE_MODELS = (
+    "pocket-tts", "kitten-tts-nano", "kitten-tts-mini",
+    "index-tts", "index-tts-quality",
+)
+
+
+def _default_model_file() -> Path:
+    """User-level config file storing the configured default model name."""
+    return Path.home() / ".tts-cli" / "default_model"
+
+
+def get_default_model() -> str:
+    """Resolve the configured default model.
+
+    Precedence: ``TTS_CLI_DEFAULT_MODEL`` env var, then the user config file,
+    then the built-in fallback (``pocket-tts``). The value is validated against
+    the selectable engine list; an invalid stored value falls back silently.
+    """
+    env_val = os.environ.get("TTS_CLI_DEFAULT_MODEL", "").strip().lower()
+    if env_val in SELECTABLE_MODELS:
+        return env_val
+    cfg = _default_model_file()
+    if cfg.is_file():
+        try:
+            val = cfg.read_text(encoding="utf-8").strip().lower()
+            if val in SELECTABLE_MODELS:
+                return val
+        except OSError:
+            pass
+    return DEFAULT_MODEL_FALLBACK
+
+
+def set_default_model(model_name: str) -> bool:
+    """Persist the user's chosen default model. Returns False on bad input."""
+    name = (model_name or "").strip().lower()
+    if name not in SELECTABLE_MODELS:
+        print(f"❌ Unknown model: {model_name!r}. Choose from: {', '.join(SELECTABLE_MODELS)}")
+        return False
+    cfg = _default_model_file()
+    try:
+        cfg.parent.mkdir(parents=True, exist_ok=True)
+        cfg.write_text(name, encoding="utf-8")
+    except OSError as e:
+        print(f"❌ Failed to write default model config: {e}")
+        return False
+    print(f"✅ Default TTS model set to '{name}'. `auto` now uses it.")
+    print("Run `cli-tts --list` to see status, or generate with: cli-tts --prompt \"...\"")
+    return True
 
 
 def create_environment(model_name: str) -> bool:
@@ -70,7 +130,16 @@ def create_environment(model_name: str) -> bool:
             "torchaudio",
             "numpy",
             "soundfile"
-        ]
+        ],
+        # KittenTTS: ultra-lightweight CPU ONNX TTS (fixed voices). Installed
+        # from the GitHub release wheel (not on PyPI). Pulls onnxruntime + spaCy
+        # for text preprocessing. Both nano and mini variants share this env.
+        "kitten-tts": [
+            "kittentts @ https://github.com/KittenML/KittenTTS/releases/download/0.8.1/kittentts-0.8.1-py3-none-any.whl",
+            "onnxruntime",
+            "numpy",
+            "soundfile",
+        ],
     }
     
     if model_name not in model_configs:
@@ -389,23 +458,32 @@ Examples:
 
     # Model and voice options
     parser.add_argument("--model", default="auto",
-                       help="TTS model to use: auto (default, alias for pocket-tts) or pocket-tts (fast default, CPU+MPS/CUDA, cloning) or index-tts (IndexTTS-2.5 GGUF) or index-tts-quality (full Python, --quality)")
+                       help="TTS model to use: auto (default = the configured default, see --set-default) or pocket-tts | kitten-tts-nano | kitten-tts-mini | index-tts | index-tts-quality")
     parser.add_argument("--quality", action="store_true",
-                       help="Use the full-precision Python IndexTTS-2.5 (MPS/CUDA) instead of the fast PocketTTS default. Slower but highest quality.")
-    parser.add_argument("--voice", help="Reference WAV path for zero-shot voice cloning (IndexTTS)")
+                       help="Use the full-precision Python IndexTTS-2.5 (MPS/CUDA) instead of the fast default. Slower but highest quality.")
+    parser.add_argument("--voice", help="Reference WAV path for zero-shot cloning (pocket-tts/index-tts), OR a built-in voice name for kitten-tts (e.g. expr-voice-5-m)")
     parser.add_argument("--lang", default=None,
-                       help="Language for multilingual engines (index-tts): ZH, EN, JA, ES, AR. Default: EN")
+                       help="Language for multilingual engines: pocket-tts (EN/ES/IT/DE/PT/FR), index-tts (ZH/EN/JA/ES/AR). Default: EN")
     parser.add_argument("--output", help="Output audio file path")
-    
+    # Streamlined agent entry: -p/--prompt is an alias for --text (the summary
+    # + expert suggestion spoken aloud). Lets agents call one flag without
+    # extra prompting; the configured default model is used automatically.
+    parser.add_argument("-p", "--prompt", dest="prompt_text",
+                       help="Text to speak (agent-friendly alias for --text). Use: cli-tts --prompt \"<summary>. Next step: <suggestion>\"")
+
     # Environment management
     parser.add_argument("--create-environment", help="Create environment for model")
     parser.add_argument("--cleanup-environment", help="Remove environment for model")
     parser.add_argument("--cleanup-all-environments", action="store_true",
                        help="Remove all environments")
-    
+
     # Information commands
-    parser.add_argument("--list-models", action="store_true", 
-                       help="List available models")
+    parser.add_argument("--list", action="store_true",
+                       help="List available models and their status (alias: --list-models)")
+    parser.add_argument("--list-models", action="store_true",
+                       help="List available models and their status")
+    parser.add_argument("--set-default", metavar="MODEL",
+                       help="Set the default TTS model for `auto` (persists to ~/.tts-cli/default_model). Choose: pocket-tts | kitten-tts-nano | kitten-tts-mini | index-tts | index-tts-quality")
     parser.add_argument("--list-environments", action="store_true",
                        help="List environment status")
     parser.add_argument("--list-voices", action="store_true",
@@ -563,18 +641,22 @@ Examples:
         return
     
     # Handle information commands
-    if args.list_models:
+    if args.list or args.list_models:
         list_models()
         return
-    
+
+    if args.set_default:
+        ok = set_default_model(args.set_default)
+        sys.exit(0 if ok else 1)
+
     if args.list_environments:
         list_environments()
         return
-    
+
     if args.test_model:
         test_model(args.test_model)
         return
-    
+
     if args.list_voices:
         list_voices(args.model)
         return
@@ -753,9 +835,9 @@ Examples:
     # 1. Positional argument
     if args.input_text:
         text = args.input_text
-    # 2. Explicit flag
-    elif args.text:
-        text = args.text
+    # 2. Explicit flag (--prompt is the agent-friendly alias for --text)
+    elif args.text or args.prompt_text:
+        text = args.text or args.prompt_text
     # 3. Clipboard
     elif args.clipboard:
         try:
@@ -797,11 +879,14 @@ Examples:
         if not output_path:
             output_path = get_cached_output_path()
         
-        # Resolve the effective model. `--quality` upgrades the fast default
-        # (pocket-tts / auto) or the IndexTTS GGUF tier to the full-precision
-        # Python IndexTTS-2.5 path (highest quality).
+        # Resolve the effective model. `auto` resolves to the user-configured
+        # default (see --set-default, fallback pocket-tts). `--quality`
+        # upgrades the fast default or the IndexTTS GGUF tier to the
+        # full-precision Python IndexTTS-2.5 path (highest quality).
         effective_model = args.model
-        if getattr(args, "quality", False) and args.model in ("auto", "pocket-tts", "index-tts"):
+        if effective_model == "auto":
+            effective_model = get_default_model()
+        if getattr(args, "quality", False) and effective_model in ("pocket-tts", "index-tts"):
             effective_model = "index-tts-quality"
 
         # Generate speech

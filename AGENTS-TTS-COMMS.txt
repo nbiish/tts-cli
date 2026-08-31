@@ -7,41 +7,27 @@
 # automatically by the CLI on every successful generation that contains a
 # "Next step:" segment (see tts_cli/cli.py `_log_to_agents_tts_comms`). Track
 # in git alongside AGENTS.md. No secrets — this is a public transcript.
-#
-# Note: entries below this header predate the suggestion-only policy and may
-# contain full summaries; new entries are suggestion-only.
 
 ## 2026-08-31T19:34:00Z | model=auto | lang=EN | voice=examples/voice_01.wav
-output=/tmp/eoc_summary.wav
-Verified RAM and VRAM are clean with no models holding memory. Integrated IndexTTS-2.5 as a two-tier engine: the Q8 GGUF fast default on Metal at 37 seconds cold, and the full Python quality tier on MPS. Benchmarked three prompting variants with timestamps and shipped an expert prompting guide. Next step: audit the audio.cpp subprocess call for input-validation boundary cases like overlong text and path traversal in the voice ref, and add a failing test proving shell false rejects command injection at the new GGUF adapter.
-
-## 2026-08-31T19:39:18Z | model=auto | lang=EN | voice=/Volumes/1tb-sandisk/code-external/tts-cli/examples/voice_01.wav
-output=/tmp/comms_test.wav
-Testing the agents tts comms log. This should appear in the transcript file.
+audit the audio.cpp subprocess call for input-validation boundary cases like overlong text and path traversal in the voice ref, and add a failing test proving shell false rejects command injection at the new GGUF adapter.
 
 ## 2026-08-31T19:42:39Z | model=auto | lang=EN | voice=examples/voice_01.wav
-output=/tmp/eoc_summary2.wav
-Added durable transcript logging. Every cli-tts call now appends its spoken text to AGENTS-TTS-COMMS.txt at the repo root, timestamped with model and language, so missed audio is readable and other agents can use it as context. The rule is mandatory in AGENTS.md and the file is tracked in git. Next step: verify the transcript entry from this very call landed in the file and confirm it survives a clean git status, closing the loop on the logging contract.
+verify the transcript entry from this very call landed in the file and confirm it survives a clean git status, closing the loop on the logging contract.
 
 ## 2026-08-31T20:13:10Z | model=auto | lang=EN | voice=examples/voice_01.wav
-output=/tmp/eoc_summary3.wav
-Benchmarked WavTTS against IndexTTS-2.5 on Apple Silicon. WavTTS produced no audio on MPS: its 10.8 gigabyte direct-waveform flow-matching model hung at zero percent for 17 minutes and was killed. It is CUDA-first and non-commercial licensed, so it is not viable here. IndexTTS-2.5 GGUF on Metal at 37 seconds cold remains the fast default, with the Python tier for quality. Next step: free the remaining disk pressure on the 1TB external by pruning the 35 gigabyte HuggingFace cache of unused models, then re-verify the cli-tts fast path still loads clean.
-
-## 2026-08-31T20:18:56Z | model=auto | lang=EN | voice=examples/voice_01.wav
-output=/tmp/default_voice_raw.wav
-This is the default reference voice for the cross platform text to speech command line interface.
+free the remaining disk pressure on the 1TB external by pruning the 35 gigabyte HuggingFace cache of unused models, then re-verify the cli-tts fast path still loads clean.
 
 ## 2026-08-31T20:24:15Z | model=auto | lang=EN | voice=examples/default_voice.wav
-output=/tmp/eoc_summary4.wav
-Made tts-cli system agnostic. The audio.cpp backend now auto-detects metal, cuda, vulkan, or cpu instead of hardcoding metal, with an AUDIOCPP_BACKEND override for the portable CPU fallback. A bundled cross-platform default reference voice ships at examples slash default dot wav, so it works on Linux, Windows, WSL, and macOS out of the box. The audit found Gepard is faster on Apple Silicon but its Swift MLX path is macOS only, so IndexTTS GGUF via audio.cpp stays the cross-platform default. Next step: on a Linux or WSL host, build audio.cpp with CUDA or Vulkan and run the same list-models and generation smoke test to confirm the cross-platform contract holds outside macOS.
+on a Linux or WSL host, build audio.cpp with CUDA or Vulkan and run the same list-models and generation smoke test to confirm the cross-platform contract holds outside macOS.
 
 ## 2026-08-31T20:36:23Z | model=auto | lang=EN | voice=(default)
-output=/tmp/pockettts_smoke.wav
-Benchmark complete. PocketTTS is now the fast default and verified clean. Next step: audit the supply chain provenance.
+audit the supply chain provenance.
 
 ## 2026-08-31T21:44:20Z | model=auto | lang=EN | voice=(default)
-output=/tmp/eoc_pockettts_merge.wav
-Benchmarked KittenTTS and PocketTTS against IndexTTS-2.5, surveyed the 2026 TTS landscape, and made PocketTTS the fast default with IndexTTS as the quality tier. Merged and verified on main. Next step: add a failing test proving the PocketTTS stdin-JSON runner rejects malformed payloads and path traversal in the voice reference, closing the injection-surface loop before relying on it across repos.
+add a failing test proving the PocketTTS stdin-JSON runner rejects malformed payloads and path traversal in the voice reference, closing the injection-surface loop before relying on it across repos.
 
 ## 2026-08-31T21:46:09Z | model=auto | lang=EN | voice=(default)
 prune the existing historical entries in AGENTS-TTS-COMMS.txt down to suggestion-only so the file is consistent with the new policy and reclaims the context the old full summaries already consume.
+
+## 2026-08-31T21:57:03Z | model=kitten-tts-nano | lang=EN | voice=(default)
+verify the kitten-tts runner rejects overlong text and unknown voice names fail-closed.

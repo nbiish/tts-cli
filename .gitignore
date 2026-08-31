@@ -243,6 +243,7 @@ Thumbs.db
 _build/
 ainish-coder/
 checkpoints/
+models-gguf/
 coverage.xml
 desktop.ini
 develop-eggs/

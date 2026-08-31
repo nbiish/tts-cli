@@ -19,15 +19,27 @@ import pyperclip
 from .core.model_registry import model_registry
 from .core.environment_manager import env_manager
 from .core.audio_processor import audio_processor
+from .models.index_tts_gguf_model import IndexTTSGGUFModel
 from .models.index_tts_model import IndexTTSModel
 
 
 def setup_models() -> None:
-    """Register all available TTS models."""
-    # IndexTTS-2.5 is the sole TTS engine. It is GPU/MPS class (CUDA/MPS/XPU)
-    # and requires downloaded checkpoints. `auto` is an alias for `index-tts`.
-    model_registry.register_model("index-tts", IndexTTSModel)
-    model_registry.register_model("auto", IndexTTSModel)  # Alias
+    """Register all available TTS models.
+
+    IndexTTS-2.5 is the sole engine family, exposed in two tiers:
+      - ``index-tts`` / ``auto`` (default): the GGUF Q8 path via audio.cpp on
+        Metal — the fast default (cold ~43s, RTF ~5.1 on Apple Silicon).
+      - ``index-tts-quality``: the full-precision Python IndexTTS-2.5 path on
+        MPS — slower (cold ~142s, RTF ~17.2) but full dtype. Selected by passing
+        ``--quality`` to the default model, or by naming it directly.
+
+    Both tiers run one-shot in a subprocess that exits immediately after writing
+    the output WAV — no daemon, no warm cache, no model state held in RAM/VRAM
+    between calls.
+    """
+    model_registry.register_model("index-tts", IndexTTSGGUFModel)        # fast default (GGUF Q8, Metal)
+    model_registry.register_model("auto", IndexTTSGGUFModel)               # alias for index-tts
+    model_registry.register_model("index-tts-quality", IndexTTSModel)      # --quality (full Python, MPS)
 
 
 def create_environment(model_name: str) -> bool:
@@ -311,7 +323,9 @@ Examples:
 
     # Model and voice options
     parser.add_argument("--model", default="auto",
-                       help="TTS model to use: auto (default, alias for index-tts) or index-tts (IndexTTS-2.5, GPU/MPS multilingual voice cloning)")
+                       help="TTS model to use: auto (default, alias for index-tts) or index-tts (IndexTTS-2.5 GGUF, fast) or index-tts-quality (full Python, --quality)")
+    parser.add_argument("--quality", action="store_true",
+                       help="Use the full-precision Python IndexTTS-2.5 (MPS) instead of the fast GGUF default. Slower but higher quality.")
     parser.add_argument("--voice", help="Reference WAV path for zero-shot voice cloning (IndexTTS)")
     parser.add_argument("--lang", default=None,
                        help="Language for multilingual engines (index-tts): ZH, EN, JA, ES, AR. Default: EN")
@@ -717,10 +731,16 @@ Examples:
         if not output_path:
             output_path = get_cached_output_path()
         
+        # Resolve the effective model. `--quality` upgrades the fast GGUF default
+        # (index-tts / auto) to the full-precision Python IndexTTS-2.5 path.
+        effective_model = args.model
+        if getattr(args, "quality", False) and args.model in ("auto", "index-tts"):
+            effective_model = "index-tts-quality"
+
         # Generate speech
         success = generate_speech(
             text=text,
-            model_name=args.model,
+            model_name=effective_model,
             voice=args.voice,
             output_path=output_path,
             voice_clone=voice_clone_path,

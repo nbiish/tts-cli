@@ -19,6 +19,18 @@ Testing the agents tts comms log. This should appear in the transcript file.
 output=/tmp/eoc_summary2.wav
 Added durable transcript logging. Every cli-tts call now appends its spoken text to AGENTS-TTS-COMMS.txt at the repo root, timestamped with model and language, so missed audio is readable and other agents can use it as context. The rule is mandatory in AGENTS.md and the file is tracked in git. Next step: verify the transcript entry from this very call landed in the file and confirm it survives a clean git status, closing the loop on the logging contract.
 
+## 2026-08-31T20:13:10Z | model=auto | lang=EN | voice=examples/voice_01.wav
+output=/tmp/eoc_summary3.wav
+Benchmarked WavTTS against IndexTTS-2.5 on Apple Silicon. WavTTS produced no audio on MPS: its 10.8 gigabyte direct-waveform flow-matching model hung at zero percent for 17 minutes and was killed. It is CUDA-first and non-commercial licensed, so it is not viable here. IndexTTS-2.5 GGUF on Metal at 37 seconds cold remains the fast default, with the Python tier for quality. Next step: free the remaining disk pressure on the 1TB external by pruning the 35 gigabyte HuggingFace cache of unused models, then re-verify the cli-tts fast path still loads clean.
+
+## 2026-08-31T20:18:56Z | model=auto | lang=EN | voice=examples/voice_01.wav
+output=/tmp/default_voice_raw.wav
+This is the default reference voice for the cross platform text to speech command line interface.
+
+## 2026-08-31T20:24:15Z | model=auto | lang=EN | voice=examples/default_voice.wav
+output=/tmp/eoc_summary4.wav
+Made tts-cli system agnostic. The audio.cpp backend now auto-detects metal, cuda, vulkan, or cpu instead of hardcoding metal, with an AUDIOCPP_BACKEND override for the portable CPU fallback. A bundled cross-platform default reference voice ships at examples slash default dot wav, so it works on Linux, Windows, WSL, and macOS out of the box. The audit found Gepard is faster on Apple Silicon but its Swift MLX path is macOS only, so IndexTTS GGUF via audio.cpp stays the cross-platform default. Next step: on a Linux or WSL host, build audio.cpp with CUDA or Vulkan and run the same list-models and generation smoke test to confirm the cross-platform contract holds outside macOS.
+
 ## 2026-08-31T20:36:23Z | model=auto | lang=EN | voice=(default)
 output=/tmp/pockettts_smoke.wav
 Benchmark complete. PocketTTS is now the fast default and verified clean. Next step: audit the supply chain provenance.

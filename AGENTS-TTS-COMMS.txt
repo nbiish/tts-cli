@@ -20,3 +20,6 @@ install the skill into a second repo and run an agent end-to-end to confirm the 
 
 ## 2026-08-31T22:23:26Z
 commit the skill in ainish-coder and run an agent there end-to-end to confirm the prompt path and transcript append work cross-repo.
+
+## 2026-08-31T22:28:41Z
+commit the refreshed tts-cli skill in ainish-coder and run an agent there to confirm the prompt path and the new transcript format append work cross-repo.

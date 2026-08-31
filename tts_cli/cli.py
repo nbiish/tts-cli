@@ -21,44 +21,28 @@ import pyperclip
 from .core.model_registry import model_registry
 from .core.environment_manager import env_manager
 from .core.audio_processor import audio_processor
-from .models.pocket_tts_model import PocketTTSModel
 from .models.kitten_tts_model import KittenTTSModel
-from .models.index_tts_gguf_model import IndexTTSGGUFModel
-from .models.index_tts_model import IndexTTSModel
 
 
 def setup_models() -> None:
     """Register all available TTS models.
 
-    Five selectable engines, all one-shot (subprocess exits immediately after
-    writing the output WAV — no daemon, no warm cache, no model state held in
-    RAM/VRAM). ``auto`` resolves to the user-configured default (see
-    ``--set-default``), falling back to ``pocket-tts``:
-      - ``pocket-tts`` (default): Kyutai PocketTTS — zero-shot voice cloning,
-        cross-platform CPU (+ MPS/CUDA). Cold ~11.6s, RTF ~1.1.
-      - ``kitten-tts-nano``: 15M int8 ONNX, CPU, fixed voices. Cold ~7.9s, RTF ~0.47.
-      - ``kitten-tts-mini``: 80M ONNX, CPU, fixed voices. Cold ~9.5s, RTF ~0.66.
-      - ``index-tts``: IndexTTS-2.5 Q8 GGUF via audio.cpp (Metal/CUDA/Vulkan/CPU). Cold ~43s.
-      - ``index-tts-quality``: full-precision Python IndexTTS-2.5 (MPS/CUDA) — the
-        highest-quality tier. Selected by ``--quality`` or by naming it directly.
+    Single engine, one-shot (subprocess exits immediately after writing the
+    output WAV — no daemon, no warm cache, no model state held in RAM/VRAM):
+      - ``kitten-tts-nano`` / ``auto`` (default): KittenTTS nano int8 (15M) —
+        ultra-lightweight CPU ONNX TTS with fixed built-in voices. The fastest
+        engine on this machine (cold ~7.9s, RTF ~0.47) and the most portable
+        (CPU-only, no accelerator, cross-platform macOS/Linux/Windows/WSL).
     """
-    model_registry.register_model("pocket-tts", PocketTTSModel)            # default (CPU+MPS/CUDA, cloning)
-    model_registry.register_model("kitten-tts-nano", KittenTTSModel)       # ultra-light CPU, fixed voices (15M int8)
-    model_registry.register_model("kitten-tts-mini", KittenTTSModel)      # light CPU, fixed voices (80M)
-    model_registry.register_model("index-tts", IndexTTSGGUFModel)          # IndexTTS GGUF (audio.cpp)
-    model_registry.register_model("index-tts-quality", IndexTTSModel)      # --quality (full Python IndexTTS)
-    # `auto` resolves to the configured default at generation time (see
-    # resolve_default_model), so register it as a thin alias that is never
-    # instantiated directly for env lookups.
-    model_registry.register_model("auto", PocketTTSModel)                  # alias (overridden at runtime)
+    model_registry.register_model("kitten-tts-nano", KittenTTSModel)     # sole engine (CPU, fixed voices, 15M int8)
+    model_registry.register_model("auto", KittenTTSModel)                # alias for kitten-tts-nano
 
 
 # --- Default-model selection (user-configurable; `auto` resolves to this) ---
-DEFAULT_MODEL_FALLBACK = "pocket-tts"
+DEFAULT_MODEL_FALLBACK = "kitten-tts-nano"
 # Selectable engines for --set-default / --list.
 SELECTABLE_MODELS = (
-    "pocket-tts", "kitten-tts-nano", "kitten-tts-mini",
-    "index-tts", "index-tts-quality",
+    "kitten-tts-nano",
 )
 
 
@@ -109,20 +93,14 @@ def set_default_model(model_name: str) -> bool:
 def create_environment(model_name: str) -> bool:
     """Create environment for a specific model."""
     model_configs = {
-        # PocketTTS (fast default): cross-platform CPU (+ MPS/CUDA). Installed
-        # from GitHub (not on PyPI). Pulls torch + soundfile as dependencies.
-        "pocket-tts": [
-            "pocket-tts @ git+https://github.com/kyutai-labs/pocket-tts.git",
-            "soundfile",
+        # KittenTTS: the sole engine — ultra-lightweight CPU ONNX TTS (fixed
+        # voices). Installed from the GitHub release wheel (not on PyPI). Pulls
+        # onnxruntime + spaCy for text preprocessing.
+        "kitten-tts": [
+            "kittentts @ https://github.com/KittenML/KittenTTS/releases/download/0.8.1/kittentts-0.8.1-py3-none-any.whl",
+            "onnxruntime",
             "numpy",
-        ],
-        # IndexTTS-2.5: runs on Python 3.11 (pinned in environment_manager).
-        # `indextts` pulls torch as a dependency. On Apple Silicon the default
-        # PyPI torch wheel provides MPS acceleration; on CUDA hosts install
-        # the cu128 torch wheel separately for full GPU speed.
-        "index-tts": [
-            "indextts",
-            "soundfile"
+            "soundfile",
         ],
         "audio-processing": [
             "demucs",
@@ -130,15 +108,6 @@ def create_environment(model_name: str) -> bool:
             "torchaudio",
             "numpy",
             "soundfile"
-        ],
-        # KittenTTS: ultra-lightweight CPU ONNX TTS (fixed voices). Installed
-        # from the GitHub release wheel (not on PyPI). Pulls onnxruntime + spaCy
-        # for text preprocessing. Both nano and mini variants share this env.
-        "kitten-tts": [
-            "kittentts @ https://github.com/KittenML/KittenTTS/releases/download/0.8.1/kittentts-0.8.1-py3-none-any.whl",
-            "onnxruntime",
-            "numpy",
-            "soundfile",
         ],
     }
     
@@ -458,12 +427,10 @@ Examples:
 
     # Model and voice options
     parser.add_argument("--model", default="auto",
-                       help="TTS model to use: auto (default = the configured default, see --set-default) or pocket-tts | kitten-tts-nano | kitten-tts-mini | index-tts | index-tts-quality")
-    parser.add_argument("--quality", action="store_true",
-                       help="Use the full-precision Python IndexTTS-2.5 (MPS/CUDA) instead of the fast default. Slower but highest quality.")
-    parser.add_argument("--voice", help="Reference WAV path for zero-shot cloning (pocket-tts/index-tts), OR a built-in voice name for kitten-tts (e.g. expr-voice-5-m)")
+                       help="TTS model to use: auto (default = kitten-tts-nano) or kitten-tts-nano")
+    parser.add_argument("--voice", help="Built-in KittenTTS voice name (e.g. expr-voice-5-m). Default: expr-voice-5-m. Use --list-voices to see all.")
     parser.add_argument("--lang", default=None,
-                       help="Language for multilingual engines: pocket-tts (EN/ES/IT/DE/PT/FR), index-tts (ZH/EN/JA/ES/AR). Default: EN")
+                       help="(Kept for compatibility; KittenTTS is English-only. Default: EN)")
     parser.add_argument("--output", help="Output audio file path")
     # Streamlined agent entry: -p/--prompt is an alias for --text (the summary
     # + expert suggestion spoken aloud). Lets agents call one flag without
@@ -483,7 +450,7 @@ Examples:
     parser.add_argument("--list-models", action="store_true",
                        help="List available models and their status")
     parser.add_argument("--set-default", metavar="MODEL",
-                       help="Set the default TTS model for `auto` (persists to ~/.tts-cli/default_model). Choose: pocket-tts | kitten-tts-nano | kitten-tts-mini | index-tts | index-tts-quality")
+                       help="Set the default TTS model for `auto` (persists to ~/.tts-cli/default_model). Choose: kitten-tts-nano")
     parser.add_argument("--list-environments", action="store_true",
                        help="List environment status")
     parser.add_argument("--list-voices", action="store_true",
@@ -880,14 +847,10 @@ Examples:
             output_path = get_cached_output_path()
         
         # Resolve the effective model. `auto` resolves to the user-configured
-        # default (see --set-default, fallback pocket-tts). `--quality`
-        # upgrades the fast default or the IndexTTS GGUF tier to the
-        # full-precision Python IndexTTS-2.5 path (highest quality).
+        # default (see --set-default, fallback kitten-tts-nano).
         effective_model = args.model
         if effective_model == "auto":
             effective_model = get_default_model()
-        if getattr(args, "quality", False) and effective_model in ("pocket-tts", "index-tts"):
-            effective_model = "index-tts-quality"
 
         # Generate speech
         success = generate_speech(

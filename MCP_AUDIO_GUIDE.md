@@ -1,8 +1,10 @@
 # 🎙️ Local Audio Cleaning & TTS Guide (MCP Edition)
 
-This comprehensive guide documents the local audio processing capabilities of the `tts-cli` codebase, specifically tailored for use within a **Model Context Protocol (MCP)** environment.
+This guide documents the local audio processing capabilities of the `tts-cli`
+codebase, tailored for use within a **Model Context Protocol (MCP)** environment.
 
-These tools allow AI agents to perform high-quality **Text-to-Speech (TTS)**, **Voice Cloning**, and **Audio Cleaning** entirely locally, ensuring data privacy and zero latency.
+These tools allow AI agents to perform **Text-to-Speech (TTS)** and **Audio
+Cleaning** entirely locally, ensuring data privacy and zero latency.
 
 ---
 
@@ -10,25 +12,30 @@ These tools allow AI agents to perform high-quality **Text-to-Speech (TTS)**, **
 
 | Feature | Flag | Description | Engine |
 | :--- | :--- | :--- | :--- |
-| **TTS** | `--text "..."` | Generate speech from text | IndexTTS-2.5 |
-| **Voice Clone** | `--voice-clone <file>` | Zero-shot clone voice from reference audio | IndexTTS-2.5 |
-| **Multilingual** | `--lang ZH\|EN\|JA\|ES\|AR` | Generate speech in a supported language | IndexTTS-2.5 |
+| **TTS** | `--text "..."` / `--prompt "..."` | Generate speech from text | KittenTTS nano |
+| **Agent summary** | `--prompt "<summary>. Next step: <suggestion>"` | Streamlined agent entry (alias for `--text`) | KittenTTS nano |
+| **Built-in voice** | `--voice expr-voice-5-m` | Select one of 8 fixed built-in voices | KittenTTS nano |
+| **Default model** | `--set-default kitten-tts-nano` / `--list` | Choose/show the default for `auto` | KittenTTS nano |
 | **Clean Voice** | `--clean-voice [file]` | **Best Practice**: Isolate vocals + Remove silence | Demucs + Silero VAD |
 | **Isolate Vocals** | `--isolate-voice [file]` | Remove background music/noise | Demucs (Hybrid Transformer) |
 | **Remove Silence** | `--remove-silence [file]` | Trim non-speech segments | Silero VAD |
+
+> KittenTTS uses **fixed built-in voices** (no zero-shot cloning). The audio
+> cleaning tools (Demucs/VAD) remain available for processing files independently.
 
 ---
 
 ## 🛠️ Prerequisites & Setup
 
-Before an MCP agent can utilize these tools, the specific isolated environments must be initialized. This architecture prevents dependency conflicts.
+Before an MCP agent can utilize these tools, the isolated environments must
+be initialized. This architecture prevents dependency conflicts.
 
 ### 1. Initialize Environments
-Run these commands once to set up the heavy-lifting dependencies.
+Run these commands once:
 
 ```bash
-# 1. Setup the IndexTTS-2.5 engine (Python 3.11 + indextts; requires GPU/MPS)
-cli-tts --create-environment index-tts
+# 1. Setup the KittenTTS engine (Python 3.11 + kittentts + onnxruntime; CPU)
+cli-tts --create-environment kitten-tts
 
 # 2. Setup the heavy audio processing engine (Demucs/VAD)
 cli-tts --create-environment audio-processing
@@ -38,35 +45,27 @@ cli-tts --create-environment audio-processing
 Ensure tools are ready:
 ```bash
 cli-tts --list-environments
-# Output should show "Available" for both 'index-tts' and 'audio-processing'
+# Output should show "Available" for both 'kitten-tts' and 'audio-processing'
 ```
 
 ---
 
 ## 📖 Workflows
 
-### 1. Robust Voice Cloning (Recommended)
-**Scenario:** You have a messy audio file (e.g., an interview with background noise) and want to clone the speaker's voice to say something new.
-
-**The "One-Shot" Command:**
-The CLI can automatically clean the reference audio before cloning it.
+### 1. Agent Voice Summary (Recommended)
+**Scenario:** An agent finishes a task and speaks a concise summary + one
+hardened-engineer next step.
 
 ```bash
-cli-tts \
-  --text "This is a clean clone generated from noisy audio." \
-  --voice-clone noisy_interview.wav \
-  --clean-voice \
-  --output final_speech.wav
+cli-tts --prompt "Integrated the feature and verified the fast path loads clean. Next step: audit the supply-chain provenance and lock down the secrets bundle." --output summary.wav
 ```
 
-**What happens under the hood:**
-1.  **Demucs** separates the vocals from the background noise.
-2.  **Silero VAD** removes silence and non-speech artifacts.
-3.  **IndexTTS-2.5** analyzes the cleaned vocal profile (zero-shot).
-4.  **Generation**: The new text is synthesized using the cleaned profile.
+The spoken suggestion is appended to `AGENTS-TTS-COMMS.txt` (suggestion only,
+token-economical) for cross-agent context.
 
 ### 2. Standalone Audio Cleaning
-**Scenario:** You just want to clean up an audio file for other purposes (e.g., a podcast or dataset preparation).
+**Scenario:** Clean up an audio file for other purposes (e.g., a podcast or
+dataset preparation).
 
 **Full Cleanup (Isolate + Trim):**
 ```bash
@@ -84,14 +83,12 @@ cli-tts --remove-silence lecture.wav --output trimmed_lecture.wav
 ```
 
 ### 3. Basic Text-to-Speech
-**Scenario:** Simple generation without cloning.
-
 ```bash
-# Use default voice
+# Default built-in voice (expr-voice-5-m)
 cli-tts --text "System initialized." --output status.wav
 
-# Multilingual
-cli-tts --text "你好" --lang ZH --output zh.wav
+# Choose a built-in voice
+cli-tts --text "Hello" --voice expr-voice-2-f --output voice.wav
 ```
 
 ---
@@ -99,22 +96,33 @@ cli-tts --text "你好" --lang ZH --output zh.wav
 ## 🧠 Technical Details for Agents
 
 ### Architecture
-*   **Isolation**: Audio processing runs in a separate `uv` environment (`.model-envs/audio-processing-env`) containing PyTorch, Demucs, and Torchaudio. This ensures the main CLI remains lightweight. IndexTTS-2.5 runs in its own isolated Python 3.11 `uv` environment.
+*   **Isolation**: Audio processing runs in a separate `uv` environment
+    (`.model-envs/audio-processing-env`) containing PyTorch, Demucs, and
+    Torchaudio. KittenTTS runs in its own isolated Python 3.11 `uv` environment.
 *   **Performance**:
-    *   **IndexTTS-2.5**: Fast on GPU/MPS (0.8B params); requires an accelerator + checkpoints.
-    *   **Demucs**: Slower (approx. 1-2x real-time on CPU). Recommended to run asynchronously if possible.
+    *   **KittenTTS nano**: Ultra-lightweight CPU ONNX (15M); cold ~7.9s, RTF
+        ~0.47 on Apple Silicon. No accelerator or checkpoints required; weights
+        download from Hugging Face on first run.
+    *   **Demucs**: Slower (approx. 1-2x real-time on CPU). Recommended to run
+        asynchronously if possible.
     *   **VAD**: Extremely fast (negligible overhead).
 
 ### Error Handling
-*   **Missing Environment**: If `--clean-voice` is used without the `audio-processing` environment, the CLI will return a specific error code/message. Agents should check for "Audio processing environment not found" and run the setup command if detected.
-*   **File Not Found**: Ensure absolute paths are used for `--voice-clone` inputs to avoid CWD ambiguity.
+*   **Missing Environment**: If `--clean-voice` is used without the
+    `audio-processing` environment, the CLI returns a specific error. Agents
+    should check for "Audio processing environment not found" and run the setup
+    command if detected.
+*   **File Not Found**: Ensure absolute paths are used for audio-processing
+    inputs to avoid CWD ambiguity.
 
 ### Integration Tips
-*   **Chaining**: You can chain `--clipboard` input with voice cloning for rapid prototyping.
-*   **Verification**: Always check the exit code (`$?`) after running a command. `0` indicates success.
+*   **Chaining**: You can chain `--clipboard` input with TTS for rapid prototyping.
+*   **Verification**: Always check the exit code (`$?`) after running a command.
+    `0` indicates success.
 
 ---
 
 ## 📄 License & Privacy
 *   **Local-First**: All processing happens on-device. No audio is sent to the cloud.
-*   **Compliance**: Adheres to the project's **AGENTS.md** security guidelines (Zero Trust, minimal privileges).
+*   **Compliance**: Adheres to the project's **AGENTS.md** security guidelines
+    (Zero Trust, minimal privileges).

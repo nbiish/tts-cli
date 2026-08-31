@@ -29,10 +29,9 @@ logger = logging.getLogger("tts_cli.kitten_tts")
 from ..core.model_registry import BaseTTSModel
 from ..core.environment_manager import env_manager
 
-# HF repo ids for each variant.
+# HF repo id for the single kept variant (the fastest: 15M int8).
 VARIANT_TO_REPO = {
     "kitten-tts-nano": "KittenML/kitten-tts-nano-0.8-int8",
-    "kitten-tts-mini": "KittenML/kitten-tts-mini-0.8",
 }
 DEFAULT_VARIANT = "kitten-tts-nano"
 DEFAULT_VOICE = "expr-voice-5-m"

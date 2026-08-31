@@ -41,30 +41,28 @@ cli-tts --text "Hello world" --output speech.wav
 
 ## ⚠️ **CRITICAL IMPLEMENTATION SCOPE**
 
-**WE IMPLEMENT THE FOLLOWING ENGINES - NO EXCEPTIONS:**
+**WE IMPLEMENT THE FOLLOWING ENGINE - NO EXCEPTIONS:**
 
-1. **PocketTTS** (Kyutai) - Fast default. Zero-shot voice cloning, cross-platform CPU (+ Apple Silicon MPS / CUDA). No accelerator required.
-2. **IndexTTS-2.5** (bilibili IndexTeam) - Quality tier. Industrial-level zero-shot multilingual voice-cloning TTS (GPU/MPS).
+1. **KittenTTS nano int8** (KittenML) - Ultra-lightweight CPU ONNX TTS. The fastest engine on this machine (cold ~7.9s, RTF ~0.47) and the most portable (no accelerator; macOS/Linux/Windows/WSL). Fixed built-in voices (no zero-shot cloning).
 
-**IMPLEMENTATION RULE:** PocketTTS is the fast default (`auto` / `pocket-tts`); IndexTTS-2.5 is the `--quality` tier (and `--model index-tts` for the GGUF path). All engines run one-shot in an isolated `uv` env and fully unload from RAM/VRAM after each call.
+**IMPLEMENTATION RULE:** `kitten-tts-nano` is the sole engine (`auto` is an alias). It runs one-shot in an isolated `uv` env (Python 3.11) and fully unloads from RAM after each call.
 
 ## 🚀 **Current Status**
 
-### ✅ **Complete - Core Infrastructure & IndexTTS-2.5**
+### ✅ **Complete - Core Infrastructure & KittenTTS**
 - **Core CLI Infrastructure**: Complete tiered architecture implemented
-- **Environment Management**: UV-based isolated environments working (per-model Python pinning — IndexTTS → 3.11)
+- **Environment Management**: UV-based isolated environments working (per-model Python pinning — KittenTTS → 3.11)
 - **Model Registry**: Dynamic model loading and registration system
-- **IndexTTS-2.5 Implementation**: Zero-shot multilingual voice-cloning TTS (GPU/MPS) - **SOLE ENGINE**
+- **KittenTTS Implementation**: Ultra-lightweight CPU ONNX TTS (fixed voices) - **SOLE ENGINE**
 - **Audio Generation**: Working audio output with auto-playback
-- **Voice Management**: Standard voices and voice cloning support
+- **Voice Management**: Built-in voice selection (`--voice`)
 - **CLI Interface**: Full command-line interface operational
 
 ## ✨ Features
 
-- **⚡ GPU/MPS Inference**: IndexTTS-2.5 runs on CUDA/MPS/XPU (Apple Silicon supported)
+- **⚡ CPU Inference**: KittenTTS runs on CPU — no GPU/MPS required (Apple Silicon, Linux, Windows, WSL)
 - **🔒 Isolated Environments**: The engine runs in its own UV environment (Python 3.11)
-- **🌍 Multilingual**: Chinese, English, Japanese, Spanish, Arabic (`--lang`)
-- **🎵 Voice Cloning**: Zero-shot voice cloning via a single reference audio file
+- **🎵 Built-in Voices**: 8 fixed voices (e.g. `expr-voice-5-m`); select with `--voice`
 - **📋 Clipboard | Text | Text File | Pipe Support**: Flexible input methods
 - **🔊 Auto-Playback**: Automatically plays generated audio
 - **💾 Smart Caching**: Auto-manages output files with rotation
@@ -84,8 +82,11 @@ cli-tts --text "Hello world"
 # Save to specific file (also plays)
 cli-tts "Hello world" --output hello.wav
 
-# Use specific voice
-cli-tts "Hello world" --voice alba
+# Use a specific built-in voice (default: expr-voice-5-m)
+cli-tts "Hello world" --voice expr-voice-5-m
+
+# List all built-in voices
+cli-tts --list-voices
 ```
 
 ### Advanced Input Methods
@@ -99,25 +100,16 @@ echo "Hello from pipe" | cli-tts
 cat story.txt | cli-tts
 ```
 
-### Voice Cloning & Audio Cleaning
-You can use a reference audio file to clone a voice. For best results, clean the audio first using our built-in tools.
+### Voices
+
+KittenTTS ships 8 fixed built-in voices (no zero-shot cloning). Select one with `--voice`:
 
 ```bash
-# Basic voice cloning (one-off)
-cli-tts --text "Hello world" --voice-clone reference.wav
+# Use a specific built-in voice
+cli-tts --text "Hello world" --voice expr-voice-2-f
 
-# 🌟 Persistent Custom Voices
-# Import a voice (copies to custom_voices/ as-is)
-cli-tts --set-clone-voice path/to/my_voice.wav
-
-# List available custom voices
-cli-tts --list-clone-voices
-
-# Switch to an existing custom voice
-cli-tts --set-clone-voice my_voice.wav
-
-# Unset custom voice (return to random/default)
-cli-tts --unset-clone-voice
+# List all voices
+cli-tts --list-voices
 ```
 
 ### Audio Processing Tools
@@ -144,35 +136,25 @@ cli-tts --remove-silence input.wav --output trimmed.wav
 
 ```bash
 # Create environment (Required first time)
-cli-tts --create-environment pocket-tts   # fast default (CPU + MPS/CUDA)
-cli-tts --create-environment index-tts    # IndexTTS-2.5 quality tier
+cli-tts --create-environment kitten-tts   # sole engine (CPU, fixed voices)
 
 # List available models
-cli-tts --list-models
+cli-tts --list
 
 # Remove environment
-cli-tts --cleanup-environment pocket-tts
+cli-tts --cleanup-environment kitten-tts
 ```
 
 ## 🤖 Available Models
 
-### 1. PocketTTS (Kyutai) — FAST DEFAULT (`auto` / `pocket-tts`)
-- **Speed**: ⚡ Fastest open zero-shot-cloning engine (2026 Picovoice benchmark: ~1.7s first-audio). Cold ~11.6s, RTF ~1.1 on Apple Silicon CPU.
-- **Quality**: ✅ Natural zero-shot voice cloning from a single reference clip
-- **Features**: Streaming, cross-platform CPU + MPS/CUDA, European languages (EN/ES/IT/DE/PT/FR)
-- **Voice Cloning**: ✅ Zero-shot (single reference audio); bundled `examples/default_voice.wav` fallback
-- **Implementation**: Kyutai PocketTTS, runs in an isolated Python 3.11 `uv` env via subprocess
-- **Requirements**: None (CPU); optional MPS/CUDA for speed. Weights download from HF on first run.
-- **Best for**: Fast agent voice summaries on any OS, zero-shot cloning without an accelerator.
-
-### 2. IndexTTS-2.5 (bilibili IndexTeam) — QUALITY TIER (`--quality` / `index-tts` / `index-tts-quality`)
-- **Speed**: `index-tts` (GGUF Q8 via audio.cpp, Metal/CUDA/Vulkan/CPU) cold ~43s; `index-tts-quality` (full Python, MPS/CUDA) cold ~142s
-- **Quality**: ✅ Industrial-level natural speech, zero-shot voice cloning
-- **Features**: Multilingual (ZH/EN/JA/ES/AR), emotion control, speaking-speed control, pronunciation control
-- **Voice Cloning**: ✅ Zero-shot (single reference audio)
-- **Implementation**: IndexTTS-2.5, runs in an isolated Python 3.11 `uv` env via subprocess
-- **Requirements**: `index-tts` — audio.cpp + GGUF + backend; `index-tts-quality` — accelerator (CUDA/MPS/XPU) + checkpoints
-- **Best for**: Highest-fidelity multilingual cloning on accelerated hardware
+### 1. KittenTTS nano int8 (KittenML) — SOLE ENGINE (`auto` / `kitten-tts-nano`)
+- **Speed**: ⚡ Fastest on this machine — cold ~7.9s, RTF ~0.47 (Apple Silicon CPU).
+- **Quality**: ✅ Natural speech from 8 fixed built-in voices (no zero-shot cloning)
+- **Features**: Ultra-lightweight (15M / 25MB), CPU-only (no accelerator), cross-platform, English
+- **Voices**: 8 built-in voices (`expr-voice-2..5` m/f); select with `--voice` (default `expr-voice-5-m`); `cli-tts --list-voices`
+- **Implementation**: KittenTTS, runs in an isolated Python 3.11 `uv` env via subprocess
+- **Requirements**: None (CPU). Weights download from HF on first run.
+- **Best for**: Fast, portable agent voice summaries on any OS without an accelerator.
 
 ### 2. Audio Processing Tools (Demucs & VAD)
 - **Demucs**: Hybrid Transformer for state-of-the-art music source separation (isolates vocals).
@@ -188,7 +170,7 @@ cli-tts --cleanup-environment pocket-tts
 
 2. **Create environment**:
    ```bash
-   cli-tts --create-environment pocket-tts   # fast default
+   cli-tts --create-environment kitten-tts   # sole engine
    ```
 
 3. **Test it works**:
@@ -206,9 +188,7 @@ TTS CLI
 ├── Model Registry (core/model_registry.py)
 ├── Environment Manager (core/environment_manager.py)
 └── Model Implementations
-    ├── PocketTTSModel      (PocketTTS, fast default)
-    ├── IndexTTSGGUFModel   (IndexTTS-2.5 GGUF, audio.cpp)
-    └── IndexTTSModel       (IndexTTS-2.5, quality tier)
+    └── KittenTTSModel      (KittenTTS nano int8, sole engine)
 ```
 
 ### Environment Isolation
@@ -217,8 +197,8 @@ The engine runs in its own isolated UV environment:
 
 ```
 .model-envs/
-└── index-tts-env/
-    └── .venv/   (Python 3.11 + indextts)
+└── kitten-tts-env/
+    └── .venv/   (Python 3.11 + kittentts + onnxruntime)
 ```
 
 
@@ -275,16 +255,15 @@ cli-tts --clipboard --output speech.wav
 # 2. Direct text input:
 cli-tts --text "Hello, this is a test of the TTS CLI tool" --output test.wav
 
-# 3. Voice cloning workflow (zero-shot, single reference):
-cli-tts --text "This is my voice" --voice-clone myvoice.wav --output cloned.wav
+# 3. Streamlined agent entry (--prompt is an alias for --text):
+cli-tts --prompt "Task done. Next step: audit the supply-chain provenance." --output agent.wav
 
-# 4. Multilingual generation:
-cli-tts --text "你好，世界" --lang ZH --output zh.wav
-cli-tts --text "こんにちは" --lang JA --output ja.wav
+# 4. Choose a built-in voice:
+cli-tts --text "Hello world" --voice expr-voice-2-f --output voice.wav
 
-# 5. Use a persistent custom voice:
-cli-tts --set-clone-voice my_voice.wav
-cli-tts --text "Speaking with my saved voice" --output saved.wav
+# 5. Set/check the default model:
+cli-tts --set-default kitten-tts-nano
+cli-tts --list
 
 # 6. Debug mode:
 cli-tts --debug --text "Test" --output debug.wav --log debug.log

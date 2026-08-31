@@ -20,13 +20,28 @@ from .core.model_registry import model_registry
 from .core.environment_manager import env_manager
 from .core.audio_processor import audio_processor
 from .models.pocket_tts_model import PocketTTSModel
+from .models.kitten_tts_model import KittenTTSModel
+from .models.hybrid_tts_model import HybridTTSModel
+from .models.index_tts_model import IndexTTSModel
 from .core.model_daemon import is_daemon_running, get_daemon_status, stop_daemon, LOG_PATH as DAEMON_LOG_PATH
 
 
 def setup_models() -> None:
     """Register all available TTS models."""
-    # Register Pocket TTS model (Compact CPU-optimized)
+    # Register Hybrid TTS model (default - KittenTTS with PocketTTS fallback)
+    model_registry.register_model("hybrid-tts", HybridTTSModel)
+    model_registry.register_model("auto", HybridTTSModel)  # Alias for hybrid
+
+    # Register Kitten TTS model (fast, no cloning)
+    model_registry.register_model("kitten-tts", KittenTTSModel)
+
+    # Register Pocket TTS model (slower, supports cloning)
     model_registry.register_model("pocket-tts", PocketTTSModel)
+
+    # Register IndexTTS-2.5 (opt-in, GPU/MPS class, multilingual voice cloning).
+    # check_availability() reports False without an accelerator + checkpoints,
+    # so the hybrid auto-router skips it and the CPU-first default is preserved.
+    model_registry.register_model("index-tts", IndexTTSModel)
 
 
 def create_environment(model_name: str) -> bool:
@@ -35,6 +50,18 @@ def create_environment(model_name: str) -> bool:
         "pocket-tts": [
             "pocket-tts",
             "scipy>=1.9.0"
+        ],
+        "kitten-tts": [
+            "kittentts",
+            "soundfile"
+        ],
+        # IndexTTS-2.5: runs on Python 3.11 (pinned in environment_manager).
+        # `indextts` pulls torch as a dependency. On Apple Silicon the default
+        # PyPI torch wheel provides MPS acceleration; on CUDA hosts install
+        # the cu128 torch wheel separately for full GPU speed.
+        "index-tts": [
+            "indextts",
+            "soundfile"
         ],
         "audio-processing": [
             "demucs",
@@ -275,10 +302,12 @@ def main() -> None:
         epilog="""
 Examples:
   cli-tts --text "Hello world" --output hello.wav
-  cli-tts --clipboard --model edge-tts --output speech.wav
-  cli-tts --create-environment edge-tts
+  cli-tts --clipboard --output speech.wav
+  cli-tts --text "Hi" --model kitten-tts --voice expr-voice-2-f
+  cli-tts --text "Long text..." --model pocket-tts --voice-clone my_voice.wav
+  cli-tts --create-environment kitten-tts
   cli-tts --list-models
-  cli-tts --list-voices --model edge-tts
+  cli-tts --list-voices --model kitten-tts
         """
     )
     
@@ -303,9 +332,11 @@ Examples:
     processing_group.add_argument("--process-audio", help="Process an existing audio file (independent of TTS)")
 
     # Model and voice options
-    parser.add_argument("--model", default="pocket-tts", 
-                       help="TTS model to use (default: pocket-tts)")
-    parser.add_argument("--voice", help="Voice to use (model-specific)")
+    parser.add_argument("--model", default="auto",
+                       help="TTS model to use: auto (default, KittenTTS with PocketTTS fallback), kitten-tts (fast), pocket-tts (voice cloning), index-tts (GPU/MPS multilingual voice cloning)")
+    parser.add_argument("--voice", help="Voice to use (model-specific; for index-tts, a reference WAV path for zero-shot cloning)")
+    parser.add_argument("--lang", default=None,
+                       help="Language for multilingual engines (index-tts): ZH, EN, JA, ES, AR. Default: EN")
     parser.add_argument("--output", help="Output audio file path")
     
     # Environment management
@@ -772,7 +803,8 @@ Examples:
             model_name=args.model,
             voice=args.voice,
             output_path=output_path,
-            voice_clone=voice_clone_path
+            voice_clone=voice_clone_path,
+            lang=args.lang
         )
         
         # Cleanup temp voice files

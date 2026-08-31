@@ -29,3 +29,6 @@ run the full pytest suite in ainish-coder to confirm no skill registration side 
 
 ## 2026-08-31T22:30:54Z
 audit the ainish-coder AGENTS.md to confirm it references the tts-cli end-of-chat voice summary rule and that no other repo duplicates a conflicting tts-cli skill.
+
+## 2026-08-31T22:37:52Z
+run an agent in ainish-coder end-to-end to confirm the end-of-chat voice summary fires automatically and the transcript append lands in the tts-cli ledger.

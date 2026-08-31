@@ -236,6 +236,7 @@ AGENTS/*.COMMS.live.md
 .voice-library/
 .windsurf/
 .yarn-integrity
+/models/
 AINISH-DATA/
 KNOWLEDGE_BASE/
 MANIFEST
@@ -258,9 +259,6 @@ htmlcov/
 lib/
 lib64/
 logs/
-MANIFEST
-# NOTE: anchored to repo root so it does NOT match tts_cli/models/
-/models/
 nosetests.xml
 npm-debug.log*
 parts/

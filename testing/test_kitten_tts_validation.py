@@ -2,15 +2,19 @@
 
 Proves the fail-closed safety properties of ``KittenTTSModel.generate_speech``:
   - overlong text is rejected before any subprocess is spawned.
+  - empty text is rejected before any subprocess is spawned.
   - an unrecognized built-in voice name is rejected (fail-closed, no silent
     fallback) before any subprocess is spawned.
   - a valid voice + valid text reaches the runner subprocess.
+  - text over CHUNK_TEXT_LENGTH is split and sent as ``chunks`` in one spawn
+    (model loads once; the runner concatenates WAVs).
 
 These tests never invoke the real KittenTTS engine or its isolated env — they
 stub ``subprocess.Popen`` and assert whether it was reached, so they are fast
 and hermetic.
 """
 
+import json
 import subprocess
 from unittest.mock import MagicMock
 
@@ -19,6 +23,7 @@ import pytest
 from tts_cli.models.kitten_tts_model import (
     KittenTTSModel,
     MAX_TEXT_LENGTH,
+    CHUNK_TEXT_LENGTH,
     BUILT_IN_VOICES,
     DEFAULT_VOICE,
 )
@@ -106,6 +111,51 @@ def test_missing_env_unavailable():
     assert m.check_availability() is False
     ok = m.generate_speech("hello", output_path="/tmp/out.wav")
     assert ok is False
+
+
+def _payload_from_popen(popen) -> dict:
+    """Decode the JSON stdin payload sent to the runner."""
+    fake_proc = popen.return_value
+    args, kwargs = fake_proc.communicate.call_args
+    raw = kwargs.get("input") if kwargs else None
+    if raw is None and args:
+        raw = args[0]
+    return json.loads(raw)
+
+
+def test_empty_text_rejected(model_with_env, monkeypatch):
+    """Empty / whitespace-only text is rejected before spawning the runner."""
+    popen = _stub_popen(monkeypatch)
+    ok = model_with_env.generate_speech("   \n", output_path="/tmp/out.wav")
+    assert ok is False
+    assert popen.call_count == 0
+
+
+def test_short_text_sends_one_chunk(model_with_env, monkeypatch):
+    """Text under CHUNK_TEXT_LENGTH is a single chunk in one runner spawn."""
+    popen = _stub_popen(monkeypatch)
+    ok = model_with_env.generate_speech("hello world",
+                                         output_path="/tmp/out.wav")
+    assert ok is True
+    assert popen.call_count == 1
+    payload = _payload_from_popen(popen)
+    assert payload["chunks"] == ["hello world"]
+
+
+def test_long_text_is_chunked_in_one_spawn(model_with_env, monkeypatch):
+    """Text over CHUNK_TEXT_LENGTH is split; the runner still loads once."""
+    popen = _stub_popen(monkeypatch)
+    sentence = "This is a complete test sentence used for chunking. "
+    text = sentence * 12  # well over 350 chars, under 5000
+    assert CHUNK_TEXT_LENGTH < len(text) < MAX_TEXT_LENGTH
+    ok = model_with_env.generate_speech(text, output_path="/tmp/out.wav")
+    assert ok is True
+    assert popen.call_count == 1, "chunking must not spawn one runner per chunk"
+    payload = _payload_from_popen(popen)
+    chunks = payload["chunks"]
+    assert len(chunks) >= 2
+    assert all(len(c) <= CHUNK_TEXT_LENGTH for c in chunks)
+    assert " ".join(chunks) == " ".join(text.split())
 
 
 def test_validate_voice():

@@ -256,7 +256,7 @@ cli-tts --clipboard --output speech.wav
 cli-tts --text "Hello, this is a test of the TTS CLI tool" --output test.wav
 
 # 3. Streamlined agent entry (--prompt is an alias for --text):
-cli-tts --prompt "Task done. Next step: audit the supply-chain provenance." --output agent.wav
+cli-tts --prompt "Task done. Next step: pin the Hugging Face kitten weights by digest before the next environment create." --output agent.wav
 
 # 4. Choose a built-in voice:
 cli-tts --text "Hello world" --voice expr-voice-2-f --output voice.wav

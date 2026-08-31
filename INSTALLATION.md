@@ -71,7 +71,7 @@ cli-tts --clipboard --output speech.wav
 cli-tts --input-file input.txt --output speech.wav
 
 # Streamlined agent entry (--prompt is an alias for --text)
-cli-tts --prompt "Task done. Next step: audit the supply-chain provenance." --output agent.wav
+cli-tts --prompt "Task done. Next step: pin the Hugging Face kitten weights by digest before the next environment create." --output agent.wav
 ```
 
 ### **Model Selection**

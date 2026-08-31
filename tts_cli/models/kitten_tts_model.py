@@ -28,6 +28,7 @@ logger = logging.getLogger("tts_cli.kitten_tts")
 
 from ..core.model_registry import BaseTTSModel
 from ..core.environment_manager import env_manager
+from ..core.text_utils import split_text
 
 # HF repo id for the single kept variant (the fastest: 15M int8).
 VARIANT_TO_REPO = {
@@ -42,8 +43,13 @@ BUILT_IN_VOICES = (
     "expr-voice-5-m", "expr-voice-5-f",
 )
 
+# Total-input DoS cap. Inference is chunked well below this; see CHUNK_TEXT_LENGTH.
 MAX_TEXT_LENGTH = 5000
+# KittenTTS ONNX Expand node fails at ~425 chars (repo_docs/KITTENTTS_LIMITS_TEST.md).
+# 350 is the documented production margin (phonemization expansion).
+CHUNK_TEXT_LENGTH = 350
 GENERATION_TIMEOUT = 300
+CHUNK_EXTRA_TIMEOUT = 45
 
 
 class KittenTTSModel(BaseTTSModel):
@@ -80,6 +86,10 @@ class KittenTTSModel(BaseTTSModel):
             print(f"❌ {deps_msg}")
             return False
 
+        if not text or not text.strip():
+            print("❌ Text is empty.")
+            return False
+
         if len(text) > MAX_TEXT_LENGTH:
             print(f"❌ Text too long ({len(text)} > {MAX_TEXT_LENGTH} chars).")
             return False
@@ -94,9 +104,14 @@ class KittenTTSModel(BaseTTSModel):
                   f"Choose from: {', '.join(BUILT_IN_VOICES)}")
             return False
 
+        chunks = split_text(text, CHUNK_TEXT_LENGTH)
+        if not chunks:
+            print("❌ Text is empty.")
+            return False
+
         speed = float(kwargs.get("speed", 1.0))
         return self._generate_in_environment(
-            text=text,
+            chunks=chunks,
             repo_id=VARIANT_TO_REPO[self._variant],
             voice=chosen_voice,
             speed=speed,
@@ -118,6 +133,7 @@ class KittenTTSModel(BaseTTSModel):
             "languages": ["EN"],
             "sample_rate": 24000,
             "max_text_length": MAX_TEXT_LENGTH,
+            "chunk_text_length": CHUNK_TEXT_LENGTH,
             "version": "0.8",
             "requires_accelerator": False,
             "requires_checkpoints": False,
@@ -125,7 +141,7 @@ class KittenTTSModel(BaseTTSModel):
             "quality_mode": False,
         }
 
-    def _generate_in_environment(self, text: str, repo_id: str, voice: str,
+    def _generate_in_environment(self, chunks: List[str], repo_id: str, voice: str,
                                  speed: float, output_path: str) -> bool:
         if not self.python_executable:
             print("❌ KittenTTS environment is not available.")
@@ -133,11 +149,12 @@ class KittenTTSModel(BaseTTSModel):
 
         payload = {
             "repo_id": repo_id,
-            "text": text,
+            "chunks": chunks,
             "voice": voice,
             "speed": speed,
             "output_path": output_path,
         }
+        timeout = GENERATION_TIMEOUT + CHUNK_EXTRA_TIMEOUT * max(0, len(chunks) - 1)
 
         try:
             proc = subprocess.Popen(
@@ -153,12 +170,12 @@ class KittenTTSModel(BaseTTSModel):
 
         try:
             stdout, stderr = proc.communicate(
-                input=json.dumps(payload), timeout=GENERATION_TIMEOUT
+                input=json.dumps(payload), timeout=timeout
             )
         except subprocess.TimeoutExpired:
             proc.kill()
             proc.communicate()
-            print(f"❌ KittenTTS generation timed out after {GENERATION_TIMEOUT}s.")
+            print(f"❌ KittenTTS generation timed out after {timeout}s.")
             return False
 
         if stdout:
@@ -187,12 +204,37 @@ class KittenTTSModel(BaseTTSModel):
         return r'''
 import json
 import os
+import shutil
 import sys
+import tempfile
 import traceback
+import wave
 
 
 def _log(msg):
     print(f"[runner] {msg}", flush=True)
+
+
+def _concat_wavs(paths, dest, gap_ms=150):
+    with wave.open(paths[0], "rb") as first:
+        params = first.getparams()
+        nchannels, sampwidth, framerate = (
+            params.nchannels, params.sampwidth, params.framerate,
+        )
+        pieces = [first.readframes(first.getnframes())]
+    gap = b"\x00" * (nchannels * sampwidth * int(framerate * gap_ms / 1000.0))
+    for p in paths[1:]:
+        with wave.open(p, "rb") as w:
+            if (w.getnchannels(), w.getsampwidth(), w.getframerate()) != (
+                nchannels, sampwidth, framerate,
+            ):
+                raise ValueError("WAV param mismatch while concatenating chunks")
+            pieces.append(gap)
+            pieces.append(w.readframes(w.getnframes()))
+    with wave.open(dest, "wb") as out:
+        out.setparams(params)
+        for piece in pieces:
+            out.writeframes(piece)
 
 
 def main():
@@ -203,7 +245,13 @@ def main():
         sys.exit(2)
 
     repo_id = payload["repo_id"]
-    text = payload["text"]
+    chunks = payload.get("chunks")
+    if not chunks:
+        text = payload.get("text")
+        chunks = [text] if text else []
+    if not chunks:
+        print("[runner] no text chunks in payload", file=sys.stderr)
+        sys.exit(2)
     voice = payload["voice"]
     speed = float(payload.get("speed", 1.0))
     output_path = payload["output_path"]
@@ -223,14 +271,29 @@ def main():
         traceback.print_exc()
         sys.exit(5)
 
-    _log(f"synthesizing ({len(text)} chars)")
+    tmpdir = tempfile.mkdtemp(prefix="tts-chunks-")
+    part_paths = []
     try:
-        tts.generate_to_file(text, output_path, voice=voice, speed=speed,
-                              sample_rate=24000)
-    except Exception as e:
-        print(f"[runner] inference failed: {e}", file=sys.stderr)
-        traceback.print_exc()
-        sys.exit(7)
+        for i, chunk in enumerate(chunks):
+            _log(f"synthesizing chunk {i + 1}/{len(chunks)} ({len(chunk)} chars)")
+            part_path = os.path.join(tmpdir, f"part-{i:04d}.wav")
+            try:
+                tts.generate_to_file(chunk, part_path, voice=voice, speed=speed,
+                                      sample_rate=24000)
+            except Exception as e:
+                print(f"[runner] inference failed: {e}", file=sys.stderr)
+                traceback.print_exc()
+                sys.exit(7)
+            if not os.path.isfile(part_path):
+                print("[runner] inference produced no output file", file=sys.stderr)
+                sys.exit(7)
+            part_paths.append(part_path)
+        if len(part_paths) == 1:
+            shutil.copyfile(part_paths[0], output_path)
+        else:
+            _concat_wavs(part_paths, output_path)
+    finally:
+        shutil.rmtree(tmpdir, ignore_errors=True)
 
     _log(f"done -> {output_path}")
 

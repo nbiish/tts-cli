@@ -36,3 +36,6 @@ run an agent in ainish-coder end-to-end to confirm the end-of-chat voice summary
 
 ## 2026-08-31T22:47:18Z
 Add tests so a second next-step marker in the summary cannot hijack the ledger.
+
+## 2026-08-31T22:54:51Z
+Run a live KittenTTS generate on a 400-character paragraph and confirm one concatenated WAV.

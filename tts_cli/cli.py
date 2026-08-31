@@ -233,11 +233,12 @@ def _log_to_agents_tts_comms(text: str, model_name: str, voice: Optional[str],
 
     The transcript is a token/context-economical ledger: it stores ONLY the
     "Next step: <suggestion>" part of each call (the hardened-engineer
-    recommendation), not the concise summary. This keeps the file small for
-    cross-agent ingestion while preserving the actionable next-step history.
-    One line per call, ISO-8601 timestamped, with model/lang/voice. Tracked in
-    git alongside AGENTS.md. If no "Next step:" segment is present, nothing is
-    written (the call had no suggestion to record).
+    recommendation), not the concise summary. Format is minimal — just the
+    ISO-8601 date-time, a newline, then the suggestion text. This keeps the
+    file small for cross-agent ingestion while preserving the actionable
+    next-step history. Tracked in git alongside AGENTS.md. If no "Next step:"
+    segment is present, nothing is written (the call had no suggestion to
+    record).
     """
     try:
         # Extract the suggestion: everything after the last "Next step:" marker
@@ -249,14 +250,9 @@ def _log_to_agents_tts_comms(text: str, model_name: str, voice: Optional[str],
         repo_root = Path(__file__).resolve().parent.parent
         comms_path = repo_root / "AGENTS-TTS-COMMS.txt"
         ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-        lang = kwargs.get("lang") or "EN"
-        voice_ref = voice or "(default)"
         # Cap the suggestion length to keep the ledger compact.
         safe_suggestion = suggestion if len(suggestion) <= 1000 else suggestion[:1000] + " …[truncated]"
-        block = (
-            f"\n## {ts} | model={model_name} | lang={lang} | voice={voice_ref}\n"
-            f"{safe_suggestion}\n"
-        )
+        block = f"\n## {ts}\n{safe_suggestion}\n"
         with open(comms_path, "a", encoding="utf-8") as f:
             f.write(block)
     except OSError:

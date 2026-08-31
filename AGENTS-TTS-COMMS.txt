@@ -2,14 +2,21 @@
 #
 # Purpose: a token-economical ledger of the "Next step: ..." hardened-engineer
 # recommendation from each cli-tts call — NOT the concise summary, so the file
-# stays small for cross-agent ingestion. One block per call, ISO-8601
-# timestamped, with model/lang/voice and the suggestion text only. Appended
-# automatically by the CLI on every successful generation that contains a
-# "Next step:" segment (see tts_cli/cli.py `_log_to_agents_tts_comms`). Track
-# in git alongside AGENTS.md. No secrets — this is a public transcript.
+# stays small for cross-agent ingestion. Format per entry: the ISO-8601
+# date-time, a newline, then the suggestion text only (no model/lang/voice
+# metadata). Appended automatically by the CLI on every successful generation
+# that contains a "Next step:" segment (see tts_cli/cli.py
+# `_log_to_agents_tts_comms`). Track in git alongside AGENTS.md. No secrets —
+# this is a public transcript.
 
-## 2026-08-31T22:09:55Z | model=kitten-tts-nano | lang=EN | voice=(default)
+## 2026-08-31T22:09:55Z
 verify the kitten-tts runner rejects overlong text and unknown voice names fail-closed.
 
-## 2026-08-31T22:11:51Z | model=kitten-tts-nano | lang=EN | voice=(default)
+## 2026-08-31T22:11:51Z
 run the full pytest suite with coverage to confirm the fail-closed properties hold and add a regression test for the runner stdin JSON payload schema.
+
+## 2026-08-31T22:15:21Z
+install the skill into a second repo and run an agent end-to-end to confirm the prompt path and the transcript append work cross-repo.
+
+## 2026-08-31T22:23:26Z
+commit the skill in ainish-coder and run an agent there end-to-end to confirm the prompt path and transcript append work cross-repo.

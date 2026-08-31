@@ -107,9 +107,7 @@ class ModelRegistry:
         name-derived dynamic loader mis-mapping it to a non-existent class.
         """
         models = [
-            "pocket-tts",
             "kitten-tts",
-            "index-tts",
         ]
 
         for model_name in models:

@@ -8,29 +8,5 @@
 # "Next step:" segment (see tts_cli/cli.py `_log_to_agents_tts_comms`). Track
 # in git alongside AGENTS.md. No secrets — this is a public transcript.
 
-## 2026-08-31T19:34:00Z | model=auto | lang=EN | voice=examples/voice_01.wav
-audit the audio.cpp subprocess call for input-validation boundary cases like overlong text and path traversal in the voice ref, and add a failing test proving shell false rejects command injection at the new GGUF adapter.
-
-## 2026-08-31T19:42:39Z | model=auto | lang=EN | voice=examples/voice_01.wav
-verify the transcript entry from this very call landed in the file and confirm it survives a clean git status, closing the loop on the logging contract.
-
-## 2026-08-31T20:13:10Z | model=auto | lang=EN | voice=examples/voice_01.wav
-free the remaining disk pressure on the 1TB external by pruning the 35 gigabyte HuggingFace cache of unused models, then re-verify the cli-tts fast path still loads clean.
-
-## 2026-08-31T20:24:15Z | model=auto | lang=EN | voice=examples/default_voice.wav
-on a Linux or WSL host, build audio.cpp with CUDA or Vulkan and run the same list-models and generation smoke test to confirm the cross-platform contract holds outside macOS.
-
-## 2026-08-31T20:36:23Z | model=auto | lang=EN | voice=(default)
-audit the supply chain provenance.
-
-## 2026-08-31T21:44:20Z | model=auto | lang=EN | voice=(default)
-add a failing test proving the PocketTTS stdin-JSON runner rejects malformed payloads and path traversal in the voice reference, closing the injection-surface loop before relying on it across repos.
-
-## 2026-08-31T21:46:09Z | model=auto | lang=EN | voice=(default)
-prune the existing historical entries in AGENTS-TTS-COMMS.txt down to suggestion-only so the file is consistent with the new policy and reclaims the context the old full summaries already consume.
-
-## 2026-08-31T21:57:03Z | model=kitten-tts-nano | lang=EN | voice=(default)
+## 2026-08-31T22:09:55Z | model=kitten-tts-nano | lang=EN | voice=(default)
 verify the kitten-tts runner rejects overlong text and unknown voice names fail-closed.
-
-## 2026-08-31T21:58:07Z | model=pocket-tts | lang=EN | voice=(default)
-run cli-tts set-default for each engine and confirm auto resolves correctly, then add a failing test proving kitten-tts rejects overlong text and unknown voice names fail-closed.

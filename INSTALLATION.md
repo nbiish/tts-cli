@@ -33,7 +33,7 @@ After installation, verify the CLI works from anywhere:
 ```bash
 # Test from any directory
 cd /tmp
-cli-tts --list-models
+cli-tts --list
 
 # Test speech generation
 cli-tts --text "Hello world" --output test.wav
@@ -49,8 +49,8 @@ The CLI automatically manages model environments:
 ### **Create Model Environments**
 
 ```bash
-# Create the IndexTTS-2.5 environment (Python 3.11 + indextts)
-cli-tts --create-environment index-tts
+# Create the KittenTTS environment (Python 3.11 + kittentts + onnxruntime)
+cli-tts --create-environment kitten-tts
 
 # List all environments
 cli-tts --list-environments
@@ -69,28 +69,32 @@ cli-tts --clipboard --output speech.wav
 
 # From file
 cli-tts --input-file input.txt --output speech.wav
+
+# Streamlined agent entry (--prompt is an alias for --text)
+cli-tts --prompt "Task done. Next step: audit the supply-chain provenance." --output agent.wav
 ```
 
 ### **Model Selection**
 
 ```bash
-# IndexTTS-2.5 is the sole engine (default). 'auto' is an alias.
-cli-tts --model index-tts --text "Hello" --output hello.wav
+# KittenTTS nano is the sole engine (default). 'auto' is an alias.
+cli-tts --model kitten-tts-nano --text "Hello" --output hello.wav
+
+# Set/check the default
+cli-tts --set-default kitten-tts-nano
+cli-tts --list
 ```
 
-### **Multilingual**
+### **Voices**
+
+KittenTTS ships 8 fixed built-in voices (no zero-shot cloning):
 
 ```bash
-# IndexTTS-2.5 supports ZH / EN / JA / ES / AR
-cli-tts --text "你好，世界" --lang ZH --output zh.wav
-cli-tts --text "こんにちは" --lang JA --output ja.wav
-```
+# Select a built-in voice (default: expr-voice-5-m)
+cli-tts --text "Hello" --voice expr-voice-2-f --output voice.wav
 
-### **Voice Cloning**
-
-```bash
-# Zero-shot clone a voice (requires a single reference audio)
-cli-tts --text "Hello" --voice-clone reference.wav --output cloned.wav
+# List all voices
+cli-tts --list-voices
 ```
 
 ## 🛠️ **Troubleshooting**
@@ -104,16 +108,14 @@ If you get "Model not available" errors:
 cli-tts --list-environments
 
 # Create missing environment
-cli-tts --create-environment index-tts
+cli-tts --create-environment kitten-tts
 
 # Test the model
-cli-tts --test-model index-tts
+cli-tts --test-model kitten-tts-nano
 ```
 
-> IndexTTS-2.5 requires an accelerator (CUDA/MPS/XPU — Apple Silicon MPS
-> supported) and downloaded checkpoints. On a machine without an accelerator,
-> `cli-tts` reports unavailable with an actionable hint rather than silently
-> degrading — there is no CPU fallback engine.
+> KittenTTS runs on CPU — no accelerator or downloaded checkpoints are
+> required. Weights download from Hugging Face on first run.
 
 ### **Permission Issues**
 
@@ -137,7 +139,7 @@ ls -la ~/.tts-cli/model-envs/
 
 # Clean up and recreate
 cli-tts --cleanup-all-environments
-cli-tts --create-environment index-tts
+cli-tts --create-environment kitten-tts
 ```
 
 ## 📁 **Directory Structure**
@@ -147,7 +149,7 @@ After installation, the CLI creates:
 ```
 ~/.tts-cli/
 ├── model-envs/
-│   ├── index-tts-env/   (Python 3.11 + indextts)
+│   ├── kitten-tts-env/   (Python 3.11 + kittentts + onnxruntime)
 │   └── environments.json
 ```
 

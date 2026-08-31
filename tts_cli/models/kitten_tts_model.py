@@ -29,10 +29,9 @@ logger = logging.getLogger("tts_cli.kitten_tts")
 from ..core.model_registry import BaseTTSModel
 from ..core.environment_manager import env_manager
 
-# HF repo ids for each variant.
+# HF repo id for the single kept variant (the fastest: 15M int8).
 VARIANT_TO_REPO = {
     "kitten-tts-nano": "KittenML/kitten-tts-nano-0.8-int8",
-    "kitten-tts-mini": "KittenML/kitten-tts-mini-0.8",
 }
 DEFAULT_VARIANT = "kitten-tts-nano"
 DEFAULT_VOICE = "expr-voice-5-m"
@@ -85,13 +84,15 @@ class KittenTTSModel(BaseTTSModel):
             print(f"❌ Text too long ({len(text)} > {MAX_TEXT_LENGTH} chars).")
             return False
 
-        # `voice` for KittenTTS is a built-in voice name (not a path). Validate
-        # it; fall back to the default if absent or unrecognized.
+        # `voice` for KittenTTS is a built-in voice name (not a path). Fail
+        # closed on an unrecognized name (do NOT silently fall back) so a
+        # typo'd voice can never produce unexpected audio. Absent voice is
+        # fine — use the default.
         chosen_voice = voice or DEFAULT_VOICE
         if chosen_voice not in BUILT_IN_VOICES:
-            if voice:
-                logger.warning("Unknown KittenTTS voice '%s'; using %s", voice, DEFAULT_VOICE)
-            chosen_voice = DEFAULT_VOICE
+            print(f"❌ Unknown KittenTTS voice: {voice!r}. "
+                  f"Choose from: {', '.join(BUILT_IN_VOICES)}")
+            return False
 
         speed = float(kwargs.get("speed", 1.0))
         return self._generate_in_environment(

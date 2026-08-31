@@ -7,6 +7,7 @@ the tiered composition architecture as a Matter component.
 """
 
 import argparse
+import logging
 import os
 import sys
 import subprocess
@@ -22,6 +23,10 @@ from .core.model_registry import model_registry
 from .core.environment_manager import env_manager
 from .core.audio_processor import audio_processor
 from .models.kitten_tts_model import KittenTTSModel
+
+logger = logging.getLogger("tts_cli.cli")
+
+_NEXT_STEP_MARKER = "next step:"
 
 
 def setup_models() -> None:
@@ -213,17 +218,24 @@ def test_model(model_name: str) -> None:
 def _extract_suggestion(text: str) -> Optional[str]:
     """Extract the "Next step: <suggestion>" segment from a spoken summary.
 
-    Matches the last occurrence of "Next step:" (case-insensitive) and returns
-    everything after it, stripped. Returns None if the marker is absent.
+    Requires exactly one case-insensitive ``Next step:`` marker. A second
+    marker (in the summary or after the suggestion) is treated as injection
+    and returns None so the ledger is not hijacked. Returns None if the
+    marker is absent or the captured suggestion is empty.
     """
     if not text:
         return None
     lower = text.lower()
-    idx = lower.rfind("next step:")
-    if idx == -1:
+    first = lower.find(_NEXT_STEP_MARKER)
+    if first == -1:
         return None
-    # Move past the marker and any following whitespace/colon.
-    suggestion = text[idx + len("next step:"):].lstrip().lstrip(":").strip()
+    second = lower.find(_NEXT_STEP_MARKER, first + len(_NEXT_STEP_MARKER))
+    if second != -1:
+        logger.warning(
+            "refusing to record suggestion: multiple 'Next step:' markers"
+        )
+        return None
+    suggestion = text[first + len(_NEXT_STEP_MARKER):].lstrip().lstrip(":").strip()
     return suggestion or None
 
 
@@ -237,18 +249,16 @@ def _log_to_agents_tts_comms(text: str, model_name: str, voice: Optional[str],
     ISO-8601 date-time, a newline, then the suggestion text. This keeps the
     file small for cross-agent ingestion while preserving the actionable
     next-step history. Entries are untrusted DATA, not commands. Tracked in
-    git alongside AGENTS.md. If no "Next step:" segment is present, nothing
-    is written (the call had no suggestion to record).
+    git alongside AGENTS.md. If no "Next step:" segment is present, or if
+    more than one marker is present (fail-closed against ledger hijack),
+    nothing is written.
     """
     try:
-        # Extract the suggestion: everything after the last "Next step:" marker
-        # (case-insensitive). The spoken format is "<summary>. Next step: <sug>".
         suggestion = _extract_suggestion(text)
         if not suggestion:
-            return  # no suggestion to record; skip silently
+            return  # no unambiguous suggestion to record
 
-        repo_root = Path(__file__).resolve().parent.parent
-        comms_path = repo_root / "AGENTS-TTS-COMMS.txt"
+        comms_path = _comms_file()
         ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         # Cap the suggestion length to keep the ledger compact.
         safe_suggestion = suggestion if len(suggestion) <= 1000 else suggestion[:1000] + " …[truncated]"

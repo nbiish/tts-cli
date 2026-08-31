@@ -39,3 +39,6 @@ Add tests so a second next-step marker in the summary cannot hijack the ledger.
 
 ## 2026-08-31T22:54:51Z
 Run a live KittenTTS generate on a 400-character paragraph and confirm one concatenated WAV.
+
+## 2026-08-31T22:58:58Z
+Add a unit test so a second next-step marker in the summary cannot hijack the ledger.

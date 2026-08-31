@@ -47,9 +47,11 @@ class IndexTTSModel(BaseTTSModel):
 
     def __init__(self, model_name: str = "index-tts"):
         super().__init__(model_name)
-        # `auto` is an alias for `index-tts`; normalize the env-lookup key so the
-        # alias resolves the same isolated environment and checkpoints.
-        self._env_key = "index-tts" if model_name == "auto" else model_name
+        # `auto` is an alias for `index-tts`, and `index-tts-quality` is the
+        # full-precision tier that shares the same isolated Python 3.11 env and
+        # checkpoints as the fast default. Normalize the env-lookup key so all
+        # three names resolve the same isolated environment and checkpoints.
+        self._env_key = "index-tts" if model_name in ("auto", "index-tts-quality") else model_name
         self.python_executable = env_manager.get_python_executable(self._env_key)
         self._model_dir = self._resolve_model_dir()
         # Cache the (relatively expensive) accelerator probe so repeated

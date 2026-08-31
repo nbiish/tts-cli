@@ -42,3 +42,6 @@ Benchmark complete. PocketTTS is now the fast default and verified clean. Next s
 ## 2026-08-31T21:44:20Z | model=auto | lang=EN | voice=(default)
 output=/tmp/eoc_pockettts_merge.wav
 Benchmarked KittenTTS and PocketTTS against IndexTTS-2.5, surveyed the 2026 TTS landscape, and made PocketTTS the fast default with IndexTTS as the quality tier. Merged and verified on main. Next step: add a failing test proving the PocketTTS stdin-JSON runner rejects malformed payloads and path traversal in the voice reference, closing the injection-surface loop before relying on it across repos.
+
+## 2026-08-31T21:46:09Z | model=auto | lang=EN | voice=(default)
+prune the existing historical entries in AGENTS-TTS-COMMS.txt down to suggestion-only so the file is consistent with the new policy and reclaims the context the old full summaries already consume.

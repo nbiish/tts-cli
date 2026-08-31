@@ -14,3 +14,7 @@ Verified RAM and VRAM are clean with no models holding memory. Integrated IndexT
 ## 2026-08-31T19:39:18Z | model=auto | lang=EN | voice=/Volumes/1tb-sandisk/code-external/tts-cli/examples/voice_01.wav
 output=/tmp/comms_test.wav
 Testing the agents tts comms log. This should appear in the transcript file.
+
+## 2026-08-31T19:42:39Z | model=auto | lang=EN | voice=examples/voice_01.wav
+output=/tmp/eoc_summary2.wav
+Added durable transcript logging. Every cli-tts call now appends its spoken text to AGENTS-TTS-COMMS.txt at the repo root, timestamped with model and language, so missed audio is readable and other agents can use it as context. The rule is mandatory in AGENTS.md and the file is tracked in git. Next step: verify the transcript entry from this very call landed in the file and confirm it survives a clean git status, closing the loop on the logging contract.

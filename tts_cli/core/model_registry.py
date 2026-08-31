@@ -108,6 +108,7 @@ class ModelRegistry:
         """
         models = [
             "pocket-tts",
+            "kitten-tts",
             "index-tts",
         ]
 

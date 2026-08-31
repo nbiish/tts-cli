@@ -26,3 +26,6 @@ commit the refreshed tts-cli skill in ainish-coder and run an agent there to con
 
 ## 2026-08-31T22:30:14Z
 run the full pytest suite in ainish-coder to confirm no skill registration side effects and audit the skill for any banned primitives.
+
+## 2026-08-31T22:30:54Z
+audit the ainish-coder AGENTS.md to confirm it references the tts-cli end-of-chat voice summary rule and that no other repo duplicates a conflicting tts-cli skill.

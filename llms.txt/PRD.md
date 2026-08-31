@@ -10,12 +10,13 @@
 
 ## Key Features
 
-1.  **IndexTTS-2.5 (Sole Engine)**:
+1.  **IndexTTS-2.5 — Two-Tier Engine (Sole Family)**:
     *   Industrial-level zero-shot voice cloning (bilibili IndexTeam), 0.8B params.
     *   Multilingual: Chinese, English, Japanese, Spanish, Arabic (`--lang`).
-    *   Emotion control, speaking-speed control (`duration_factor`), pronunciation control (Pinyin / CMU / Kana).
-    *   Selected via `--model index-tts` (or `--model auto`, an alias). Requires an accelerator (CUDA/MPS/XPU) + downloaded checkpoints; Apple Silicon MPS is supported.
-    *   Runs in an isolated Python 3.11 `uv` environment (IndexTTS requires `<3.12` while the host targets `>=3.12`); the adapter talks to it via subprocess with stdin-JSON (no command injection).
+    *   **Fast default** (`--model index-tts` / `--model auto`): IndexTTS-2.5 quantized to **Q8 GGUF**, run through `audiocpp_cli` (audio.cpp) on **Metal**. Cold ~43s, RTF ~5.1 on Apple Silicon. No daemon — the subprocess exits after each call, fully releasing RAM/VRAM.
+    *   **Quality tier** (`--quality`): full-precision Python IndexTTS-2.5 on **MPS**. Cold ~142s, RTF ~17.2. Full dtype, higher quality. Same no-daemon / unload-on-exit contract.
+    *   Both tiers are one-shot subprocesses: cold load → synthesize → write WAV → exit → release all memory. No model state is held between calls.
+    *   Emotion control, speaking-speed control (`duration_factor`), pronunciation control (Pinyin / CMU / Kana) on the quality tier.
     *   Maintains the stable CLI contract (`--text`, file output, autoplayer).
 2.  **Voice Cloning**:
     *   Clone voices using a single reference audio file.
@@ -61,7 +62,8 @@ IndexTTS-2.5 is the sole engine. Future candidates (not yet integrated):
 - **Model Registry (`core/model_registry.py`)**: Manages available TTS models.
 - **Environment Manager (`core/environment_manager.py`)**: Handles `uv` environment creation, execution, and cleanup. Per-model Python version pinning (e.g. IndexTTS → 3.11).
 - **Model Implementations**:
-    *   `IndexTTSModel`: IndexTTS-2.5, the sole engine — GPU/MPS multilingual zero-shot voice cloning. Runs in an isolated Python 3.11 env via subprocess; user input passed via stdin JSON (`shell=False`, no command injection). `check_availability()` gates on env + checkpoints + accelerator and reports the specific gap with an actionable hint.
+    *   `IndexTTSGGUFModel`: IndexTTS-2.5 **Q8 GGUF** via `audiocpp_cli` (audio.cpp) on Metal — the **fast default** (`index-tts` / `auto`). One-shot subprocess that exits after each call (no daemon, no RAM/VRAM held). `check_availability()` gates on `audiocpp_cli` + the GGUF file + Metal.
+    *   `IndexTTSModel`: full-precision Python IndexTTS-2.5 on MPS — the **quality tier** (`index-tts-quality`, selected via `--quality`). Runs in an isolated Python 3.11 env via subprocess with stdin-JSON (`shell=False`, no command injection). Same unload-on-exit contract.
 
 ## Critical Constraints
 

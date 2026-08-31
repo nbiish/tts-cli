@@ -100,11 +100,16 @@ class ModelRegistry:
             return False
     
     def register_all_models(self) -> None:
-        """Register all available TTS models."""
+        """Register all available TTS models.
+
+        Only the fast default is auto-loaded dynamically; the ``--quality``
+        tier is registered explicitly by ``cli.setup_models`` to avoid the
+        name-derived dynamic loader mis-mapping it to a non-existent class.
+        """
         models = [
-            "index-tts"
+            "index-tts",
         ]
-        
+
         for model_name in models:
             self.load_model_dynamically(model_name)
 

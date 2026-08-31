@@ -40,5 +40,8 @@ Add tests so a second next-step marker in the summary cannot hijack the ledger.
 ## 2026-08-31T22:54:51Z
 Run a live KittenTTS generate on a 400-character paragraph and confirm one concatenated WAV.
 
-## 2026-08-31T22:58:58Z
-Add a unit test so a second next-step marker in the summary cannot hijack the ledger.
+## 2026-08-31T23:03:40Z
+Merge fix/tts-ledger-marker-hijack to main after confirming the extract tests still pass on a clean checkout.
+
+## 2026-08-31T23:11:13Z
+confirm the merge to main, then run skills sync on one deployed target repo to validate the provenance stamp end-to-end.

@@ -18,3 +18,7 @@ Testing the agents tts comms log. This should appear in the transcript file.
 ## 2026-08-31T19:42:39Z | model=auto | lang=EN | voice=examples/voice_01.wav
 output=/tmp/eoc_summary2.wav
 Added durable transcript logging. Every cli-tts call now appends its spoken text to AGENTS-TTS-COMMS.txt at the repo root, timestamped with model and language, so missed audio is readable and other agents can use it as context. The rule is mandatory in AGENTS.md and the file is tracked in git. Next step: verify the transcript entry from this very call landed in the file and confirm it survives a clean git status, closing the loop on the logging contract.
+
+## 2026-08-31T20:36:23Z | model=auto | lang=EN | voice=(default)
+output=/tmp/pockettts_smoke.wav
+Benchmark complete. PocketTTS is now the fast default and verified clean. Next step: audit the supply chain provenance.

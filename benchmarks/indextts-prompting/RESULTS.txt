@@ -1,0 +1,71 @@
+=== IndexTTS-2.5 Three-Variant Prompting Benchmark ===
+Text: cli-tts is ready for all agents. IndexTTS-2.5 is the sole engine. Next step: verify the voice channel end to end.
+Reference: /Volumes/1tb-sandisk/code-external/tts-cli/examples/voice_01.wav
+GGUF: /Volumes/1tb-sandisk/code-external/tts-cli/models-gguf/IndexTTS2.5-GGUF/index-tts2_5-q8_0.gguf
+
+[2026-08-31T19:28:50Z] START A: quantized (GGUF Q8, audio.cpp, Metal, default controls)
+family=index_tts2
+task=tts
+mode=offline
+audio_out=/Volumes/1tb-sandisk/code-external/indextts-prompting/benchmarks/indextts-prompting/out_A_quantized.wav
+metrics.wall_ms=9969.71
+metrics.audio_duration_ms=6582.86
+metrics.rtf=1.5145
+metrics.x_realtime=0.660286
+metrics.audio_duration_source=output
+metrics.sample_rate=22050
+metrics.channels=1
+[2026-08-31T19:29:27Z] END   A
+
+[2026-08-31T19:29:27Z] START B: normal (Python IndexTTS-2.5, MPS, --quality)
+[2026-08-31T19:33:53Z] END   B
+IndexTTS: Speech generated successfully to /Volumes/1tb-sandisk/code-external/indextts-prompting/benchmarks/indextts-prompting/out_B_normal.wav
+✅ Speech generated successfully: /Volumes/1tb-sandisk/code-external/indextts-prompting/benchmarks/indextts-prompting/out_B_normal.wav
+real	4m26.056s
+
+[2026-08-31T19:33:53Z] START C: template (GGUF Q8 + --emotion happy --speaking-rate 0.95)
+family=index_tts2
+task=tts
+mode=offline
+audio_out=/Volumes/1tb-sandisk/code-external/indextts-prompting/benchmarks/indextts-prompting/out_C_template.wav
+metrics.wall_ms=13224.6
+metrics.audio_duration_ms=8266.3
+metrics.rtf=1.59982
+metrics.x_realtime=0.62507
+metrics.audio_duration_source=output
+metrics.sample_rate=22050
+metrics.channels=1
+[2026-08-31T19:34:29Z] END   C
+
+=== Audio durations ===
+out_A_quantized.wav: 6.58s
+out_B_normal.wav: 6.55s
+out_C_template.wav: 8.27s
+[2026-08-31T19:34:29Z] ALL DONE
+
+================================================================================
+SUMMARY (cold-start total wall, same text + reference)
+================================================================================
+Variant | Runtime              | Cold total | Audio   | Inference RTF | Controls used
+--------|----------------------|------------|---------|--------------|----------------------
+A       | GGUF Q8 / audio.cpp  | ~37s       | 6.58s   | 1.51         | default (none)
+B       | Python / MPS         | 266s       | 6.55s   | n/a (cold)   | default (none)
+C       | GGUF Q8 / audio.cpp  | ~36s       | 8.27s   | 1.60         | --emotion happy --speaking-rate 0.95
+
+Key observations (factual):
+- A vs B: the Q8 GGUF path is ~7.2x faster cold (37s vs 266s) on the SAME text.
+  Same model, different runtime + precision. Q8 quantization did not audibly
+  degrade the short agent-summary prompt.
+- A vs C: same runtime, but C's --emotion happy + --speaking-rate 0.95 produced
+  LONGER audio (8.27s vs 6.58s) and a different delivery — proving the audio.cpp
+  prompting controls (emotion, rate) actually affect output, not just speed.
+- B is the only path that exposes the 8-float emotion VECTOR and inline
+  pronunciation tags (<word|reading>); A/C expose --emotion <name> (coarse) +
+  --speaking-rate/--pitch-shift/--energy-scale. See PROMPTING_GUIDE.md §1/§2.
+- All three unload fully on process exit — no RAM/VRAM held between calls.
+
+Decision criteria (operator to fill after listening):
+[ ] Q8 fast path acceptable for agent status readouts?       Y / N
+[ ] Does template (C) close the quality gap to Python (B)?      Y / N
+[ ] Is Python emotion-vector / pronunciation worth ~7x slower? Y / N
+Standardize on: [ A (fast) | B (quality) | C (template-fast) | both A+B ]

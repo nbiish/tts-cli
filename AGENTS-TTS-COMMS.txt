@@ -10,3 +10,6 @@
 
 ## 2026-08-31T22:09:55Z | model=kitten-tts-nano | lang=EN | voice=(default)
 verify the kitten-tts runner rejects overlong text and unknown voice names fail-closed.
+
+## 2026-08-31T22:11:51Z | model=kitten-tts-nano | lang=EN | voice=(default)
+run the full pytest suite with coverage to confirm the fail-closed properties hold and add a regression test for the runner stdin JSON payload schema.

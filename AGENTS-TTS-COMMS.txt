@@ -1,0 +1,16 @@
+# AGENTS-TTS-COMMS.txt — durable transcript of every cli-tts spoken output.
+#
+# Purpose: the readable counterpart to the spoken audio. The operator can catch
+# a missed readout here, and other agents can ingest prior spoken summaries as
+# context. One block per cli-tts call, ISO-8601 timestamped, with model/lang/
+# voice and the full spoken text. Appended automatically by the CLI on every
+# successful generation (see tts_cli/cli.py `_log_to_agents_tts_comms`). Track in
+# git alongside AGENTS.md. No secrets — this is a public transcript.
+
+## 2026-08-31T19:34:00Z | model=auto | lang=EN | voice=examples/voice_01.wav
+output=/tmp/eoc_summary.wav
+Verified RAM and VRAM are clean with no models holding memory. Integrated IndexTTS-2.5 as a two-tier engine: the Q8 GGUF fast default on Metal at 37 seconds cold, and the full Python quality tier on MPS. Benchmarked three prompting variants with timestamps and shipped an expert prompting guide. Next step: audit the audio.cpp subprocess call for input-validation boundary cases like overlong text and path traversal in the voice ref, and add a failing test proving shell false rejects command injection at the new GGUF adapter.
+
+## 2026-08-31T19:39:18Z | model=auto | lang=EN | voice=/Volumes/1tb-sandisk/code-external/tts-cli/examples/voice_01.wav
+output=/tmp/comms_test.wav
+Testing the agents tts comms log. This should appear in the transcript file.

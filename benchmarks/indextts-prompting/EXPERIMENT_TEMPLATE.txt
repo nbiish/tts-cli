@@ -1,0 +1,117 @@
+================================================================================
+IndexTTS-2.5 PROMPTING EXPERIMENT TEMPLATE
+================================================================================
+Goal: produce THREE final audio outputs, each backed by factual prompting info
+and a run timestamp, so the operator can decide which path to standardize on.
+
+Three variants:
+  A. QUANTIZED  — IndexTTS-2.5 Q8 GGUF via audiocpp_cli on Metal (fast default)
+  B. NORMAL    — IndexTTS-2.5 full-precision Python on MPS (--quality tier)
+  C. TEMPLATE  — the fastest TTS (same Q8 GGUF) but driven by a STRUCTURED
+                 prompt template (emotion + rate + shaped text), to test whether
+                 a template lifts the fast path's quality enough to skip Python.
+
+================================================================================
+HOW TO USE THIS TEMPLATE
+================================================================================
+For each variant, fill in every [BRACKET] field, run the command, and record the
+timestamp + measured RTF. Do not edit the factual prompting facts (§1) — those
+are fixed from the model card and `audiocpp_cli --help`. Edit only the [BRACKET]
+experiment choices in §2/§3.
+
+================================================================================
+§1. FACTUAL PROMPTING SURFACE (fixed — do not edit)
+================================================================================
+Model: IndexTTS-2.5 — autoregressive zero-shot TTS, GPT backbone (~0.8B),
+      flow-matching mel decoder, BigVGAN vocoder. Output 22.05 kHz.
+Languages: ZH, EN, JA, ES, AR.
+Emotion (Python):  8-float vector [happy, angry, sad, afraid, disgusted,
+                   melancholic, surprised, calm] — mixable, continuous.
+Emotion (audio.cpp): --emotion <name>  one of the 8 names above (coarse, single).
+Speed (Python):   duration_factor 0.5-2.0  (>1 slower, <1 faster).
+Speed (audio.cpp): --speaking-rate <float>, --duration-seconds,
+                   --target-duration-seconds, --reference-duration-seconds.
+Pronunciation (Python ONLY): <word|reading> inline tags — Pinyin / CMU / Kana.
+Pitch/Energy (audio.cpp ONLY): --pitch-shift <float>, --energy-scale <float>.
+Voice clone: reference clip sets TIMBRE only; emotion is disentangled.
+Limitation: long text is segmented; prosody does NOT cross segment boundaries.
+Cold start: ~43s (GGUF/Metal), ~142s (Python/MPS). Both unload on exit.
+
+================================================================================
+§2. EXPERIMENT CHOICES (edit these per run)
+================================================================================
+Reference voice : [path/to/reference.wav]      # 5-15s, clean, single speaker
+Prompt language : [EN]                          # ZH|EN|JA|ES|AR
+Prompt text     : [one short declarative sentence; lead with outcome, then next step]
+Emotion         : [calm]                        # name (audio.cpp) or 8-float (Python)
+Speaking rate   : [1.0]                         # duration_factor (Py) / --speaking-rate (cpp)
+Pronunciation   : [none]                        # Python only: <word|reading> tags or none
+Pitch shift     : [0.0]                         # audio.cpp only
+Energy scale    : : [1.0]                        # audio.cpp only
+
+================================================================================
+§3. RUN COMMANDS (one per variant — fill [BRACKETS] from §2)
+================================================================================
+
+--- A. QUANTIZED (GGUF Q8, audio.cpp, Metal) -----------------------------------
+audiocpp_cli --task tts --family index_tts2 \
+  --model models-gguf/IndexTTS2.5-GGUF/index-tts2_5-q8_0.gguf \
+  --backend metal --language [en] --emotion [calm] \
+  --speaking-rate [1.0] --pitch-shift [0.0] --energy-scale [1.0] \
+  --voice-ref [reference.wav] --text "[prompt text]" \
+  --out benchmarks/indextts-prompting/out_A_quantized.wav --metrics
+Run timestamp (UTC): [fill after run]
+Wall time / RTF      : [fill from --metrics]
+
+--- B. NORMAL (Python IndexTTS-2.5, MPS) ---------------------------------------
+# via the CLI quality tier (uses emo_vector + duration_factor under the hood):
+cli-tts --model index-tts-quality --quality \
+  --voice [reference.wav] --lang [EN] --output out_B_normal.wav \
+  --text "[prompt text]"
+# (for emotion vector / pronunciation tags, call IndexTTS2.infer directly in Py3.11)
+Run timestamp (UTC): [fill after run]
+Wall time / RTF      : [fill from time / audio duration]
+
+--- C. TEMPLATE (fastest TTS = GGUF Q8 + structured prompt template) -----------
+# Same fast runtime as A, but the prompt is shaped by the template:
+#   - emotion set explicitly (not left at default)
+#   - speaking-rate tuned for a status readout
+#   - text shaped: outcome first, one next step, no symbols
+audiocpp_cli --task tts --family index_tts2 \
+  --model models-gguf/IndexTTS2.5-GGUF/index-tts2_5-q8_0.gguf \
+  --backend metal --language [en] --emotion [happy] \
+  --speaking-rate [0.95] --pitch-shift [0.0] --energy-scale [1.0] \
+  --voice-ref [reference.wav] \
+  --text "[OUTCOME sentence]. Next step: [ONE hardened-engineer action]." \
+  --out benchmarks/indextts-prompting/out_C_template.wav --metrics
+Run timestamp (UTC): [fill after run]
+Wall time / RTF      : [fill from --metrics]
+
+================================================================================
+§4. WHAT TO TRY / VARY (instructions for exploration)
+================================================================================
+1. EMOTION SWEEP (audio.cpp): run --emotion with each of happy/angry/sad/afraid/
+   disgusted/melancholic/surprised/calm on the SAME text+voice. Listen for which
+   names the Q8 path renders cleanly vs which collapse. Record the winners.
+2. EMOTION VECTOR MIX (Python): on the same text, compare a single-axis vector
+   [1,0,0,0,0,0,0,0] vs a mix [0.5,0,0,0,0,0.2,0,0.3]. Note whether the mix
+   reads more human — this is the Python path's main advantage.
+3. SPEED SWEEP (both): rate 0.9 / 1.0 / 1.1 on the same text. Find the rate
+   where the fast path stays intelligible for short summaries.
+4. PRONUNCIATION (Python only): take a prompt with a proper noun the model
+   misreads, add <word|reading>, compare before/after. This is Python-only and
+   the strongest reason to keep the --quality tier.
+5. REFERENCE CLIP: try a 5s vs 15s reference; a noisy vs clean one. Confirm the
+   model-card claim that timbre (not emotion) is what the reference controls.
+6. SEGMENTATION: feed a 600-char prompt vs a 150-char one. Listen for the
+   prosody break at the segment boundary (documented limitation).
+7. CROSS-LINGUAL: clone a ZH reference speaking EN text, and vice versa.
+
+================================================================================
+§5. DECISION CRITERIA (fill after the three runs)
+================================================================================
+[ ] Is the Q8 fast path's quality acceptable for agent status readouts?  Y / N
+[ ] Does the template (C) close the quality gap to the Python path (B)?   Y / N
+[ ] Is the Python path's emotion-vector / pronunciation worth 3.3x slower? Y / N
+Standardize on: [ A (fast) | B (quality) | C (template-fast) | both A+B ]
+Reason: [one sentence, citing the measured RTF + a listening note]

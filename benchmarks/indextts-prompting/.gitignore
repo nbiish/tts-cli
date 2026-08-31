@@ -1,0 +1,4 @@
+# Benchmark outputs (large, regenerable) — keep templates + results, ignore wavs/logs
+out_*.wav
+*.stderr.log
+B.log

@@ -198,6 +198,8 @@ AGENTS/*.COMMS.live.md
 *.tflite
 *.tgz
 *.wav
+# Exception: ship the bundled cross-platform default reference voice (small, ~200KB).
+!examples/default_voice.wav
 *.xz
 *.zip
 *~

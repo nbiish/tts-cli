@@ -2,8 +2,13 @@
 IndexTTS-2.5 GGUF model implementation for TTS CLI.
 
 This is the **fast default** engine: IndexTTS-2.5 quantized to Q8 and run through
-``audiocpp_cli`` (audio.cpp, a pure-C++ ggml runtime with a Metal backend on Apple
-Silicon). It is selected via ``--model index-tts`` (the default) or ``--model auto``
+``audiocpp_cli`` (audio.cpp, a pure-C++ ggml runtime). It is **system-agnostic**:
+audio.cpp supports ``metal`` (macOS), ``cuda``/``hip`` (NVIDIA/AMD on
+Linux/Windows), ``vulkan`` (cross-platform GPU), and ``cpu`` (everywhere). The
+adapter auto-detects the best available backend on the host (override with the
+``AUDIOCPP_BACKEND`` env var) and passes it to ``audiocpp_cli``.
+
+It is selected via ``--model index-tts`` (the default) or ``--model auto``
 (an alias). The full-precision Python IndexTTS-2.5 path is available via
 ``--model index-tts --quality`` for higher-quality output at the cost of speed.
 
@@ -55,7 +60,10 @@ class IndexTTSGGUFModel(BaseTTSModel):
         self._env_key = "index-tts" if model_name == "auto" else model_name
         self._audiocpp = shutil.which("audiocpp_cli")
         self._gguf_path = self._resolve_gguf()
+        # Cache the (relatively expensive) backend probe so repeated
+        # check_availability() calls during a CLI session stay cheap.
         self._availability_cache: Optional[bool] = None
+        self._backend_cache: Optional[str] = None
 
     # ------------------------------------------------------------------
     # Configuration helpers
@@ -87,50 +95,78 @@ class IndexTTSGGUFModel(BaseTTSModel):
             current = current.parent
         return None
 
-    def _has_metal(self) -> bool:
-        """Probe audiocpp_cli for a usable Metal backend.
+    # Backend preference order (most capable first). audio.cpp supports all of
+    # these; we pick the first one the host actually exposes via --list-devices.
+    _BACKEND_PREF = ("metal", "cuda", "hip", "vulkan", "cpu")
 
-        ``audiocpp_cli --list-devices`` prints the backend devices; a Metal
-        (or CPU) backend is required on Apple Silicon. We only check that the
-        binary can run and reports a metal device — we never load the model here
-        (keeps the probe cheap and avoids holding VRAM).
+    def _detect_backend(self) -> Optional[str]:
+        """Probe audiocpp_cli for the best available backend on this host.
+
+        ``audiocpp_cli --list-devices`` prints the backend devices. We parse it
+        for the backends audio.cpp was built with, then pick the most capable one
+        in preference order (metal > cuda > hip > vulkan > cpu). The model is
+        NOT loaded here (keeps the probe cheap and avoids holding VRAM).
+
+        Override: set the ``AUDIOCPP_BACKEND`` env var to force a backend
+        (e.g. ``cpu`` for a portable, no-GPU fallback) — it is used verbatim if
+        ``audiocpp_cli`` accepts it, else we fall back to detection.
         """
-        if self._availability_cache is not None:
-            return self._availability_cache
+        if self._availability_cache is not None and self._backend_cache is not None:
+            return self._backend_cache
         if not self._audiocpp:
             self._availability_cache = False
-            return False
+            self._backend_cache = None
+            return None
+
+        env_backend = os.environ.get("AUDIOCPP_BACKEND", "").strip().lower()
         try:
             proc = subprocess.run(
                 [self._audiocpp, "--list-devices"],
                 capture_output=True, text=True, timeout=20, check=False,
             )
             out = (proc.stdout + proc.stderr).lower()
-            self._availability_cache = proc.returncode == 0 and "metal" in out
+            available = [b for b in self._BACKEND_PREF if b in out]
         except (subprocess.TimeoutExpired, FileNotFoundError, OSError) as e:
             logger.debug("audiocpp device probe failed: %s", e)
             self._availability_cache = False
-        return self._availability_cache
+            self._backend_cache = None
+            return None
+
+        # Honor an explicit override if it's among what the binary exposes; else
+        # fall through to auto-pick so a bad env var never silently forces CPU.
+        if env_backend and (env_backend in available or env_backend == "best"):
+            chosen = env_backend
+        elif available:
+            chosen = available[0]
+        else:
+            self._availability_cache = False
+            self._backend_cache = None
+            return None
+
+        self._availability_cache = True
+        self._backend_cache = chosen
+        return chosen
 
     # ------------------------------------------------------------------
     # BaseTTSModel interface
     # ------------------------------------------------------------------
 
     def check_availability(self) -> bool:
-        """Available only when audiocpp_cli + the GGUF file + Metal are all present."""
+        """Available when audiocpp_cli + the GGUF file + any usable backend are present."""
         if not self._audiocpp:
             return False
         if not self._gguf_path:
             return False
-        return self._has_metal()
+        return self._detect_backend() is not None
 
     def check_dependencies(self) -> tuple[bool, str]:
-        """Return (ok, message) with actionable install hints."""
+        """Return (ok, message) with actionable, OS-appropriate install hints."""
         if not self._audiocpp:
             return False, (
-                "audiocpp_cli not found on PATH. Install audio.cpp on macOS with: "
-                "brew tap 0xshug0/audio-cpp && brew trust 0xshug0/audio-cpp && "
-                "brew install audio-cpp"
+                "audiocpp_cli not found on PATH. Install audio.cpp:\n"
+                "  macOS  : brew tap 0xshug0/audio-cpp && brew trust 0xshug0/audio-cpp && brew install audio-cpp\n"
+                "  Linux  : build from source (see https://github.com/0xShug0/audio-cpp) with -DGGML_CUDA=ON or -DGGML_VULKAN=ON\n"
+                "  Windows: build from source with CUDA/Vulkan, or use the CPU backend"
             )
         if not self._gguf_path:
             return False, (
@@ -139,12 +175,14 @@ class IndexTTSGGUFModel(BaseTTSModel):
                 "IndexTTS2.5-GGUF/index-tts2_5-q8_0.gguf --local-dir=models-gguf\n"
                 "or set INDEX_TTS_GGUF to an existing .gguf path."
             )
-        if not self._has_metal():
+        backend = self._detect_backend()
+        if not backend:
             return False, (
-                "No Metal backend detected via audiocpp_cli. IndexTTS-2.5 GGUF "
-                "requires audio.cpp built with Metal on Apple Silicon."
+                "No audio.cpp backend detected. Build audio.cpp with at least one "
+                "of: Metal (macOS), CUDA/HIP (NVIDIA/AMD), Vulkan, or CPU. "
+                "Set AUDIOCPP_BACKEND=cpu to force the portable CPU fallback."
             )
-        return True, "Dependencies OK"
+        return True, f"Dependencies OK (backend: {backend})"
 
     def generate_speech(self, text: str, voice: Optional[str] = None,
                         output_path: str = "output.wav", **kwargs) -> bool:
@@ -197,7 +235,7 @@ class IndexTTSGGUFModel(BaseTTSModel):
     def get_model_info(self) -> Dict[str, Any]:
         return {
             "name": "index-tts",
-            "description": "IndexTTS-2.5 GGUF (Q8) via audio.cpp — fast default (Metal)",
+            "description": "IndexTTS-2.5 GGUF (Q8) via audio.cpp — fast default (auto backend: metal/cuda/vulkan/cpu)",
             "capabilities": ["text-to-speech", "voice-cloning", "multilingual",
                              "gpu-class", "quantized"],
             "languages": list(SUPPORTED_LANGS),
@@ -227,12 +265,17 @@ class IndexTTSGGUFModel(BaseTTSModel):
             print("❌ audiocpp_cli is not available.")
             return False
 
+        backend = self._detect_backend()
+        if not backend:
+            print("❌ No audio.cpp backend available. Set AUDIOCPP_BACKEND=cpu for the portable fallback.")
+            return False
+
         cmd = [
             self._audiocpp,
             "--task", "tts",
             "--family", "index_tts2",
             "--model", str(self._gguf_path),
-            "--backend", "metal",
+            "--backend", backend,
             "--language", lang.lower(),
             "--text", text,
             "--out", output_path,

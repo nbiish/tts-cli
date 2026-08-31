@@ -43,26 +43,27 @@ cli-tts --text "Hello world" --output speech.wav
 
 **WE IMPLEMENT ONLY THE FOLLOWING MODEL - NO EXCEPTIONS:**
 
-1. **Pocket TTS** (Kyutai) - Lightweight CPU-optimized TTS
+1. **IndexTTS-2.5** (bilibili IndexTeam) - Industrial-level zero-shot multilingual voice-cloning TTS
 
-**IMPLEMENTATION RULE:** We focus exclusively on this model for optimal performance and simplicity.
+**IMPLEMENTATION RULE:** IndexTTS-2.5 is the sole engine. It requires an accelerator (CUDA/MPS/XPU — Apple Silicon MPS supported) and downloaded checkpoints. There is no CPU fallback engine.
 
 ## 🚀 **Current Status**
 
-### ✅ **Complete - Core Infrastructure & Pocket TTS**
+### ✅ **Complete - Core Infrastructure & IndexTTS-2.5**
 - **Core CLI Infrastructure**: Complete tiered architecture implemented
-- **Environment Management**: UV-based isolated environments working
+- **Environment Management**: UV-based isolated environments working (per-model Python pinning — IndexTTS → 3.11)
 - **Model Registry**: Dynamic model loading and registration system
-- **Pocket TTS Implementation**: Lightweight, CPU-optimized TTS model - **DEFAULT**
+- **IndexTTS-2.5 Implementation**: Zero-shot multilingual voice-cloning TTS (GPU/MPS) - **SOLE ENGINE**
 - **Audio Generation**: Working audio output with auto-playback
 - **Voice Management**: Standard voices and voice cloning support
 - **CLI Interface**: Full command-line interface operational
 
 ## ✨ Features
 
-- **⚡ Fast CPU Inference**: Optimized for running locally on CPU with `uv` acceleration
-- **🔒 Isolated Environments**: Runs in its own UV environment
-- **🎵 Voice Cloning**: Support for voice cloning via reference audio
+- **⚡ GPU/MPS Inference**: IndexTTS-2.5 runs on CUDA/MPS/XPU (Apple Silicon supported)
+- **🔒 Isolated Environments**: The engine runs in its own UV environment (Python 3.11)
+- **🌍 Multilingual**: Chinese, English, Japanese, Spanish, Arabic (`--lang`)
+- **🎵 Voice Cloning**: Zero-shot voice cloning via a single reference audio file
 - **📋 Clipboard | Text | Text File | Pipe Support**: Flexible input methods
 - **🔊 Auto-Playback**: Automatically plays generated audio
 - **💾 Smart Caching**: Auto-manages output files with rotation
@@ -141,26 +142,26 @@ cli-tts --remove-silence input.wav --output trimmed.wav
 ### Environment Management
 
 ```bash
-# Create environment (Required first time)
-cli-tts --create-environment pocket-tts
+# Create environment (Required first time — Python 3.11 + indextts)
+cli-tts --create-environment index-tts
 
 # List available models
 cli-tts --list-models
 
 # Remove environment
-cli-tts --cleanup-environment pocket-tts
+cli-tts --cleanup-environment index-tts
 ```
 
 ## 🤖 Available Models
 
-### 1. Pocket TTS (Kyutai) - DEFAULT
-- **Speed**: ⚡ **VERY FAST** - Faster than real-time on CPU
-- **Quality**: ✅ High quality, natural speech
-- **Features**: Lightweight, CPU-optimized, voice cloning
-- **Voice Cloning**: ✅ Supported (reference audio)
-- **Available Voices**: alba, marius, javert, jean, fantine, cosette, eponine, azelma
-- **Implementation**: Kyutai Pocket TTS library
-- **Best for**: Fast local generation, CPU-only environments
+### 1. IndexTTS-2.5 (bilibili IndexTeam) - SOLE ENGINE
+- **Speed**: ⚡ Fast on GPU/MPS (0.8B params)
+- **Quality**: ✅ Industrial-level natural speech, zero-shot voice cloning
+- **Features**: Multilingual (ZH/EN/JA/ES/AR), emotion control, speaking-speed control, pronunciation control
+- **Voice Cloning**: ✅ Zero-shot (single reference audio)
+- **Implementation**: IndexTTS-2.5, runs in an isolated Python 3.11 `uv` env via subprocess
+- **Requirements**: Accelerator (CUDA/MPS/XPU) + downloaded checkpoints
+- **Best for**: High-quality local voice cloning on accelerated hardware
 
 ### 2. Audio Processing Tools (Demucs & VAD)
 - **Demucs**: Hybrid Transformer for state-of-the-art music source separation (isolates vocals).
@@ -176,7 +177,7 @@ cli-tts --cleanup-environment pocket-tts
 
 2. **Create environment**:
    ```bash
-   cli-tts --create-environment pocket-tts
+   cli-tts --create-environment index-tts
    ```
 
 3. **Test it works**:
@@ -194,17 +195,17 @@ TTS CLI
 ├── Model Registry (core/model_registry.py)
 ├── Environment Manager (core/environment_manager.py)
 └── Model Implementations
-    └── PocketTTSModel
+    └── IndexTTSModel  (IndexTTS-2.5, sole engine)
 ```
 
 ### Environment Isolation
 
-The model runs in its own isolated UV environment:
+The engine runs in its own isolated UV environment:
 
 ```
 .model-envs/
-└── pocket-tts-env/
-    └── .venv/
+└── index-tts-env/
+    └── .venv/   (Python 3.11 + indextts)
 ```
 
 
@@ -261,36 +262,19 @@ cli-tts --clipboard --output speech.wav
 # 2. Direct text input:
 cli-tts --text "Hello, this is a test of the TTS CLI tool" --output test.wav
 
-# 3. Voice cloning workflow:
+# 3. Voice cloning workflow (zero-shot, single reference):
 cli-tts --text "This is my voice" --voice-clone myvoice.wav --output cloned.wav
 
-# 4. Real-time voice cloning (Marvis TTS):
-cli-tts --text "This is my voice" --model marvis-tts --voice-clone myvoice.wav --output cloned.wav
+# 4. Multilingual generation:
+cli-tts --text "你好，世界" --lang ZH --output zh.wav
+cli-tts --text "こんにちは" --lang JA --output ja.wav
 
-# 5. Performance benchmarking:
-cli-tts --benchmark --text "Test text" --models edge-tts,marvis-tts,vibevoice --output-dir benchmarks/
+# 5. Use a persistent custom voice:
+cli-tts --set-clone-voice my_voice.wav
+cli-tts --text "Speaking with my saved voice" --output saved.wav
 
-# 6. Voice library management:
-cli-tts --voice-library --add "my-voice" --from reference.wav
-cli-tts --voice-library --use "my-voice" --text "Test" --output test.wav
-
-# 7. Live streaming (Marvis TTS):
-cli-tts --stream --model marvis-tts --text "Live streaming test"
-
-# 8. Podcast template:
-cli-tts --template podcast --text "Episode content" --model vibevoice --output episode.wav
-
-# 9. Model optimization:
-cli-tts --optimize for real-time --model marvis-tts --text "Test" --output optimized.wav
-
-# 10. Debug mode:
-cli-tts --debug --model marvis-tts --text "Test" --output debug.wav --log debug.log
-
-# 11. Test suite:
-cli-tts --test-suite --models all --output test-results.json
-
-# 12. Long-form content (ModelScope VibeVoice):
-cli-tts --text "This is a very long piece of text..."(or a large text file or a clipboard text) --model modelscope-vibevoice --output long_form.wav
+# 6. Debug mode:
+cli-tts --debug --text "Test" --output debug.wav --log debug.log
 ```
 
 ## Citation

@@ -24,6 +24,6 @@ if ! command -v uv &> /dev/null; then
 fi
 
 # Run with uv
-# --with pocket-tts --with scipy: Inject dependencies for in-process fast path
-# python -m tts_cli.cli: Run the module
-cd "$PROJECT_ROOT" && uv run --with pocket-tts --with scipy python -m tts_cli.cli "$@"
+# The IndexTTS-2.5 engine runs in its own isolated `uv` env (Python 3.11) via
+# subprocess; the host CLI only needs the project deps, which `uv run` resolves.
+cd "$PROJECT_ROOT" && uv run python -m tts_cli.cli "$@"

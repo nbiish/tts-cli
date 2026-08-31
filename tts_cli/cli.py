@@ -19,42 +19,20 @@ import pyperclip
 from .core.model_registry import model_registry
 from .core.environment_manager import env_manager
 from .core.audio_processor import audio_processor
-from .models.pocket_tts_model import PocketTTSModel
-from .models.kitten_tts_model import KittenTTSModel
-from .models.hybrid_tts_model import HybridTTSModel
 from .models.index_tts_model import IndexTTSModel
-from .core.model_daemon import is_daemon_running, get_daemon_status, stop_daemon, LOG_PATH as DAEMON_LOG_PATH
 
 
 def setup_models() -> None:
     """Register all available TTS models."""
-    # Register Hybrid TTS model (default - KittenTTS with PocketTTS fallback)
-    model_registry.register_model("hybrid-tts", HybridTTSModel)
-    model_registry.register_model("auto", HybridTTSModel)  # Alias for hybrid
-
-    # Register Kitten TTS model (fast, no cloning)
-    model_registry.register_model("kitten-tts", KittenTTSModel)
-
-    # Register Pocket TTS model (slower, supports cloning)
-    model_registry.register_model("pocket-tts", PocketTTSModel)
-
-    # Register IndexTTS-2.5 (opt-in, GPU/MPS class, multilingual voice cloning).
-    # check_availability() reports False without an accelerator + checkpoints,
-    # so the hybrid auto-router skips it and the CPU-first default is preserved.
+    # IndexTTS-2.5 is the sole TTS engine. It is GPU/MPS class (CUDA/MPS/XPU)
+    # and requires downloaded checkpoints. `auto` is an alias for `index-tts`.
     model_registry.register_model("index-tts", IndexTTSModel)
+    model_registry.register_model("auto", IndexTTSModel)  # Alias
 
 
 def create_environment(model_name: str) -> bool:
     """Create environment for a specific model."""
     model_configs = {
-        "pocket-tts": [
-            "pocket-tts",
-            "scipy>=1.9.0"
-        ],
-        "kitten-tts": [
-            "kittentts",
-            "soundfile"
-        ],
         # IndexTTS-2.5: runs on Python 3.11 (pinned in environment_manager).
         # `indextts` pulls torch as a dependency. On Apple Silicon the default
         # PyPI torch wheel provides MPS acceleration; on CUDA hosts install
@@ -200,7 +178,7 @@ def list_voices(model_name: str) -> None:
         if '-' in voice:
             lang = voice.split('-')[0] + '-' + voice.split('-')[1]
         else:
-            lang = "English" if model_name == "pocket-tts" else "General"
+            lang = "General"
         
         if lang not in voice_groups:
             voice_groups[lang] = []
@@ -303,11 +281,11 @@ def main() -> None:
 Examples:
   cli-tts --text "Hello world" --output hello.wav
   cli-tts --clipboard --output speech.wav
-  cli-tts --text "Hi" --model kitten-tts --voice expr-voice-2-f
-  cli-tts --text "Long text..." --model pocket-tts --voice-clone my_voice.wav
-  cli-tts --create-environment kitten-tts
+  cli-tts --text "Hi" --voice ref.wav --lang EN
+  cli-tts --text "Long text..." --voice-clone my_voice.wav --lang ZH
+  cli-tts --create-environment index-tts
   cli-tts --list-models
-  cli-tts --list-voices --model kitten-tts
+  cli-tts --list-voices --model index-tts
         """
     )
     
@@ -333,8 +311,8 @@ Examples:
 
     # Model and voice options
     parser.add_argument("--model", default="auto",
-                       help="TTS model to use: auto (default, KittenTTS with PocketTTS fallback), kitten-tts (fast), pocket-tts (voice cloning), index-tts (GPU/MPS multilingual voice cloning)")
-    parser.add_argument("--voice", help="Voice to use (model-specific; for index-tts, a reference WAV path for zero-shot cloning)")
+                       help="TTS model to use: auto (default, alias for index-tts) or index-tts (IndexTTS-2.5, GPU/MPS multilingual voice cloning)")
+    parser.add_argument("--voice", help="Reference WAV path for zero-shot voice cloning (IndexTTS)")
     parser.add_argument("--lang", default=None,
                        help="Language for multilingual engines (index-tts): ZH, EN, JA, ES, AR. Default: EN")
     parser.add_argument("--output", help="Output audio file path")
@@ -360,68 +338,10 @@ Examples:
     parser.add_argument("--unset-clone-voice", action="store_true", help="Unset the persistent clone voice (does not delete the file)")
     parser.add_argument("--list-clone-voices", action="store_true", help="List available custom clone voices")
     
-    # Daemon management
-    daemon_group = parser.add_argument_group("Model Daemon")
-    daemon_group.add_argument("--daemon-status", action="store_true",
-                             help="Show model daemon status (PID tracking, queue depth, loaded state)")
-    daemon_group.add_argument("--daemon-stop", action="store_true",
-                             help="Stop the model daemon and unload the model from memory")
-    daemon_group.add_argument("--daemon-log", nargs="?", const=50, type=int, metavar="LINES",
-                             help="Show the last N lines of the daemon log (default: 50)")
-    
     args = parser.parse_args()
     
     # Setup models
     setup_models()
-
-    # ---- Daemon management commands ----
-    if args.daemon_status:
-        if not is_daemon_running():
-            print("Model daemon is NOT running.")
-            print("It will start automatically on next TTS request.")
-        else:
-            status = get_daemon_status()
-            if status:
-                print("Model Daemon Status")
-                print("=" * 50)
-                print(f"  Daemon PID:      {status.get('daemon_pid', '?')}")
-                print(f"  Model loaded:    {'Yes' if status.get('model_loaded') else 'No'}")
-                print(f"  Queue depth:     {status.get('queue_depth', 0)}")
-                print(f"  Idle timeout:    {status.get('idle_timeout_seconds', '?')}s")
-                pids = status.get('active_pids', [])
-                if pids:
-                    print(f"  Tracked PIDs:    {len(pids)}")
-                    for p in pids:
-                        print(f"    PID {p['pid']:>8}  requests={p['request_count']}  "
-                              f"last_seen={time.strftime('%H:%M:%S', time.localtime(p['last_seen']))}")
-                else:
-                    print("  Tracked PIDs:    (none)")
-            else:
-                print("Daemon is running but did not respond to status query.")
-        return
-
-    if args.daemon_stop:
-        if not is_daemon_running():
-            print("Model daemon is not running.")
-        else:
-            if stop_daemon():
-                print("\u2705 Daemon stopped and model unloaded from memory.")
-            else:
-                print("\u274c Failed to stop daemon.")
-        return
-
-    if args.daemon_log is not None:
-        if not DAEMON_LOG_PATH.exists():
-            print(f"No daemon log found at {DAEMON_LOG_PATH}")
-        else:
-            import collections
-            n = args.daemon_log
-            with open(DAEMON_LOG_PATH, "r", encoding="utf-8", errors="replace") as f:
-                tail = collections.deque(f, maxlen=n)
-            print(f"--- Last {len(tail)} lines of {DAEMON_LOG_PATH} ---")
-            for line in tail:
-                print(line, end="")
-        return
 
     # Define constants for custom voices
     # Use repository root for storage to ensure persistence and accessibility
@@ -787,7 +707,7 @@ Examples:
             
     # If no text provided but voice clone is present, use default text
     if not text and args.voice_clone:
-        text = "This is a sample of the cloned voice using Pocket TTS."
+        text = "This is a sample of the cloned voice using IndexTTS."
         print(f"ℹ️  No text provided. Using default text: '{text}'")
         
     # Proceed if we have text

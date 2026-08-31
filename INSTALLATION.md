@@ -49,8 +49,8 @@ The CLI automatically manages model environments:
 ### **Create Model Environments**
 
 ```bash
-# Create environment for a specific model
-cli-tts --create-environment pocket-tts
+# Create the IndexTTS-2.5 environment (Python 3.11 + indextts)
+cli-tts --create-environment index-tts
 
 # List all environments
 cli-tts --list-environments
@@ -74,25 +74,23 @@ cli-tts --input-file input.txt --output speech.wav
 ### **Model Selection**
 
 ```bash
-# Use specific model
-cli-tts --model pocket-tts --text "Hello" --output hello.wav
+# IndexTTS-2.5 is the sole engine (default). 'auto' is an alias.
+cli-tts --model index-tts --text "Hello" --output hello.wav
 ```
 
-### **Voice Selection**
+### **Multilingual**
 
 ```bash
-# List available voices
-cli-tts --list-voices --model pocket-tts
-
-# Use specific voice
-cli-tts --model pocket-tts --voice "alba" --text "Hello" --output hello.wav
+# IndexTTS-2.5 supports ZH / EN / JA / ES / AR
+cli-tts --text "你好，世界" --lang ZH --output zh.wav
+cli-tts --text "こんにちは" --lang JA --output ja.wav
 ```
 
 ### **Voice Cloning**
 
 ```bash
-# Clone a voice (requires reference audio)
-cli-tts --model pocket-tts --text "Hello" --voice-clone reference.wav --output cloned.wav
+# Zero-shot clone a voice (requires a single reference audio)
+cli-tts --text "Hello" --voice-clone reference.wav --output cloned.wav
 ```
 
 ## 🛠️ **Troubleshooting**
@@ -106,11 +104,16 @@ If you get "Model not available" errors:
 cli-tts --list-environments
 
 # Create missing environment
-cli-tts --create-environment pocket-tts
+cli-tts --create-environment index-tts
 
-# Test specific model
-cli-tts --test-model pocket-tts
+# Test the model
+cli-tts --test-model index-tts
 ```
+
+> IndexTTS-2.5 requires an accelerator (CUDA/MPS/XPU — Apple Silicon MPS
+> supported) and downloaded checkpoints. On a machine without an accelerator,
+> `cli-tts` reports unavailable with an actionable hint rather than silently
+> degrading — there is no CPU fallback engine.
 
 ### **Permission Issues**
 
@@ -134,7 +137,7 @@ ls -la ~/.tts-cli/model-envs/
 
 # Clean up and recreate
 cli-tts --cleanup-all-environments
-cli-tts --create-environment pocket-tts
+cli-tts --create-environment index-tts
 ```
 
 ## 📁 **Directory Structure**
@@ -144,7 +147,7 @@ After installation, the CLI creates:
 ```
 ~/.tts-cli/
 ├── model-envs/
-│   ├── pocket-tts-env/
+│   ├── index-tts-env/   (Python 3.11 + indextts)
 │   └── environments.json
 ```
 

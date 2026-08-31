@@ -61,3 +61,55 @@ preserved.
   License). Dependencies installed via uv in an isolated env (pinned by upstream `uv.lock`).
 - Subprocess uses `shell=False` (list args). Text is passed via stdin to avoid command
   injection (no `python -c` with interpolated text).
+
+---
+
+# PHASE 2: IndexTTS-2.5 as sole engine + agent voice-summary rule
+
+**Date:** 2026-08-31 (continued)
+**Branch:** `feat/agent-tts-summaries`
+**Worktree:** `../agent-tts-summaries`
+**Classification:** Confidential
+
+## Objective
+
+Per operator directive: "We should only be using the single model that we just integrated,
+which is the newest and lightest and most performant model." and "You can remove the old
+models from the pipeline system and out of disk space." Plus: wire `tts-cli` into
+`AGENTS.md` so every agent speaks a concise summary + a single hardened-engineer next step
+at end of chat.
+
+## Decisions (confirmed with operator)
+
+1. **Single engine:** IndexTTS-2.5 is the sole engine. `--model auto` is an alias for it.
+2. **Removed:** `KittenTTSModel`, `PocketTTSModel`, `HybridTTSModel`, `model_daemon.py`,
+   `daemon_client.py`, and their tests (`test_pocket_tts.py`, `test_model_daemon.py`).
+3. **Disk reclaimed:** `.model-envs/kitten-tts-env` (217M) + `pocket-tts-env` (568M) deleted
+   from main repo path (~785 MB). `environments.json` pruned to `audio-processing` only.
+4. **AGENTS.md rule:** binding end-of-chat voice-summary via `cli-tts --text "<summary>.
+   Next step: <ONE hardened-engineer recommendation>"`, adversarial-minded, fail-closed.
+5. **No CPU fallback:** on a machine without an accelerator, `cli-tts` reports unavailable
+   with an actionable hint rather than silently degrading.
+
+## Deliverables
+
+- `tts_cli/cli.py` — pruned to IndexTTS only; daemon group removed; `--lang` retained.
+- `tts_cli/models/__init__.py` — exports `IndexTTSModel` only.
+- `tts_cli/core/model_registry.py`, `environment_manager.py`, `core/__init__.py` — pruned.
+- `AGENTS.md` — binding end-of-chat voice-summary rule (hardened-engineer next step).
+- `llms.txt/PRD.md` — rewritten for single-engine architecture.
+- `README.md`, `INSTALLATION.md`, `MCP_AUDIO_GUIDE.md`, `scripts/*` — old-model refs removed.
+- `.model-envs/index-tts-env` (Python 3.11) + `checkpoints/` (IndexTeam/IndexTTS-2.5) provisioned.
+
+## Verification
+
+- `uv run python -m tts_cli --list-models` shows only `index-tts` + `auto` (Not Available
+  until env+checkpoints+accelerator are all present).
+- End-to-end: `cli-tts --text "..." --output out.wav` produces audio on MPS (pending
+  background install + checkpoint download completion).
+- No remaining `KittenTTS|PocketTTS|HybridTTS|daemon` references in `tts_cli/`.
+
+## Security
+
+- No secrets. No `.env`. Subprocess `shell=False`; user text via stdin JSON (no injection).
+- `indextts` installed from its GitHub source (not on PyPI) inside the isolated 3.11 env.

@@ -10,9 +10,11 @@
 
 ## Key Features
 
-1.  **Pocket TTS (Default Model)**:
-    *   Lightweight, CPU-optimized text-to-speech.
-    *   Faster than real-time generation.
+1.  **Hybrid TTS (Default)**:
+    *   Uses a fast default engine for short/medium prompts, with automatic fallback for robustness.
+    *   Maintains a stable CLI contract (`--text`, file output, autoplayer).
+2.  **Pocket TTS (Fallback Engine)**:
+    *   Lightweight, CPU-optimized text-to-speech for long text and reliability.
     *   High-quality natural speech.
 2.  **Voice Cloning**:
     *   Clone voices using a single reference audio file.
@@ -45,6 +47,20 @@
     *   Text argument (`--text`).
     *   Clipboard content (`--clipboard`).
     *   Text file input (`--input-file`).
+
+## Compatibility Contract (Downstream Integrations)
+
+This CLI is used as a speech backend by other agentic tools (e.g. YOLO Mode). Maintain:
+- `tts-cli --text "<msg>"` must work and remain stable.
+- Non-zero exit codes should be reserved for hard failures.
+- Output should stay quiet by default (no logs on stdout unless requested).
+
+## Model Roadmap (2026)
+
+When adding engines, prefer open, local-first options with permissive licensing:
+- **IndexTTS-2.5** (bilibili Model Use License) — ✅ added as opt-in GPU/MPS engine (`--model index-tts`).
+- **Kokoro-82M** (Apache-2.0, open-weight): https://huggingface.co/hexgrad/Kokoro-82M
+- **Piper** (fast local neural TTS, CLI + ONNX voices): https://github.com/bit-r/piper-TTS
 
 ## Architecture
 

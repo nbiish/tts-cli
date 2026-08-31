@@ -5,7 +5,15 @@
 Approach: Security-first, Zero Trust, Standardized
 Output: Production-ready, tested, encrypted, PQC-compliant, secure by default
 
-**Important**:  Utilize `tts-cli --text "{text to be spoken}"` to self-reflect and generate audio to summarize your actions and decisions. If the user enables the mcp server `local-tts-mcp`, use that instead.
+**End-of-Chat Voice Summary (MANDATORY):** Before yielding back to the operator at the end of your turn, ALWAYS speak a brief status update via `tts-cli`. This is not optional — it is how the operator (who may be away from the screen) tracks what every agent did across every repo.
+
+- One command, spoken aloud:
+  `cli-tts --text "<1-2 sentence concise summary of what was accomplished>. Next step: <ONE recommendation a decades-long hardened software & cybersecurity engineer would take as the single most logical next action.>"`
+- The single suggestion must be concrete and adversarial-minded — the next hardening move, not a vague "consider": verify the boundary case, check the supply-chain provenance, lock down the secret, add the failing test, confirm the rollback/bisect path, fail-closed on the untrusted input, audit for the banned primitive, run the native linter + secret scan. Pick the ONE that most reduces risk or closes the loop.
+- Keep stdout quiet — the spoken audio IS the channel; do not dump logs into the terminal.
+- Default model is `index-tts` (IndexTTS-2.5, the sole engine). Use `--lang ZH|EN|JA|ES|AR` when the summary is non-English; `--voice <ref.wav>` only when a specific clone voice is set.
+- If the `local-tts-mcp` MCP server is enabled in the harness, prefer it over the CLI.
+- Skip only if `cli-tts` is unavailable or the operator has explicitly disabled audio for the session.
 </agent>
 
 <coding>

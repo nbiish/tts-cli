@@ -102,7 +102,7 @@ class ModelRegistry:
     def register_all_models(self) -> None:
         """Register all available TTS models."""
         models = [
-            "pocket-tts"
+            "index-tts"
         ]
         
         for model_name in models:

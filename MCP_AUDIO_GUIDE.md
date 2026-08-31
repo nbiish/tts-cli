@@ -10,8 +10,9 @@ These tools allow AI agents to perform high-quality **Text-to-Speech (TTS)**, **
 
 | Feature | Flag | Description | Engine |
 | :--- | :--- | :--- | :--- |
-| **TTS** | `--text "..."` | Generate speech from text | Pocket TTS |
-| **Voice Clone** | `--voice-clone <file>` | Clone voice from reference audio | Pocket TTS |
+| **TTS** | `--text "..."` | Generate speech from text | IndexTTS-2.5 |
+| **Voice Clone** | `--voice-clone <file>` | Zero-shot clone voice from reference audio | IndexTTS-2.5 |
+| **Multilingual** | `--lang ZH\|EN\|JA\|ES\|AR` | Generate speech in a supported language | IndexTTS-2.5 |
 | **Clean Voice** | `--clean-voice [file]` | **Best Practice**: Isolate vocals + Remove silence | Demucs + Silero VAD |
 | **Isolate Vocals** | `--isolate-voice [file]` | Remove background music/noise | Demucs (Hybrid Transformer) |
 | **Remove Silence** | `--remove-silence [file]` | Trim non-speech segments | Silero VAD |
@@ -26,8 +27,8 @@ Before an MCP agent can utilize these tools, the specific isolated environments 
 Run these commands once to set up the heavy-lifting dependencies.
 
 ```bash
-# 1. Setup the lightweight TTS engine
-cli-tts --create-environment pocket-tts
+# 1. Setup the IndexTTS-2.5 engine (Python 3.11 + indextts; requires GPU/MPS)
+cli-tts --create-environment index-tts
 
 # 2. Setup the heavy audio processing engine (Demucs/VAD)
 cli-tts --create-environment audio-processing
@@ -37,7 +38,7 @@ cli-tts --create-environment audio-processing
 Ensure tools are ready:
 ```bash
 cli-tts --list-environments
-# Output should show "Available" for both 'pocket-tts' and 'audio-processing'
+# Output should show "Available" for both 'index-tts' and 'audio-processing'
 ```
 
 ---
@@ -61,7 +62,7 @@ cli-tts \
 **What happens under the hood:**
 1.  **Demucs** separates the vocals from the background noise.
 2.  **Silero VAD** removes silence and non-speech artifacts.
-3.  **Pocket TTS** analyzes the cleaned vocal profile.
+3.  **IndexTTS-2.5** analyzes the cleaned vocal profile (zero-shot).
 4.  **Generation**: The new text is synthesized using the cleaned profile.
 
 ### 2. Standalone Audio Cleaning
@@ -89,8 +90,8 @@ cli-tts --remove-silence lecture.wav --output trimmed_lecture.wav
 # Use default voice
 cli-tts --text "System initialized." --output status.wav
 
-# Use a specific built-in voice
-cli-tts --text "Alert." --voice javert --output alert.wav
+# Multilingual
+cli-tts --text "你好" --lang ZH --output zh.wav
 ```
 
 ---
@@ -98,9 +99,9 @@ cli-tts --text "Alert." --voice javert --output alert.wav
 ## 🧠 Technical Details for Agents
 
 ### Architecture
-*   **Isolation**: Audio processing runs in a separate `uv` environment (`.model-envs/audio-processing-env`) containing PyTorch, Demucs, and Torchaudio. This ensures the main CLI remains lightweight.
+*   **Isolation**: Audio processing runs in a separate `uv` environment (`.model-envs/audio-processing-env`) containing PyTorch, Demucs, and Torchaudio. This ensures the main CLI remains lightweight. IndexTTS-2.5 runs in its own isolated Python 3.11 `uv` environment.
 *   **Performance**:
-    *   **Pocket TTS**: Faster than real-time on modern CPUs.
+    *   **IndexTTS-2.5**: Fast on GPU/MPS (0.8B params); requires an accelerator + checkpoints.
     *   **Demucs**: Slower (approx. 1-2x real-time on CPU). Recommended to run asynchronously if possible.
     *   **VAD**: Extremely fast (negligible overhead).
 

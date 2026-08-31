@@ -75,7 +75,6 @@ class EnvironmentManager:
             # version outside the host project's range (e.g. IndexTTS needs
             # >=3.10,<3.12 while this project targets >=3.12).
             model_python_versions = {
-                "vibevoice": "3.9",   # legacy compatibility
                 "index-tts": "3.11",  # IndexTTS requires >=3.10,<3.12
             }
             python_version = model_python_versions.get(model_name)

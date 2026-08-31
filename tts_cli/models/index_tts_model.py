@@ -5,11 +5,10 @@ This module provides the IndexTTS-2.5 model implementation — an industrial-lev
 zero-shot text-to-speech system with voice cloning, emotion control, speaking-speed
 control, and multilingual support (ZH / EN / JA / ES / AR).
 
-IndexTTS is a GPU-class engine: it requires an accelerator (CUDA, MPS, or XPU) and
-model checkpoints downloaded separately. It is **opt-in** via ``--model index-tts``.
-On CPU-only machines (or when the environment / checkpoints are missing) it reports
-unavailable and the hybrid auto-router skips it, preserving the CPU-first default
-contract documented in the PRD.
+IndexTTS is the sole TTS engine for this CLI. It requires an accelerator
+(CUDA, MPS, or XPU) and model checkpoints downloaded separately. It is selected via
+``--model index-tts`` (or ``--model auto``, which is an alias). When the environment
+or checkpoints are missing it reports unavailable with an actionable message.
 
 Because IndexTTS requires Python ``>=3.10,<3.12`` while this project targets
 ``>=3.12``, the engine runs in an isolated ``uv`` environment pinned to Python 3.11.
@@ -48,7 +47,10 @@ class IndexTTSModel(BaseTTSModel):
 
     def __init__(self, model_name: str = "index-tts"):
         super().__init__(model_name)
-        self.python_executable = env_manager.get_python_executable(model_name)
+        # `auto` is an alias for `index-tts`; normalize the env-lookup key so the
+        # alias resolves the same isolated environment and checkpoints.
+        self._env_key = "index-tts" if model_name == "auto" else model_name
+        self.python_executable = env_manager.get_python_executable(self._env_key)
         self._model_dir = self._resolve_model_dir()
         # Cache the (relatively expensive) accelerator probe so repeated
         # check_availability() calls during a CLI session stay cheap.
@@ -133,9 +135,8 @@ class IndexTTSModel(BaseTTSModel):
     def check_availability(self) -> bool:
         """Available only when env + checkpoints + accelerator are all present.
 
-        This is the gate the hybrid auto-router uses to decide whether to skip
-        IndexTTS. On CPU-only machines (or missing env/checkpoints) it returns
-        False, so the default ``auto`` path is unaffected.
+        When any of these is missing, ``generate_speech`` reports the specific
+        gap with an actionable install hint instead of crashing.
         """
         if not self.python_executable:
             return False
@@ -158,9 +159,9 @@ class IndexTTSModel(BaseTTSModel):
             )
         if not self._has_accelerator():
             return False, (
-                "No accelerator detected (CUDA/MPS/XPU). IndexTTS-2.5 is a GPU-class "
-                "engine and is not enabled on CPU-only machines. Use the default "
-                "`auto` model or `kitten-tts`/`pocket-tts` for CPU synthesis."
+                "No accelerator detected (CUDA/MPS/XPU). IndexTTS-2.5 requires an "
+                "accelerator (Apple Silicon MPS is supported). Create the env and "
+                "download checkpoints, then re-run on a machine with MPS/CUDA/XPU."
             )
         return True, "Dependencies OK"
 

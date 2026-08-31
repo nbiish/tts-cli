@@ -260,6 +260,47 @@ def _log_to_agents_tts_comms(text: str, model_name: str, voice: Optional[str],
         pass
 
 
+def _comms_file() -> Path:
+    """Absolute path to the canonical AGENTS-TTS-COMMS.txt transcript.
+
+    The transcript lives at the tts-cli repo root (the package's parent), so it
+    is a single global ledger regardless of which repo an agent calls from —
+    the `cli-tts` wrapper always `cd`s to the tts-cli project root before run.
+    """
+    return Path(__file__).resolve().parent.parent / "AGENTS-TTS-COMMS.txt"
+
+
+def read_last_suggestion() -> Optional[str]:
+    """Return the most recent suggestion block from AGENTS-TTS-COMMS.txt.
+
+    Entries are blocks beginning with a `## <ISO-8601 timestamp>` line followed
+    by the suggestion text. Returns the last suggestion text (stripped), or
+    None if the file is missing/empty/has no entries.
+    """
+    path = _comms_file()
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return None
+
+    last_block: Optional[str] = None
+    for line in text.splitlines():
+        if line.startswith("## "):
+            # Start a new block; the suggestion is whatever follows until the
+            # next `## ` header. We only need the last block's body.
+            last_block = ""
+        elif last_block is not None:
+            # Accumulate body lines of the current (last) block.
+            if last_block:
+                last_block += "\n" + line
+            else:
+                last_block = line
+    if last_block is None:
+        return None
+    suggestion = last_block.strip()
+    return suggestion or None
+
+
 def generate_speech(text: str, model_name: str, voice: Optional[str], 
                    output_path: str, **kwargs) -> bool:
     """Generate speech from text."""
@@ -470,6 +511,8 @@ Examples:
                        help="List environment status")
     parser.add_argument("--list-voices", action="store_true",
                        help="List voices for a model")
+    parser.add_argument("--last-suggestion", action="store_true",
+                       help="Print the most recent 'Next step:' suggestion appended to AGENTS-TTS-COMMS.txt (the canonical cross-agent transcript). Use to tail the latest expert recommendation from any repo.")
     parser.add_argument("--test-model", help="Test a specific model")
     
     # Voice cloning
@@ -626,6 +669,14 @@ Examples:
     if args.list or args.list_models:
         list_models()
         return
+
+    if args.last_suggestion:
+        suggestion = read_last_suggestion()
+        if suggestion:
+            print(suggestion)
+            sys.exit(0)
+        print("(no suggestions recorded in AGENTS-TTS-COMMS.txt yet)")
+        sys.exit(1)
 
     if args.set_default:
         ok = set_default_model(args.set_default)

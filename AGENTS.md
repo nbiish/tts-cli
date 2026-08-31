@@ -323,6 +323,7 @@ Before yielding back to the operator at the end of your turn, ALWAYS speak a bri
 - **Keep stdout quiet** — the spoken audio IS the channel; do not dump logs into the terminal.
 - **Default model is `index-tts`** (IndexTTS-2.5, the sole engine). Use `--lang ZH|EN|JA|ES|AR` when the summary is non-English; `--voice <ref.wav>` only when a specific clone voice is set.
 - If the `local-tts-mcp` MCP server is enabled in the harness, prefer it over the CLI.
+- **Durable transcript (mandatory):** every `cli-tts` call is appended to `AGENTS-TTS-COMMS.txt` at the repo root — ISO-8601 timestamped, with model/lang/voice and the full spoken text. This is automatic (the CLI writes it on success); do not suppress it. The file is the readable counterpart to the audio: the operator can catch a missed readout, and other agents can ingest prior spoken summaries as context. Track it in git alongside `AGENTS.md`.
 - **Skip only if** `cli-tts` is unavailable or the operator has explicitly disabled audio for the session.
 </OUTPUT>
 

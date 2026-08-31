@@ -12,6 +12,7 @@ import subprocess
 import shutil
 import platform
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 import pyperclip
@@ -141,6 +142,37 @@ def test_model(model_name: str) -> None:
     print(f"✅ Model {model_name} is available and ready to use")
 
 
+def _log_to_agents_tts_comms(text: str, model_name: str, voice: Optional[str],
+                            output_path: str, **kwargs) -> None:
+    """Append the spoken text to AGENTS-TTS-COMMS.txt at the repo root.
+
+    Every cli-tts call is logged so the operator can read what was spoken if the
+    audio was missed, and so other agents can use prior spoken summaries as
+    context. The file is a rolling, append-only ledger (one block per call),
+    ISO-8601 timestamped, with the model, language, voice ref, and the full
+    spoken text. It is intended to be tracked in git alongside AGENTS.md.
+    """
+    try:
+        # Resolve repo root from this file (tts_cli/cli.py -> repo root).
+        repo_root = Path(__file__).resolve().parent.parent
+        comms_path = repo_root / "AGENTS-TTS-COMMS.txt"
+        ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        lang = kwargs.get("lang") or "EN"
+        voice_ref = voice or "(default)"
+        # Truncate very long text in the log header; keep full text up to a cap.
+        safe_text = text if len(text) <= 2000 else text[:2000] + " …[truncated]"
+        block = (
+            f"\n## {ts} | model={model_name} | lang={lang} | voice={voice_ref}\n"
+            f"output={output_path}\n"
+            f"{safe_text}\n"
+        )
+        with open(comms_path, "a", encoding="utf-8") as f:
+            f.write(block)
+    except OSError:
+        # Logging must never break generation; swallow write errors silently.
+        pass
+
+
 def generate_speech(text: str, model_name: str, voice: Optional[str], 
                    output_path: str, **kwargs) -> bool:
     """Generate speech from text."""
@@ -159,6 +191,7 @@ def generate_speech(text: str, model_name: str, voice: Optional[str],
     
     if success:
         print(f"✅ Speech generated successfully: {output_path}")
+        _log_to_agents_tts_comms(text, model_name, voice, output_path, **kwargs)
     else:
         print("❌ Failed to generate speech")
     

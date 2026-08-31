@@ -31,3 +31,6 @@ prune the existing historical entries in AGENTS-TTS-COMMS.txt down to suggestion
 
 ## 2026-08-31T21:57:03Z | model=kitten-tts-nano | lang=EN | voice=(default)
 verify the kitten-tts runner rejects overlong text and unknown voice names fail-closed.
+
+## 2026-08-31T21:58:07Z | model=pocket-tts | lang=EN | voice=(default)
+run cli-tts set-default for each engine and confirm auto resolves correctly, then add a failing test proving kitten-tts rejects overlong text and unknown voice names fail-closed.

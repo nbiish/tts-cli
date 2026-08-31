@@ -67,8 +67,8 @@ class KittenTTSModel(BaseTTSModel):
     def check_dependencies(self) -> tuple[bool, str]:
         if not self.python_executable:
             return False, (
-                "KittenTTS environment not found. Create it with: "
-                "cli-tts --create-environment kitten-tts"
+                "tts-cli not installed → https://github.com/nbiish/tts-cli "
+                "(run: cli-tts --create-environment kitten-tts)"
             )
         return True, "Dependencies OK"
 

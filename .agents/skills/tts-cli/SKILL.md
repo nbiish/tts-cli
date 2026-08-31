@@ -26,6 +26,11 @@ cli-tts --prompt "<1-2 sentence concise summary of what was accomplished>. Next 
 
 Keep stdout quiet — the spoken audio IS the channel; do not dump logs.
 
+**If not installed:** when the engine env is missing, `cli-tts` prints one
+concise recovery line and exits non-zero —
+`❌ tts-cli engine not ready → https://github.com/nbiish/tts-cli`. Follow the
+link for setup, then `cli-tts --create-environment kitten-tts`.
+
 ## 2. Setup (once per machine)
 
 ```bash

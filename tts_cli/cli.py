@@ -45,6 +45,19 @@ SELECTABLE_MODELS = (
     "kitten-tts-nano",
 )
 
+# Canonical remote — printed as the single concise "not installed" hint so any
+# agent/operator can recover in one glance.
+TTS_CLI_REMOTE = "https://github.com/nbiish/tts-cli"
+
+
+def _not_installed_hint(reason: str = "tts-cli not installed") -> None:
+    """Print the single, concise not-installed notice pointing at the remote.
+
+    Used everywhere the engine can't run (env missing, model unavailable, model
+    not registered). One line, one link — the remote README has full setup.
+    """
+    print(f"❌ {reason} → {TTS_CLI_REMOTE}")
+
 
 def _default_model_file() -> Path:
     """User-level config file storing the configured default model name."""
@@ -132,15 +145,23 @@ def list_models() -> None:
     print("Available TTS Models:")
     print("=" * 50)
     
+    any_unavailable = False
     models = model_registry.list_models()
     for model_name in models:
         model = model_registry.get_model(model_name)
         if model:
             info = model.get_model_info()
-            status = "✅ Available" if model.check_availability() else "❌ Not Available"
+            available = model.check_availability()
+            status = "✅ Available" if available else "❌ Not Available"
+            if not available:
+                any_unavailable = True
             print(f"{model_name:15} | {status:15} | {info['description']}")
         else:
             print(f"{model_name:15} | ❌ Not Loaded")
+            any_unavailable = True
+
+    if any_unavailable:
+        _not_installed_hint("tts-cli not ready")
 
 
 def list_environments() -> None:
@@ -165,10 +186,9 @@ def test_model(model_name: str) -> None:
     
     # Check if environment exists
     if not env_manager.environment_exists(model_name):
-        print(f"❌ Environment not found for {model_name}")
-        print(f"Create it with: cli-tts --create-environment {model_name}")
+        _not_installed_hint(f"tts-cli env '{model_name}' missing (run: cli-tts --create-environment kitten-tts)")
         return
-    
+
     # Test environment
     success, message = env_manager.test_environment(model_name)
     if not success:
@@ -180,11 +200,11 @@ def test_model(model_name: str) -> None:
     # Test model functionality
     model = model_registry.get_model(model_name)
     if not model:
-        print(f"❌ Model not registered: {model_name}")
+        _not_installed_hint(f"tts-cli model '{model_name}' not registered")
         return
     
     if not model.check_availability():
-        print(f"❌ Model not available: {model_name}")
+        _not_installed_hint("tts-cli engine not available")
         return
     
     print(f"✅ Model {model_name} is available and ready to use")
@@ -249,14 +269,13 @@ def generate_speech(text: str, model_name: str, voice: Optional[str],
     """Generate speech from text."""
     model = model_registry.get_model(model_name)
     if not model:
-        print(f"Model not found: {model_name}")
+        _not_installed_hint(f"tts-cli model '{model_name}' not registered")
         return False
-    
+
     if not model.check_availability():
-        print(f"Model not available: {model_name}")
-        print(f"Create environment with: cli-tts --create-environment {model_name}")
+        _not_installed_hint("tts-cli engine not ready (run: cli-tts --create-environment kitten-tts)")
         return False
-    
+
     print(f"Generating speech with {model_name}...")
     success = model.generate_speech(text, voice, output_path, **kwargs)
     
@@ -273,11 +292,11 @@ def list_voices(model_name: str) -> None:
     """List voices for a specific model."""
     model = model_registry.get_model(model_name)
     if not model:
-        print(f"Model not found: {model_name}")
+        _not_installed_hint(f"tts-cli model '{model_name}' not registered")
         return
     
     if not model.check_availability():
-        print(f"Model not available: {model_name}")
+        _not_installed_hint("tts-cli engine not available")
         return
     
     voices = model.list_voices()

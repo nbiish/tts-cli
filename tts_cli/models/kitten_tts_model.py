@@ -19,8 +19,9 @@ calls. All user input is passed via stdin as JSON (CWE-78 safe).
 """
 
 import json
-import subprocess
 import logging
+import secrets
+import subprocess
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 
@@ -35,13 +36,14 @@ VARIANT_TO_REPO = {
     "kitten-tts-nano": "KittenML/kitten-tts-nano-0.8-int8",
 }
 DEFAULT_VARIANT = "kitten-tts-nano"
-DEFAULT_VOICE = "expr-voice-5-m"
 BUILT_IN_VOICES = (
     "expr-voice-2-m", "expr-voice-2-f",
     "expr-voice-3-m", "expr-voice-3-f",
     "expr-voice-4-m", "expr-voice-4-f",
     "expr-voice-5-m", "expr-voice-5-f",
 )
+# Heard tempo is baked into the WAV so every OS player can run at 1.0.
+DEFAULT_GENERATE_SPEED = 1.8
 
 # Total-input DoS cap. Inference is chunked well below this; see CHUNK_TEXT_LENGTH.
 MAX_TEXT_LENGTH = 5000
@@ -96,9 +98,13 @@ class KittenTTSModel(BaseTTSModel):
 
         # `voice` for KittenTTS is a built-in voice name (not a path). Fail
         # closed on an unrecognized name (do NOT silently fall back) so a
-        # typo'd voice can never produce unexpected audio. Absent voice is
-        # fine — use the default.
-        chosen_voice = voice or DEFAULT_VOICE
+        # typo'd voice can never produce unexpected audio. Omitted voice
+        # picks one of the eight built-in names once per call (same voice
+        # for every chunk of this generation).
+        if voice is None:
+            chosen_voice = secrets.choice(BUILT_IN_VOICES)
+        else:
+            chosen_voice = voice
         if chosen_voice not in BUILT_IN_VOICES:
             print(f"❌ Unknown KittenTTS voice: {voice!r}. "
                   f"Choose from: {', '.join(BUILT_IN_VOICES)}")
@@ -109,7 +115,7 @@ class KittenTTSModel(BaseTTSModel):
             print("❌ Text is empty.")
             return False
 
-        speed = float(kwargs.get("speed", 1.0))
+        speed = float(kwargs.get("speed", DEFAULT_GENERATE_SPEED))
         return self._generate_in_environment(
             chunks=chunks,
             repo_id=VARIANT_TO_REPO[self._variant],
@@ -253,7 +259,7 @@ def main():
         print("[runner] no text chunks in payload", file=sys.stderr)
         sys.exit(2)
     voice = payload["voice"]
-    speed = float(payload.get("speed", 1.0))
+    speed = float(payload.get("speed", 1.8))
     output_path = payload["output_path"]
 
     try:

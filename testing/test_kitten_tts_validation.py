@@ -25,7 +25,7 @@ from tts_cli.models.kitten_tts_model import (
     MAX_TEXT_LENGTH,
     CHUNK_TEXT_LENGTH,
     BUILT_IN_VOICES,
-    DEFAULT_VOICE,
+    DEFAULT_GENERATE_SPEED,
 )
 
 
@@ -94,13 +94,20 @@ def test_valid_voice_reaches_runner(model_with_env, monkeypatch):
     assert sent_stdin is subprocess.PIPE
 
 
-def test_no_voice_uses_default(model_with_env, monkeypatch):
-    """Absent voice resolves to DEFAULT_VOICE and reaches the runner."""
+def test_no_voice_picks_with_secrets_choice(model_with_env, monkeypatch):
+    """Omitted voice uses secrets.choice once; generate speed defaults to 1.8."""
     popen = _stub_popen(monkeypatch)
-    ok = model_with_env.generate_speech("hello world",
-                                         output_path="/tmp/out.wav")
+    monkeypatch.setattr(
+        "tts_cli.models.kitten_tts_model.secrets.choice",
+        lambda seq: "expr-voice-3-f",
+    )
+    ok = model_with_env.generate_speech("hello world", output_path="/tmp/out.wav")
     assert ok is True
     assert popen.call_count == 1
+    payload = _payload_from_popen(popen)
+    assert payload["voice"] == "expr-voice-3-f"
+    assert payload["speed"] == DEFAULT_GENERATE_SPEED
+    assert payload["speed"] == 1.8
 
 
 def test_missing_env_unavailable():
@@ -164,4 +171,5 @@ def test_validate_voice():
     for v in BUILT_IN_VOICES:
         assert m.validate_voice(v) is True
     assert m.validate_voice("nonsense") is False
-    assert DEFAULT_VOICE in BUILT_IN_VOICES
+    assert "expr-voice-5-m" in BUILT_IN_VOICES
+    assert DEFAULT_GENERATE_SPEED == 1.8

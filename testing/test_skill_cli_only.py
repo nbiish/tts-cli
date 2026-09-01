@@ -25,3 +25,15 @@ def test_skill_names_cli_and_every_master_question():
     for question in MASTER_QUESTIONS:
         assert question in text
     assert len(MASTER_QUESTIONS) == 11
+    assert "marketing / sales" in text
+    assert "craft / next-agent" not in text
+    assert "--voice" not in text
+    assert "--wait" not in text
+    assert "expr-voice" not in text
+    assert "list-voices" not in text
+    lowered = text.lower()
+    assert "do not wait" not in lowered
+    assert "detach" not in lowered
+    assert "setup-global" not in text
+    assert "--clipboard" not in text
+    assert "create-environment" not in text

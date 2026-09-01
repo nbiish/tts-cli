@@ -55,10 +55,7 @@ cli-tts --list-environments
 ### 1. Agent Voice Summary (Recommended)
 Follow `.agents/skills/tts-cli/SKILL.md` and `AGENTS.md` `<OUTPUT>`. Speak
 with **one** `cli-tts --prompt` per turn: fused Next-step plus one-sentence
-answers to every master. Omit `--voice` and `--speed` — the CLI is the
-singular system (next chat: 1.8× readout, random built-in voice per call).
-**Do not wait** for `cli-tts` to finish; background the command until CLI
-detach lands.
+answers to every master. The CLI plays for the operator.
 
 ```bash
 cli-tts --prompt "$(cat <<'EOF'
@@ -72,10 +69,10 @@ What would this test / QA master suggest? <one sentence>
 What would this release / rollback master suggest? <one sentence>
 What would this product / operator-trust master suggest? <one sentence>
 What would this human-factors / ear master suggest? <one sentence>
-What would this craft / next-agent master suggest? <one sentence>
+What would this marketing / sales master suggest? <one sentence>
 What would this governance / license / sovereignty master suggest? <one sentence>
 EOF
-)" >/dev/null 2>&1 &
+)" >/dev/null 2>&1
 ```
 
 The spoken Next-step body is appended to `AGENTS-TTS-COMMS.txt`. Treat
@@ -102,7 +99,7 @@ cli-tts --remove-silence lecture.wav --output trimmed_lecture.wav
 
 ### 3. Basic Text-to-Speech
 ```bash
-# Omit --voice (next chat: random built-in; today: expr-voice-5-m)
+# Omit --voice (CLI picks a random built-in; 1.8× is in the WAV)
 cli-tts --text "System initialized." --output status.wav
 
 # Operator override — pin a built-in voice

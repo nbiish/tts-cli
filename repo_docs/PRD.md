@@ -6,7 +6,7 @@
 - **Version:** 2.0.0
 - **Description:** A modern, clean command-line Text-to-Speech tool designed for local execution with isolated environments. It leverages the `uv` package manager to ensure dependency isolation for different TTS models.
 - **Purpose:** To provide a fast, privacy-focused, and easy-to-use TTS solution that runs efficiently on consumer hardware (CPU-optimized) without relying on cloud APIs.
-- **UX:** Command Line Interface (CLI).
+- **UX:** Command Line Interface (CLI) today. Long-term: a Rust mixer GUI that pops up for tts-cli, watches tts-cli PIDs, queues every agent play as a skippable track list, owns volume for those plays, and sets the permanent WAV generate speed for all tts-cli calls (see `.agents/tasks/TASK.2026-09-01.tts-mixer-gui.md`). Agent speak is CLI-owned 1.8× + random voice.
 
 ## Key Features
 

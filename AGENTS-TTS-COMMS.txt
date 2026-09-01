@@ -162,3 +162,31 @@ What would this product / operator-trust master suggest? Keep agent prompt free 
 What would this human-factors / ear master suggest? 1.8 is rushed on purpose; if a phrase is missed, read the chat or the ledger.
 What would this craft / next-agent master suggest? Open feat tts-cli-speed-voice-diversity from main and follow the speed-voice-diversity task file.
 What would this governance / license / sovereignty master suggest? Keep the engine on-device under the existing local license; do not add a cloud speech vendor.
+
+## 2026-09-01T14:39:02Z
+Open feat tts-cli-speed-voice-diversity from main and implement detach, one point eight heard rate, and random voice from the speed-voice-diversity task file.
+What would this adversarial-security master suggest? Keep unknown voice names fail-closed and do not write the chosen voice into the public ledger.
+What would this privacy / data-minimization master suggest? Leave keys and machine paths out of the spoken prompt and the public ledger.
+What would this networks / supply-chain master suggest? Pin KittenTTS weights by digest before the next environment create.
+What would this systems-architecture master suggest? Detach with a new session so the speak child survives when the parent shell exits.
+What would this reliability / SRE master suggest? Fail closed when the engine env is missing and print the recovery line.
+What would this test / QA master suggest? Prove default prompt returns before playback would finish and that wait still generates.
+What would this release / rollback master suggest? Ask before merging the feat branch after tests pass in the worktree.
+What would this product / operator-trust master suggest? Keep agent prompt free of voice, speed, and wait so the tool stays one system.
+What would this human-factors / ear master suggest? One point eight is rushed on purpose; if a phrase is missed, read the chat or the ledger.
+What would this craft / next-agent master suggest? Open feat tts-cli-speed-voice-diversity from main and follow the speed-voice-diversity task file.
+What would this governance / license / sovereignty master suggest? Keep the engine on-device under the existing local license; do not add a cloud speech vendor.
+
+## 2026-09-01T14:51:21Z
+Confirm merge of feat tts-cli-speed-voice-diversity so main plays at one point eight with auto-pick and no wait flag.
+What would this adversarial-security master suggest? Keep unknown names fail-closed in the CLI and never write the chosen name into the public ledger.
+What would this privacy / data-minimization master suggest? Leave keys and machine paths out of the spoken prompt and the public ledger.
+What would this networks / supply-chain master suggest? Pin KittenTTS weights by digest before the next environment create.
+What would this systems-architecture master suggest? Parent returns at once; the child gets an output path so it generates and plays without looping.
+What would this reliability / SRE master suggest? Fail closed when the engine env is missing and print the recovery line.
+What would this test / QA master suggest? Keep the grep-lock that the skill has no voice flags, no wait, and no setup dump.
+What would this release / rollback master suggest? Ask before merging the feat branch after the remaining docs match the slim skill.
+What would this product / operator-trust master suggest? Agents only see one prompt; the CLI owns play, tempo, and auto-pick.
+What would this human-factors / ear master suggest? One point eight is rushed on purpose; if a phrase is missed, read the chat or the ledger.
+What would this marketing / sales master suggest? Pitch one command that talks while the agent keeps working, not a menu of flags.
+What would this governance / license / sovereignty master suggest? Keep the engine on-device under the existing local license; do not add a cloud speech vendor.

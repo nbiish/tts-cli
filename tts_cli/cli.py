@@ -8,6 +8,7 @@ the tiered composition architecture as a Matter component.
 
 import argparse
 import logging
+import math
 import os
 import sys
 import subprocess
@@ -22,7 +23,12 @@ import pyperclip
 from .core.model_registry import model_registry
 from .core.environment_manager import env_manager
 from .core.audio_processor import audio_processor
-from .models.kitten_tts_model import KittenTTSModel
+from .models.kitten_tts_model import (
+    BUILT_IN_VOICES,
+    DEFAULT_GENERATE_SPEED,
+    KittenTTSModel,
+    MAX_TEXT_LENGTH,
+)
 
 logger = logging.getLogger("tts_cli.cli")
 
@@ -44,7 +50,7 @@ MASTER_QUESTIONS = (
     "What would this release / rollback master suggest?",
     "What would this product / operator-trust master suggest?",
     "What would this human-factors / ear master suggest?",
-    "What would this craft / next-agent master suggest?",
+    "What would this marketing / sales master suggest?",
     "What would this governance / license / sovereignty master suggest?",
 )
 
@@ -55,6 +61,9 @@ NEXT_STEP_ONESHOT_PROMPT = (
     + "\n".join(MASTER_QUESTIONS)
     + "\n"
 )
+
+# Heard tempo lives in the WAV. The OS player must not stack a second rate.
+PLAY_AUDIO_RATE = 1.0
 
 
 def print_next_step_prompt() -> None:
@@ -347,6 +356,69 @@ def read_last_suggestion() -> Optional[str]:
     return suggestion or None
 
 
+def _speak_request_error(text: str, voice: Optional[str], speed: float) -> Optional[str]:
+    """Fail-closed checks that must run in the parent before detach."""
+    if not text or not text.strip():
+        return "Text is empty."
+    if len(text) > MAX_TEXT_LENGTH:
+        return f"Text too long ({len(text)} > {MAX_TEXT_LENGTH} chars)."
+    if not math.isfinite(speed) or speed <= 0:
+        return "--speed must be a positive finite number."
+    if voice is not None and voice not in BUILT_IN_VOICES:
+        return (
+            f"Unknown KittenTTS voice: {voice!r}. "
+            f"Choose from: {', '.join(BUILT_IN_VOICES)}"
+        )
+    return None
+
+
+def _detached_child_argv(
+    text: str,
+    *,
+    model: str,
+    voice: Optional[str],
+    speed: float,
+    lang: Optional[str],
+    output_path: str,
+) -> list[str]:
+    argv = [
+        sys.executable,
+        "-m",
+        "tts_cli.cli",
+        "--model",
+        model,
+        "--speed",
+        str(speed),
+        "--text",
+        text,
+        "--output",
+        output_path,
+    ]
+    if voice:
+        argv.extend(["--voice", voice])
+    if lang:
+        argv.extend(["--lang", lang])
+    return argv
+
+
+def _spawn_detached_child(argv: list[str]) -> None:
+    """Start a one-shot child that generates and plays after this process exits."""
+    popen_kwargs: dict = {
+        "stdin": subprocess.DEVNULL,
+        "stdout": subprocess.DEVNULL,
+        "stderr": subprocess.DEVNULL,
+        "close_fds": True,
+    }
+    if os.name == "nt":
+        popen_kwargs["creationflags"] = (
+            getattr(subprocess, "DETACHED_PROCESS", 0x00000008)
+            | getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0x00000200)
+        )
+    else:
+        popen_kwargs["start_new_session"] = True
+    subprocess.Popen(argv, **popen_kwargs)
+
+
 def generate_speech(text: str, model_name: str, voice: Optional[str], 
                    output_path: str, **kwargs) -> bool:
     """Generate speech from text."""
@@ -408,9 +480,13 @@ def list_voices(model_name: str) -> None:
             print(f"  - {voice}")
 
 
-def play_audio(file_path: str, speed: float = 1.2) -> None:
-    """Play audio file using system default player at the given speed."""
-    print(f"Playing audio: {file_path} (speed: {speed}x)")
+def play_audio(file_path: str, speed: float = PLAY_AUDIO_RATE) -> None:
+    """Play audio file using system default player at the given speed.
+
+    Heard tempo is baked into KittenTTS generate (default 1.8). The player
+    default is 1.0 so we do not stack rates.
+    """
+    logger.debug("Playing audio: %s (player rate: %sx)", file_path, speed)
     try:
         system = platform.system()
         if system == "Darwin":  # macOS
@@ -530,7 +606,18 @@ Examples:
     # Model and voice options
     parser.add_argument("--model", default="auto",
                        help="TTS model to use: auto (default = kitten-tts-nano) or kitten-tts-nano")
-    parser.add_argument("--voice", help="Built-in KittenTTS voice name (e.g. expr-voice-5-m). Default: expr-voice-5-m. Use --list-voices to see all.")
+    parser.add_argument(
+        "--voice",
+        help="Built-in KittenTTS voice name (e.g. expr-voice-2-f). "
+             "Omit to pick one of the eight at random per call. "
+             "Unknown names fail closed. Use --list-voices to see all.",
+    )
+    parser.add_argument(
+        "--speed",
+        type=float,
+        default=DEFAULT_GENERATE_SPEED,
+        help="KittenTTS generate speed (heard rate baked into the WAV). Default 1.8.",
+    )
     parser.add_argument("--lang", default=None,
                        help="(Kept for compatibility; KittenTTS is English-only. Default: EN)")
     parser.add_argument("--output", help="Output audio file path")
@@ -969,6 +1056,26 @@ Examples:
         if effective_model == "auto":
             effective_model = get_default_model()
 
+        err = _speak_request_error(text, args.voice, args.speed)
+        if err:
+            print(f"❌ {err}")
+            sys.exit(1)
+
+        # No --output: parent exits immediately; child gets --output so it
+        # generates, logs, and plays without spawning another child.
+        if not args.output:
+            _spawn_detached_child(
+                _detached_child_argv(
+                    text,
+                    model=effective_model,
+                    voice=args.voice,
+                    speed=args.speed,
+                    lang=args.lang,
+                    output_path=output_path,
+                )
+            )
+            sys.exit(0)
+
         # Generate speech
         success = generate_speech(
             text=text,
@@ -976,7 +1083,8 @@ Examples:
             voice=args.voice,
             output_path=output_path,
             voice_clone=voice_clone_path,
-            lang=args.lang
+            lang=args.lang,
+            speed=args.speed,
         )
         
         # Cleanup temp voice files

@@ -224,6 +224,7 @@ AGENTS/*.COMMS.live.md
 .hypothesis/
 .idea/
 .installed.cfg
+.model-envs
 .model-envs/
 .mypy_cache/
 .node_repl_history

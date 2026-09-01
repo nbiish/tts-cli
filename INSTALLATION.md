@@ -88,7 +88,7 @@ cli-tts --list
 ### **Voices**
 
 KittenTTS ships 8 fixed built-in voices (no zero-shot cloning). Agent
-speak omits `--voice` (CLI-owned random + 1.8× next chat). Operators may
+speak omits `--voice` (CLI-owned random + 1.8× WAV). Operators may
 pin a name:
 
 ```bash

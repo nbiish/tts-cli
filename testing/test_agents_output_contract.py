@@ -33,8 +33,9 @@ def test_agents_output_names_shipped_cli_behavior():
     assert "Do not add IndexTTS" in _AGENTS
     assert "period-space" in _AGENTS
     assert "Do not prompt agents to wrap" in _AGENTS
-    assert "Nine deterministic" in _AGENTS
-    assert "blank / blank" in _AGENTS
+    assert "Do not paste this file's `<OUTPUT>` roster" in _AGENTS
+    assert "on-device Python" in _AGENTS
+    assert "Skill distribution hub" in _AGENTS
 
 
 def test_agents_output_claims_serialized_play():
@@ -56,3 +57,4 @@ def test_llms_is_kitten_prd_not_indextts():
     assert "Do not add wrap instructions to the skill" in _LLMS
     assert "nine deterministic" in _LLMS
     assert "blank / blank" in _LLMS
+    assert "copy the skill only" in _LLMS

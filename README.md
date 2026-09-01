@@ -55,14 +55,14 @@ cli-tts --text "Hello world" --output speech.wav
 - **Model Registry**: Dynamic model loading and registration system
 - **KittenTTS Implementation**: Ultra-lightweight CPU ONNX TTS (fixed voices) - **SOLE ENGINE**
 - **Audio Generation**: Working audio output with auto-playback
-- **Voice Management**: Built-in voice selection (`--voice`)
+- **Voice Management**: Built-in voices; agents omit `--voice`, operators pin with `--voice`
 - **CLI Interface**: Full command-line interface operational
 
 ## ✨ Features
 
 - **⚡ CPU Inference**: KittenTTS runs on CPU — no GPU/MPS required (Apple Silicon, Linux, Windows, WSL)
 - **🔒 Isolated Environments**: The engine runs in its own UV environment (Python 3.11)
-- **🎵 Built-in Voices**: 8 fixed voices (e.g. `expr-voice-5-m`); select with `--voice`
+- **🎵 Built-in Voices**: 8 fixed voices; agent speak omits `--voice` (CLI-owned random + 1.8× next chat); operator `--voice` pins
 - **📋 Clipboard | Text | Text File | Pipe Support**: Flexible input methods
 - **🔊 Auto-Playback**: Automatically plays generated audio
 - **💾 Smart Caching**: Auto-manages output files with rotation
@@ -82,7 +82,7 @@ cli-tts --text "Hello world"
 # Save to specific file (also plays)
 cli-tts "Hello world" --output hello.wav
 
-# Use a specific built-in voice (default: expr-voice-5-m)
+# Operator override — pin a built-in voice (agents omit --voice)
 cli-tts "Hello world" --voice expr-voice-5-m
 
 # List all built-in voices
@@ -102,10 +102,12 @@ cat story.txt | cli-tts
 
 ### Voices
 
-KittenTTS ships 8 fixed built-in voices (no zero-shot cloning). Select one with `--voice`:
+KittenTTS ships 8 fixed built-in voices (no zero-shot cloning). **Agent
+speak** omits `--voice` — the CLI is the singular system (next chat:
+random voice per call, heard rate 1.8×). Operators may still pin a name:
 
 ```bash
-# Use a specific built-in voice
+# Operator override — pin a built-in voice
 cli-tts --text "Hello world" --voice expr-voice-2-f
 
 # List all voices
@@ -151,7 +153,7 @@ cli-tts --cleanup-environment kitten-tts
 - **Speed**: ⚡ Fastest on this machine — cold ~7.9s, RTF ~0.47 (Apple Silicon CPU).
 - **Quality**: ✅ Natural speech from 8 fixed built-in voices (no zero-shot cloning)
 - **Features**: Ultra-lightweight (15M / 25MB), CPU-only (no accelerator), cross-platform, English
-- **Voices**: 8 built-in voices (`expr-voice-2..5` m/f); select with `--voice` (default `expr-voice-5-m`); `cli-tts --list-voices`
+- **Voices**: 8 built-in voices (`expr-voice-2..5` m/f); agents omit `--voice` (CLI-owned diversity next chat); operators pin with `--voice`; `cli-tts --list-voices`
 - **Implementation**: KittenTTS, runs in an isolated Python 3.11 `uv` env via subprocess
 - **Requirements**: None (CPU). Weights download from HF on first run.
 - **Best for**: Fast, portable agent voice summaries on any OS without an accelerator.

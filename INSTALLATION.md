@@ -87,10 +87,12 @@ cli-tts --list
 
 ### **Voices**
 
-KittenTTS ships 8 fixed built-in voices (no zero-shot cloning):
+KittenTTS ships 8 fixed built-in voices (no zero-shot cloning). Agent
+speak omits `--voice` (CLI-owned random + 1.8× next chat). Operators may
+pin a name:
 
 ```bash
-# Select a built-in voice (default: expr-voice-5-m)
+# Operator override
 cli-tts --text "Hello" --voice expr-voice-2-f --output voice.wav
 
 # List all voices

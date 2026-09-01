@@ -120,3 +120,45 @@ What would this product / operator-trust master suggest? Put every master senten
 What would this human-factors / ear master suggest? Keep English verb-first lines and let the engine chunk long speech so it stays speakable.
 What would this craft / next-agent master suggest? Deploy the updated OUTPUT with ainish-coder rules so other repos inherit the eleven-answer contract.
 What would this governance / license / sovereignty master suggest? Keep the engine on-device under the existing local license; do not add a cloud speech vendor.
+
+## 2026-09-01T14:23:37Z
+Merge docs tts-cli-speed-voice-diversity then implement heard rate 1.4 and random voice on a feat branch.
+What would this adversarial-security master suggest? Keep unknown --voice names fail-closed and do not write the chosen voice into the public ledger.
+What would this privacy / data-minimization master suggest? Leave keys and machine paths out of the spoken prompt and the public ledger.
+What would this networks / supply-chain master suggest? Pin KittenTTS weights by digest before the next environment create.
+What would this systems-architecture master suggest? Bake 1.4 into generate speed and play the WAV at 1.0 so every OS hears the same tempo.
+What would this reliability / SRE master suggest? Fail closed when the engine env is missing and print the recovery line.
+What would this test / QA master suggest? Monkeypatch secrets.choice and assert the runner payload voice and generate speed before merging code.
+What would this release / rollback master suggest? Ask before merging this plan branch; implement on a fresh feat worktree after it lands.
+What would this product / operator-trust master suggest? Keep agent --prompt free of --voice and --speed so the tool stays one system.
+What would this human-factors / ear master suggest? Verify KittenTTS accepts 1.4 before stacking a second playback rate that would sound rushed.
+What would this craft / next-agent master suggest? Open feat tts-cli-speed-voice-diversity from main and follow TASK.2026-09-01.speed-voice-diversity.md.
+What would this governance / license / sovereignty master suggest? Keep the engine on-device under the existing local license; do not add a cloud speech vendor.
+
+## 2026-09-01T14:27:31Z
+Merge docs tts-cli-speed-voice-diversity then implement heard rate 1.8 and random voice on a feat branch.
+What would this adversarial-security master suggest? Keep unknown voice names fail-closed and do not write the chosen voice into the public ledger.
+What would this privacy / data-minimization master suggest? Leave keys and machine paths out of the spoken prompt and the public ledger.
+What would this networks / supply-chain master suggest? Pin KittenTTS weights by digest before the next environment create.
+What would this systems-architecture master suggest? Bake 1.8 into generate speed and play the WAV at 1.0 so every OS hears the same tempo without stacking.
+What would this reliability / SRE master suggest? Fail closed when the engine env is missing and print the recovery line.
+What would this test / QA master suggest? Monkeypatch secrets.choice and assert the runner payload voice and generate speed 1.8 before merging code.
+What would this release / rollback master suggest? Ask before merging this plan branch; implement on a fresh feat worktree after it lands.
+What would this product / operator-trust master suggest? Keep agent prompt free of voice and speed flags so the tool stays one system.
+What would this human-factors / ear master suggest? 1.8 is rushed on purpose; if a phrase is missed, read the chat or the ledger.
+What would this craft / next-agent master suggest? Open feat tts-cli-speed-voice-diversity from main and follow the speed-voice-diversity task file.
+What would this governance / license / sovereignty master suggest? Keep the engine on-device under the existing local license; do not add a cloud speech vendor.
+
+## 2026-09-01T14:31:48Z
+Merge the plan branch then implement detach, 1.8 heard rate, and random voice on a feat branch.
+What would this adversarial-security master suggest? Keep unknown voice names fail-closed and do not write the chosen voice into the public ledger.
+What would this privacy / data-minimization master suggest? Leave keys and machine paths out of the spoken prompt and the public ledger.
+What would this networks / supply-chain master suggest? Pin KittenTTS weights by digest before the next environment create.
+What would this systems-architecture master suggest? Default detach after validation so the parent exits immediately; use wait only in tests.
+What would this reliability / SRE master suggest? Fail closed when the engine env is missing and print the recovery line.
+What would this test / QA master suggest? Prove default prompt returns before playback would finish and that wait still generates.
+What would this release / rollback master suggest? Ask before merging this plan branch; implement on a fresh feat worktree after it lands.
+What would this product / operator-trust master suggest? Keep agent prompt free of voice, speed, and wait so the tool stays one system.
+What would this human-factors / ear master suggest? 1.8 is rushed on purpose; if a phrase is missed, read the chat or the ledger.
+What would this craft / next-agent master suggest? Open feat tts-cli-speed-voice-diversity from main and follow the speed-voice-diversity task file.
+What would this governance / license / sovereignty master suggest? Keep the engine on-device under the existing local license; do not add a cloud speech vendor.

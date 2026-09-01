@@ -13,8 +13,8 @@ Cleaning** entirely locally, ensuring data privacy and zero latency.
 | Feature | Flag | Description | Engine |
 | :--- | :--- | :--- | :--- |
 | **TTS** | `--text "..."` / `--prompt "..."` | Generate speech from text | KittenTTS nano |
-| **Agent summary** | `--prompt "<summary>. Next step: <suggestion>"` | Streamlined agent entry (alias for `--text`) | KittenTTS nano |
-| **Built-in voice** | `--voice expr-voice-5-m` | Select one of 8 fixed built-in voices | KittenTTS nano |
+| **Agent summary** | `--prompt` (fused Next-step + eleven answers; omit `--voice` / `--speed`) | Singular speak path | KittenTTS nano |
+| **Built-in voice** | `--voice NAME` | Operator override (8 names). Agents omit this. Next chat: omitted → random | KittenTTS nano |
 | **Default model** | `--set-default kitten-tts-nano` / `--list` | Choose/show the default for `auto` | KittenTTS nano |
 | **Clean Voice** | `--clean-voice [file]` | **Best Practice**: Isolate vocals + Remove silence | Demucs + Silero VAD |
 | **Isolate Vocals** | `--isolate-voice [file]` | Remove background music/noise | Demucs (Hybrid Transformer) |
@@ -55,7 +55,10 @@ cli-tts --list-environments
 ### 1. Agent Voice Summary (Recommended)
 Follow `.agents/skills/tts-cli/SKILL.md` and `AGENTS.md` `<OUTPUT>`. Speak
 with **one** `cli-tts --prompt` per turn: fused Next-step plus one-sentence
-answers to every master (`cli-tts --next-step-prompt` prints the questions).
+answers to every master. Omit `--voice` and `--speed` — the CLI is the
+singular system (next chat: 1.8× readout, random built-in voice per call).
+**Do not wait** for `cli-tts` to finish; background the command until CLI
+detach lands.
 
 ```bash
 cli-tts --prompt "$(cat <<'EOF'
@@ -72,7 +75,7 @@ What would this human-factors / ear master suggest? <one sentence>
 What would this craft / next-agent master suggest? <one sentence>
 What would this governance / license / sovereignty master suggest? <one sentence>
 EOF
-)" --output summary.wav
+)" >/dev/null 2>&1 &
 ```
 
 The spoken Next-step body is appended to `AGENTS-TTS-COMMS.txt`. Treat
@@ -99,10 +102,10 @@ cli-tts --remove-silence lecture.wav --output trimmed_lecture.wav
 
 ### 3. Basic Text-to-Speech
 ```bash
-# Default built-in voice (expr-voice-5-m)
+# Omit --voice (next chat: random built-in; today: expr-voice-5-m)
 cli-tts --text "System initialized." --output status.wav
 
-# Choose a built-in voice
+# Operator override — pin a built-in voice
 cli-tts --text "Hello" --voice expr-voice-2-f --output voice.wav
 ```
 

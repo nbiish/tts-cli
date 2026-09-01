@@ -63,3 +63,6 @@ Run skills sync at the start of your next session in a deployed project to confi
 
 ## 2026-08-31T23:37:11Z
 Confirm merge of the fused-suggestion skill so the next agent imagines the full expert room and writes one Next-step into the public ledger with no panel schema.
+
+## 2026-09-01T00:09:29Z
+Copy the tts-cli skill into ainish-coder on its own worktree so the next agent answers the same master-suggest questions and writes one Next-step with no panel schema.

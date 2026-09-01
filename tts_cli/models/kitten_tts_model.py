@@ -15,7 +15,9 @@ name rather than a reference audio path.
 
 The engine runs one-shot in a subprocess that exits immediately after writing
 the output WAV — no daemon, no warm cache, no model state held in RAM between
-calls. All user input is passed via stdin as JSON (CWE-78 safe).
+calls. All user input is passed via stdin as JSON (CWE-78 safe). Within one
+call, the ONNX session stays loaded for every text chunk; it is dropped only
+after those part WAVs exist, then the parts are concatenated.
 """
 
 import json
@@ -210,6 +212,7 @@ class KittenTTSModel(BaseTTSModel):
         return r'''
 import json
 import os
+import gc
 import shutil
 import sys
 import tempfile
@@ -269,7 +272,7 @@ def main():
         traceback.print_exc()
         sys.exit(4)
 
-    _log(f"loading KittenTTS ({repo_id}, voice={voice})")
+    _log(f"loading KittenTTS once ({repo_id}, voice={voice}, chunks={len(chunks)})")
     try:
         tts = KittenTTS(model_name=repo_id)
     except Exception as e:
@@ -280,20 +283,26 @@ def main():
     tmpdir = tempfile.mkdtemp(prefix="tts-chunks-")
     part_paths = []
     try:
-        for i, chunk in enumerate(chunks):
-            _log(f"synthesizing chunk {i + 1}/{len(chunks)} ({len(chunk)} chars)")
-            part_path = os.path.join(tmpdir, f"part-{i:04d}.wav")
-            try:
-                tts.generate_to_file(chunk, part_path, voice=voice, speed=speed,
-                                      sample_rate=24000)
-            except Exception as e:
-                print(f"[runner] inference failed: {e}", file=sys.stderr)
-                traceback.print_exc()
-                sys.exit(7)
-            if not os.path.isfile(part_path):
-                print("[runner] inference produced no output file", file=sys.stderr)
-                sys.exit(7)
-            part_paths.append(part_path)
+        try:
+            for i, chunk in enumerate(chunks):
+                _log(f"synthesizing chunk {i + 1}/{len(chunks)} ({len(chunk)} chars)")
+                part_path = os.path.join(tmpdir, f"part-{i:04d}.wav")
+                try:
+                    tts.generate_to_file(chunk, part_path, voice=voice, speed=speed,
+                                          sample_rate=24000)
+                except Exception as e:
+                    print(f"[runner] inference failed: {e}", file=sys.stderr)
+                    traceback.print_exc()
+                    sys.exit(7)
+                if not os.path.isfile(part_path):
+                    print("[runner] inference produced no output file", file=sys.stderr)
+                    sys.exit(7)
+                part_paths.append(part_path)
+        finally:
+            # Drop the ONNX session before WAV stitch. Do not reload per chunk.
+            del tts
+            gc.collect()
+
         if len(part_paths) == 1:
             shutil.copyfile(part_paths[0], output_path)
         else:

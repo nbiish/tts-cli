@@ -165,6 +165,21 @@ def test_long_text_is_chunked_in_one_spawn(model_with_env, monkeypatch):
     assert " ".join(chunks) == " ".join(text.split())
 
 
+def test_runner_keeps_one_onnx_session_for_all_chunks():
+    """Runner loads KittenTTS once, loops generate_to_file, then drops the session."""
+    script = KittenTTSModel._runner_script()
+    assert script.count("tts = KittenTTS(") == 1
+    assert "loading KittenTTS once" in script
+    load_at = script.index("tts = KittenTTS(")
+    loop_at = script.index("for i, chunk in enumerate(chunks):")
+    gen_at = script.index("tts.generate_to_file(")
+    unload_at = script.index("del tts")
+    concat_at = script.index("_concat_wavs(part_paths, output_path)")
+    assert load_at < loop_at < gen_at < unload_at < concat_at
+    assert script.count("tts = KittenTTS(") == 1
+    assert script.count("tts.generate_to_file(") == 1
+
+
 def test_validate_voice():
     """validate_voice accepts only the documented built-in voices."""
     m = KittenTTSModel("kitten-tts-nano")

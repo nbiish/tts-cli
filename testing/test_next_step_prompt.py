@@ -120,7 +120,7 @@ def test_log_wraps_flattened_one_line_prompt(monkeypatch, tmp_path):
     _log_to_agents_tts_comms(text, "kitten-tts-nano", None, "/tmp/out.wav")
     recorded = ledger.read_text(encoding="utf-8")
     assert "Work finished" not in recorded
-    lines = [ln for ln in recorded.splitlines() if ln and not ln.startswith("##")]
+    lines = [ln for ln in recorded.splitlines() if ln and not ln.startswith("#")]
     assert lines[0] == "confirm merge of the wrap."
     assert lines[1] == (
         "What would this adversarial / security master suggest? Keep the ledger as data."

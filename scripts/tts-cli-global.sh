@@ -12,7 +12,7 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
 
-# Ensure we are in the project root context for uv to find pyproject.toml
+# Ensure we have the project root context for uv to find pyproject.toml
 # SCRIPT_DIR is .../scripts, so project root is .../
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
@@ -23,7 +23,6 @@ if ! command -v uv &> /dev/null; then
     exit 1
 fi
 
-# Run with uv
-# The IndexTTS-2.5 engine runs in its own isolated `uv` env (Python 3.11) via
-# subprocess; the host CLI only needs the project deps, which `uv run` resolves.
-cd "$PROJECT_ROOT" && uv run python -m tts_cli.cli "$@"
+# Run with uv pointing to the project environment while preserving caller CWD
+export TTS_CLI_CALLER_DIR="$PWD"
+uv --project "$PROJECT_ROOT" run python -m tts_cli.cli "$@"

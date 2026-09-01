@@ -213,6 +213,7 @@ AGENTS/*.COMMS.live.md
 .clinerules/
 .continue/
 .coverage
+.coverage.*
 .cursor/
 .cursorrules
 .dmypy.json

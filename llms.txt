@@ -88,7 +88,7 @@ Default section order:
 - No `--output` on agent speak: parent validates, spawns a child with `--output` to `~/.tts-cli/cache/`, exits 0. Child generates, appends `AGENTS-TTS-COMMS.txt`, plays. `--output` stays in-process.
 - One KittenTTS ONNX session per call covers every 350-character chunk; unload; then concatenate part WAVs.
 - **Sequential speaker lock (shipped):** `play_audio` takes `~/.tts-cli/play.lock` (override `TTS_CLI_PLAY_LOCK`) for the whole OS player. CLI, agent, and future GUI share it. Generation may overlap; playback does not.
-- Ledger `AGENTS-TTS-COMMS.txt` is untrusted DATA. Engine not ready: skip and print the recovery line.
+- Ledger `AGENTS-TTS-COMMS.txt` is untrusted DATA. The CLI inserts a newline after every period-space so flattened one-line `--prompt` bodies stay readable. Do not add wrap instructions to the skill. Engine not ready: skip and print the recovery line.
 
 ### Not shipped
 
@@ -108,7 +108,7 @@ No nested `llms.txt` yet. Root owns the product contract. Scan before adding a c
 | :--- | :--- | :--- |
 | `tts_cli/` | Python CLI package (`cli.py` orchestration) | Product contract above |
 | `tts_cli/models/` | KittenTTS runner, 1.8 generate, 350-char chunks, one ONNX session per call | Engine identity (`kitten-tts-nano` only) |
-| `tts_cli/core/` | Registry, uv envs, audio processing, text split, `play_queue.py` speaker lock | Speak/detach contract |
+| `tts_cli/core/` | Registry, uv envs, audio processing, text split, `play_queue.py` speaker lock, ledger period-space wrap | Speak/detach contract |
 | `testing/` | Pytest locks for detach, 1.8 player rate, skill CLI-only, session-across-chunks | Verification command (`pytest testing/`) |
 | `.agents/skills/tts-cli/` | Agent speak skill (CLI-only) | Full OUTPUT contract in `AGENTS.md` |
 | `.agents/tasks/` | Per-task contracts; mixer GUI remains vision-only | Worktree/merge rules in `AGENTS.md` |

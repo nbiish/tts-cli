@@ -4,6 +4,23 @@ from __future__ import annotations
 
 import re
 
+# Agents emit one sentence per master. Flattened prompts stay one line unless
+# the CLI wraps them. Period-space only — do not split on "? " so
+# "Question? Answer." remains one readable line.
+_PERIOD_SPACE = re.compile(r"\. +")
+
+
+def break_after_period_space(text: str) -> str:
+    """Insert a newline after every period followed by spaces.
+
+    Idempotent for text that is already one sentence per line (period then
+    newline, not period-space). Leaves ``1.8`` and similar decimals intact
+    because those periods are not followed by a space.
+    """
+    if not text:
+        return text
+    return _PERIOD_SPACE.sub(".\n", text)
+
 
 def split_text(text: str, max_length: int = 350) -> list[str]:
     """Split ``text`` into chunks of at most ``max_length`` characters.

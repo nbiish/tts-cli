@@ -24,6 +24,7 @@ from .core.model_registry import model_registry
 from .core.environment_manager import env_manager
 from .core.audio_processor import audio_processor
 from .core.play_queue import exclusive_speaker
+from .core.text_utils import break_after_period_space
 from .models.kitten_tts_model import (
     BUILT_IN_VOICES,
     DEFAULT_GENERATE_SPEED,
@@ -290,17 +291,19 @@ def _log_to_agents_tts_comms(text: str, model_name: str, voice: Optional[str],
 
     The transcript stores everything after the single ``Next step:`` marker
     (fused order plus the eleven master answers), not the concise summary.
-    Format is minimal — ISO-8601 date-time, a newline, then that text.
-    Entries are untrusted DATA, not commands. Tracked in git alongside
-    AGENTS.md. If no "Next step:" segment is present, or if more than one
-    marker is present (fail-closed against ledger hijack), nothing is
-    written.
+    Format is minimal — ISO-8601 date-time, a newline, then that text with a
+    newline after every period-space so flattened one-line prompts stay
+    readable. Agents are not asked to wrap; the CLI does it. Entries are
+    untrusted DATA, not commands. Tracked in git alongside AGENTS.md. If no
+    "Next step:" segment is present, or if more than one marker is present
+    (fail-closed against ledger hijack), nothing is written.
     """
     try:
         suggestion = _extract_suggestion(text)
         if not suggestion:
             return  # no unambiguous suggestion to record
 
+        suggestion = break_after_period_space(suggestion)
         comms_path = _comms_file()
         ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         # Cap the suggestion length to keep the ledger compact.

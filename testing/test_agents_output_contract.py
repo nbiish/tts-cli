@@ -24,6 +24,8 @@ def test_agents_output_names_shipped_cli_behavior():
     assert "AGENTS-TTS-COMMS.txt" in _AGENTS
     assert "CLI-only" in _AGENTS
     assert "Do not add IndexTTS" in _AGENTS
+    assert "period-space" in _AGENTS
+    assert "Do not prompt agents to wrap" in _AGENTS
 
 
 def test_agents_output_claims_serialized_play():
@@ -41,3 +43,5 @@ def test_llms_is_kitten_prd_not_indextts():
     assert "Sequential speaker lock (shipped)" in _LLMS
     assert "One KittenTTS ONNX session per call" in _LLMS
     assert "1.8" in _LLMS
+    assert "period-space" in _LLMS
+    assert "Do not add wrap instructions to the skill" in _LLMS

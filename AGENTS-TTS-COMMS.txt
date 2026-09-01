@@ -66,3 +66,6 @@ Confirm merge of the fused-suggestion skill so the next agent imagines the full 
 
 ## 2026-09-01T00:09:29Z
 Copy the tts-cli skill into ainish-coder on its own worktree so the next agent answers the same master-suggest questions and writes one Next-step with no panel schema.
+
+## 2026-09-01T00:15:08Z
+Run skills-sync on one deployed project so the new master-suggest list is what the next agent actually loads.

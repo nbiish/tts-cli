@@ -498,11 +498,10 @@ Examples:
     parser.add_argument("--lang", default=None,
                        help="(Kept for compatibility; KittenTTS is English-only. Default: EN)")
     parser.add_argument("--output", help="Output audio file path")
-    # Streamlined agent entry: -p/--prompt is an alias for --text (the summary
-    # + fused next-step spoken aloud). Lets agents call one flag without
-    # extra prompting; the configured default model is used automatically.
+    # Streamlined agent entry: -p/--prompt is an alias for --text.
+    # Call ONCE per turn after the skill's one-shot master-suggest prompt.
     parser.add_argument("-p", "--prompt", dest="prompt_text",
-                       help="Text to speak (agent-friendly alias for --text). Use: cli-tts --prompt \"<summary>. Next step: <fused imperative>\"")
+                       help="Agent voice summary. Call ONCE per turn: \"<summary>. Next step: <fused imperative>\". Run the one-shot master-suggest prompt in the tts-cli skill first (one sentence per expert). Never call this flag per expert.")
 
     # Environment management
     parser.add_argument("--create-environment", help="Create environment for model")

@@ -69,3 +69,6 @@ Copy the tts-cli skill into ainish-coder on its own worktree so the next agent a
 
 ## 2026-09-01T00:15:08Z
 Run skills-sync on one deployed project so the new master-suggest list is what the next agent actually loads.
+
+## 2026-09-01T00:20:26Z
+Confirm merge of feat/tts-oneshot-master-prompt and docs/tts-oneshot-skill-sync to both mains so every harness loads that single prompt.

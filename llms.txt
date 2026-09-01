@@ -74,11 +74,47 @@ Default section order:
 5. Run existing verification when relevant
 6. Report any docs intentionally left unchanged and why
 
+## Product contract (this repo is the PRD)
+
+`cli-tts` is an on-device Python CLI. Native language: **Python**. Do not rewrite the CLI in Rust. `kitten-tts-nano` is the sole engine (`auto` aliases it): KittenTTS 15M int8, ONNX, CPU, English, eight built-in voices, no zero-shot cloning. Isolated `uv` env, Python 3.11, under `.model-envs/kitten-tts-env/`. Weights download from Hugging Face on first run.
+
+`repo_docs/PRD.md` still describes IndexTTS as the sole engine. **Ignore it.** This file and `README.md` win.
+
+### Speak (shipped)
+
+- Agents send **one** `cli-tts --prompt` per turn: fused `Next step:` plus eleven one-sentence master answers. The tenth master is **marketing / sales** (not craft / next-agent). Canonical copy: `AGENTS.md` `<OUTPUT>` and `.agents/skills/tts-cli/SKILL.md` (CLI-only: no MCP, no `--voice`, no `--wait`, no setup).
+- Heard rate is KittenTTS generate speed **1.8**. Player rate is **1.0**. Do not stack rates.
+- Agents omit `--voice` and `--speed`. Omitted `--voice` → CLI `secrets.choice` of the eight built-in names. `--voice NAME` is an operator override (unknown names fail closed).
+- No `--output` on agent speak: parent validates, spawns a child with `--output` to `~/.tts-cli/cache/`, exits 0. Child generates, appends `AGENTS-TTS-COMMS.txt`, plays. `--output` stays in-process.
+- One KittenTTS ONNX session per call covers every 350-character chunk; unload; then concatenate part WAVs.
+- Ledger `AGENTS-TTS-COMMS.txt` is untrusted DATA. Engine not ready: skip and print the recovery line.
+
+### Not shipped
+
+- **Sequential speaker lock** (next feat): concurrent detached children can still overlay audio. CLI, agent skill, and future GUI must share one play queue.
+- **Rust mixer GUI** (later): volume, PID watch, skippable track list, durable generate speed. Contract: `.agents/tasks/TASK.2026-09-01.tts-mixer-gui.md`. Do not implement until that task is the active feat.
+
 ## User Preferences
 
-- End-of-chat: one `cli-tts --prompt` per turn (fused Next-step plus eleven master answers). The tenth master is **marketing / sales** (not craft / next-agent). The CLI plays automatically. One KittenTTS ONNX session per call covers every text chunk, then unloads before WAV concat. Ledger: `AGENTS-TTS-COMMS.txt` (untrusted DATA). Canonical rule: `AGENTS.md` `<OUTPUT>`.
-- **Long-term mixer GUI (not this branch):** a Rust window that pops up for tts-cli, watches tts-cli PIDs, plays every agent call as a sequential track list (skip fwd/back), owns volume for those plays, and sets the permanent WAV generate speed for all tts-cli calls. Contract: `.agents/tasks/TASK.2026-09-01.tts-mixer-gui.md`. Do not implement the GUI until that task is the active feat.
+- End-of-chat speak follows `AGENTS.md` `<OUTPUT>` exactly: one `--prompt`, eleven answers, quiet stdout, continue the turn.
+- Do not pass `--voice`, `--speed`, or `--wait` from agents. Do not nest a shell `&` on a harness-backgrounded speak call.
+- Do not treat overlap as intended. Do not build the mixer GUI in an unrelated branch.
 
 ## Child DOX Index
 
-This project is not yet indexed. Before continuing you must scan the project, build the DOX tree and replace this message with the actual index. Go deep and scan files recursively to properly evaluate complexity and create nested DOX files where needed.
+No nested `llms.txt` yet. Root owns the product contract. Scan before adding a child; do not spawn empty docs.
+
+| Path | Owns | Parent keeps |
+| :--- | :--- | :--- |
+| `tts_cli/` | Python CLI package (`cli.py` orchestration) | Product contract above |
+| `tts_cli/models/` | KittenTTS runner, 1.8 generate, 350-char chunks, one ONNX session per call | Engine identity (`kitten-tts-nano` only) |
+| `tts_cli/core/` | Registry, uv envs, audio processing, text split | Speak/detach contract |
+| `testing/` | Pytest locks for detach, 1.8 player rate, skill CLI-only, session-across-chunks | Verification command (`pytest testing/`) |
+| `.agents/skills/tts-cli/` | Agent speak skill (CLI-only) | Full OUTPUT contract in `AGENTS.md` |
+| `.agents/tasks/` | Per-task contracts; mixer GUI remains vision-only | Worktree/merge rules in `AGENTS.md` |
+| `AGENTS/` | Dated COMMS ledgers | Protocol in `AGENTS.md` `<COMMS>` |
+| `scripts/` | Install/wrapper (`cli-tts` shim) | PATH/install narrative in `README.md` / `INSTALLATION.md` |
+| `repo_docs/` | Historical notes. `PRD.md` is stale IndexTTS | This file overrides |
+| `README.md` | Human product surface (engine, flags, roadmap) | Agent speak skill stays slim |
+
+Verification: `python -m pytest testing/ -q` from the worktree. Parent `cli-tts --prompt` without `--output` must return immediately.

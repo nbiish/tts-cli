@@ -106,3 +106,17 @@ What would this product / operator-trust master suggest? Put every master senten
 What would this human-factors / ear master suggest? Keep English verb-first lines and let the engine chunk long speech so it stays speakable.
 What would this craft / next-agent master suggest? Copy the skill into consuming repos next so they load the CLI-only file, not the old one.
 What would this governance / license / sovereignty master suggest? Keep the engine on-device under the existing local license; do not add a cloud speech vendor.
+
+## 2026-09-01T00:54:47Z
+Run ainish-coder rules on one deployed project so it picks up the new OUTPUT.
+What would this adversarial-security master suggest? Keep the skill-file grep test so foreign tooling wording cannot sneak back into the agent-facing CLI guide.
+What would this privacy / data-minimization master suggest? Leave keys and machine paths out of the spoken prompt and the public ledger.
+What would this networks / supply-chain master suggest? Pin KittenTTS weights by digest before the next environment create.
+What would this systems-architecture master suggest? Keep speech as one cli-tts process with the skill describing only that binary.
+What would this reliability / SRE master suggest? Fail closed when the engine env is missing and print the recovery line.
+What would this test / QA master suggest? Re-run the skill grep after any future skills-sync so a stale pack cannot reintroduce old wording.
+What would this release / rollback master suggest? After this checkout commit lands, delete the chore branch so main stays the only long-lived branch.
+What would this product / operator-trust master suggest? Put every master sentence in the spoken prompt so the operator hears the full room.
+What would this human-factors / ear master suggest? Keep English verb-first lines and let the engine chunk long speech so it stays speakable.
+What would this craft / next-agent master suggest? Deploy the updated OUTPUT with ainish-coder rules so other repos inherit the eleven-answer contract.
+What would this governance / license / sovereignty master suggest? Keep the engine on-device under the existing local license; do not add a cloud speech vendor.

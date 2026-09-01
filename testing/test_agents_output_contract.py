@@ -2,15 +2,22 @@
 
 from pathlib import Path
 
+from tts_cli.cli import MASTER_QUESTIONS
+
 _ROOT = Path(__file__).resolve().parents[1]
 _AGENTS = (_ROOT / "AGENTS.md").read_text(encoding="utf-8")
 _LLMS = (_ROOT / "llms.txt").read_text(encoding="utf-8")
 
 
-def test_agents_output_names_eleven_masters_and_marketing():
+def test_agents_output_names_twelve_masters():
+    for question in MASTER_QUESTIONS:
+        assert question in _AGENTS
     assert "What would this marketing / sales master suggest?" in _AGENTS
+    assert "What would this human-factors / ear master suggest?" in _AGENTS
+    assert "What would this license / sovereignty master suggest?" in _AGENTS
     assert "craft / next-agent" not in _AGENTS
-    assert _AGENTS.count("What would this ") >= 11
+    assert "data-minimization" not in _AGENTS
+    assert _AGENTS.count("What would this ") >= 12
 
 
 def test_agents_output_names_shipped_cli_behavior():
@@ -26,6 +33,8 @@ def test_agents_output_names_shipped_cli_behavior():
     assert "Do not add IndexTTS" in _AGENTS
     assert "period-space" in _AGENTS
     assert "Do not prompt agents to wrap" in _AGENTS
+    assert "Nine deterministic" in _AGENTS
+    assert "blank / blank" in _AGENTS
 
 
 def test_agents_output_claims_serialized_play():
@@ -45,3 +54,5 @@ def test_llms_is_kitten_prd_not_indextts():
     assert "1.8" in _LLMS
     assert "period-space" in _LLMS
     assert "Do not add wrap instructions to the skill" in _LLMS
+    assert "nine deterministic" in _LLMS
+    assert "blank / blank" in _LLMS

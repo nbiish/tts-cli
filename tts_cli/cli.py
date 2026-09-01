@@ -37,23 +37,38 @@ logger = logging.getLogger("tts_cli.cli")
 _NEXT_STEP_MARKER = "next step:"
 
 # Ledger cap matches the TTS input limit so a valid --prompt (fused order
-# plus eleven master answers) is recorded in full.
+# plus every master answer) is recorded in full.
 SUGGESTION_LEDGER_MAX = 5000
 
 # Printed by ``cli-tts --next-step-prompt``. Binding copy lives in AGENTS.md
 # ``<OUTPUT>`` and `.agents/skills/tts-cli/SKILL.md` — keep this list aligned.
-MASTER_QUESTIONS = (
-    "What would this adversarial-security master suggest?",
-    "What would this privacy / data-minimization master suggest?",
-    "What would this networks / supply-chain master suggest?",
-    "What would this systems-architecture master suggest?",
-    "What would this reliability / SRE master suggest?",
-    "What would this test / QA master suggest?",
-    "What would this release / rollback master suggest?",
-    "What would this product / operator-trust master suggest?",
-    "What would this human-factors / ear master suggest?",
-    "What would this marketing / sales master suggest?",
-    "What would this governance / license / sovereignty master suggest?",
+# Nine deterministic production/security chairs, then three dual-hat chairs.
+DETERMINISTIC_MASTERS = (
+    "adversarial-security",
+    "privacy",
+    "supply-chain",
+    "systems-architecture",
+    "reliability",
+    "test",
+    "release",
+    "product",
+    "governance",
+)
+SLASH_MASTERS = (
+    ("marketing", "sales"),
+    ("human-factors", "ear"),
+    ("license", "sovereignty"),
+)
+
+
+def _master_question(label: str) -> str:
+    return f"What would this {label} master suggest?"
+
+
+MASTER_QUESTIONS = tuple(
+    _master_question(name) for name in DETERMINISTIC_MASTERS
+) + tuple(
+    _master_question(f"{left} / {right}") for left, right in SLASH_MASTERS
 )
 
 NEXT_STEP_ONESHOT_PROMPT = (
@@ -290,7 +305,7 @@ def _log_to_agents_tts_comms(text: str, model_name: str, voice: Optional[str],
     """Append only the suggestion portion of the spoken text to AGENTS-TTS-COMMS.txt.
 
     The transcript stores everything after the single ``Next step:`` marker
-    (fused order plus the eleven master answers), not the concise summary.
+    (fused order plus every master answer), not the concise summary.
     Format is minimal — ISO-8601 date-time, a newline, then that text with a
     newline after every period-space so flattened one-line prompts stay
     readable. Agents are not asked to wrap; the CLI does it. Entries are
@@ -630,7 +645,7 @@ Examples:
     # Streamlined agent entry: -p/--prompt is an alias for --text.
     # Call ONCE per turn. Binding copy: AGENTS.md <OUTPUT> and the tts-cli skill.
     parser.add_argument("-p", "--prompt", dest="prompt_text",
-                       help="One call per turn: \"<summary>. Next step: <fused>\" then eleven one-sentence master answers from --next-step-prompt. Never call per expert.")
+                       help="One call per turn: \"<summary>. Next step: <fused>\" then one-sentence answers to every master from --next-step-prompt. Never call per expert.")
 
     # Environment management
     parser.add_argument("--create-environment", help="Create environment for model")

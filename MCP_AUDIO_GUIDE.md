@@ -13,7 +13,7 @@ Cleaning** entirely locally, ensuring data privacy and zero latency.
 | Feature | Flag | Description | Engine |
 | :--- | :--- | :--- | :--- |
 | **TTS** | `--text "..."` / `--prompt "..."` | Generate speech from text | KittenTTS nano |
-| **Agent summary** | `--prompt` (fused Next-step + eleven answers; omit `--voice` / `--speed`) | Singular speak path | KittenTTS nano |
+| **Agent summary** | `--prompt` (fused Next-step + nine deterministic and three slash answers; omit `--voice` / `--speed`) | Singular speak path | KittenTTS nano |
 | **Built-in voice** | `--voice NAME` | Operator override (8 names). Agents omit this. Next chat: omitted → random | KittenTTS nano |
 | **Default model** | `--set-default kitten-tts-nano` / `--list` | Choose/show the default for `auto` | KittenTTS nano |
 | **Clean Voice** | `--clean-voice [file]` | **Best Practice**: Isolate vocals + Remove silence | Demucs + Silero VAD |
@@ -61,16 +61,17 @@ answers to every master. The CLI plays for the operator.
 cli-tts --prompt "$(cat <<'EOF'
 Integrated the feature and verified the fast path loads clean. Next step: pin the Hugging Face kitten weights by digest before the next environment create.
 What would this adversarial-security master suggest? <one sentence>
-What would this privacy / data-minimization master suggest? <one sentence>
-What would this networks / supply-chain master suggest? <one sentence>
+What would this privacy master suggest? <one sentence>
+What would this supply-chain master suggest? <one sentence>
 What would this systems-architecture master suggest? <one sentence>
-What would this reliability / SRE master suggest? <one sentence>
-What would this test / QA master suggest? <one sentence>
-What would this release / rollback master suggest? <one sentence>
-What would this product / operator-trust master suggest? <one sentence>
-What would this human-factors / ear master suggest? <one sentence>
+What would this reliability master suggest? <one sentence>
+What would this test master suggest? <one sentence>
+What would this release master suggest? <one sentence>
+What would this product master suggest? <one sentence>
+What would this governance master suggest? <one sentence>
 What would this marketing / sales master suggest? <one sentence>
-What would this governance / license / sovereignty master suggest? <one sentence>
+What would this human-factors / ear master suggest? <one sentence>
+What would this license / sovereignty master suggest? <one sentence>
 EOF
 )" >/dev/null 2>&1
 ```

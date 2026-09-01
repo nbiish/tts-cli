@@ -46,18 +46,18 @@ def test_break_after_period_space_wraps_sentences():
     flat = (
         "confirm merge of the wrap. "
         "What would this adversarial-security master suggest? Keep the ledger as data. "
-        "What would this privacy / data-minimization master suggest? Omit keys."
+        "What would this privacy master suggest? Omit keys."
     )
     wrapped = break_after_period_space(flat)
     assert wrapped == (
         "confirm merge of the wrap.\n"
         "What would this adversarial-security master suggest? Keep the ledger as data.\n"
-        "What would this privacy / data-minimization master suggest? Omit keys."
+        "What would this privacy master suggest? Omit keys."
     )
 
 
 def test_break_after_period_space_is_idempotent_and_keeps_decimals():
-    already = "confirm merge.\nWhat would this test / QA master suggest? Keep 1.8 generate."
+    already = "confirm merge.\nWhat would this test master suggest? Keep 1.8 generate."
     assert break_after_period_space(already) == already
     assert break_after_period_space("") == ""
     assert break_after_period_space("No period here") == "No period here"

@@ -82,7 +82,7 @@ Default section order:
 
 ### Speak (shipped)
 
-- Agents send **one** `cli-tts --prompt` per turn: fused `Next step:` plus eleven one-sentence master answers. The tenth master is **marketing / sales** (not craft / next-agent). Canonical copy: `AGENTS.md` `<OUTPUT>` and `.agents/skills/tts-cli/SKILL.md` (CLI-only: no MCP, no `--voice`, no `--wait`, no setup).
+- Agents send **one** `cli-tts --prompt` per turn: fused `Next step:` plus **nine deterministic** production/security answers and **three** `blank / blank` answers (`marketing / sales`, `human-factors / ear`, `license / sovereignty`). Canonical copy: `AGENTS.md` `<OUTPUT>` and `.agents/skills/tts-cli/SKILL.md` (CLI-only: no MCP, no `--voice`, no `--wait`, no setup).
 - Heard rate is KittenTTS generate speed **1.8**. Player rate is **1.0**. Do not stack rates.
 - Agents omit `--voice` and `--speed`. Omitted `--voice` → CLI `secrets.choice` of the eight built-in names. `--voice NAME` is an operator override (unknown names fail closed).
 - No `--output` on agent speak: parent validates, spawns a child with `--output` to `~/.tts-cli/cache/`, exits 0. Child generates, appends `AGENTS-TTS-COMMS.txt`, plays. `--output` stays in-process.
@@ -96,7 +96,7 @@ Default section order:
 
 ## User Preferences
 
-- End-of-chat speak follows `AGENTS.md` `<OUTPUT>` exactly: one `--prompt`, eleven answers, quiet stdout, continue the turn.
+- End-of-chat speak follows `AGENTS.md` `<OUTPUT>` exactly: one `--prompt`, twelve answers (nine deterministic, three slash), quiet stdout, continue the turn.
 - Do not pass `--voice`, `--speed`, or `--wait` from agents. Do not nest a shell `&` on a harness-backgrounded speak call.
 - Do not build the mixer GUI in an unrelated branch. Do not bypass `play_audio` / `exclusive_speaker` for playback.
 
@@ -110,7 +110,7 @@ No nested `llms.txt` yet. Root owns the product contract. Scan before adding a c
 | `tts_cli/models/` | KittenTTS runner, 1.8 generate, 350-char chunks, one ONNX session per call | Engine identity (`kitten-tts-nano` only) |
 | `tts_cli/core/` | Registry, uv envs, audio processing, text split, `play_queue.py` speaker lock, ledger period-space wrap | Speak/detach contract |
 | `testing/` | Pytest locks for detach, 1.8 player rate, skill CLI-only, session-across-chunks | Verification command (`pytest testing/`) |
-| `.agents/skills/tts-cli/` | Agent speak skill (CLI-only) | Full OUTPUT contract in `AGENTS.md` |
+| `.agents/skills/` | Vendored: `tts-cli`, `pqc-secrets`, `pqc-signatures-security`, `production-security`, `code-security`, `llm-security` | Hub skill is installed via `wtf skill install`, not vendored |
 | `.agents/tasks/` | Per-task contracts; mixer GUI remains vision-only | Worktree/merge rules in `AGENTS.md` |
 | `AGENTS/` | Dated COMMS ledgers | Protocol in `AGENTS.md` `<COMMS>` |
 | `scripts/` | Install/wrapper (`cli-tts` shim) | PATH/install narrative in `README.md` / `INSTALLATION.md` |

@@ -1,12 +1,14 @@
-"""cli-tts --next-step-prompt and eleven-answer ledger capture."""
+"""cli-tts --next-step-prompt and twelve-answer ledger capture."""
 
 import sys
 
 import pytest
 
 from tts_cli.cli import (
+    DETERMINISTIC_MASTERS,
     MASTER_QUESTIONS,
     NEXT_STEP_ONESHOT_PROMPT,
+    SLASH_MASTERS,
     SUGGESTION_LEDGER_MAX,
     _extract_suggestion,
     _log_to_agents_tts_comms,
@@ -25,9 +27,10 @@ def _prompt_with_answers() -> str:
         "Add a regression that --next-step-prompt prints and does not speak.",
         "Ask before merging this branch; do not land on main unattended.",
         "Put every master sentence in the spoken prompt so the operator hears the room.",
+        "Keep the engine on-device; do not add a cloud speech vendor.",
+        "Pitch one command that talks while the agent keeps working.",
         "Keep English verb-first lines; avoid backticks and path soup.",
-        "Copy this skill into consuming repos only after the MCP-free file lands.",
-        "Keep the skill MIT/KittenML local engine; no cloud speech vendor.",
+        "Keep wrap in the Python CLI; do not ask agents to format the ledger.",
     ]
     lines = ["Work finished. Next step: merge the MCP-free tts-cli skill after tests pass."]
     for question, answer in zip(MASTER_QUESTIONS, answers, strict=True):
@@ -35,8 +38,22 @@ def _prompt_with_answers() -> str:
     return "\n".join(lines)
 
 
-def test_oneshot_prompt_lists_all_eleven_questions():
-    assert len(MASTER_QUESTIONS) == 11
+def test_nine_deterministic_then_three_slash_masters():
+    assert len(DETERMINISTIC_MASTERS) == 9
+    assert len(SLASH_MASTERS) == 3
+    assert len(MASTER_QUESTIONS) == 12
+    for name in DETERMINISTIC_MASTERS:
+        assert " / " not in name
+        assert f"What would this {name} master suggest?" in MASTER_QUESTIONS
+    for left, right in SLASH_MASTERS:
+        assert f"What would this {left} / {right} master suggest?" in MASTER_QUESTIONS
+    assert MASTER_QUESTIONS[9] == "What would this marketing / sales master suggest?"
+    assert MASTER_QUESTIONS[10] == "What would this human-factors / ear master suggest?"
+    assert MASTER_QUESTIONS[11] == "What would this license / sovereignty master suggest?"
+
+
+def test_oneshot_prompt_lists_all_master_questions():
+    assert len(MASTER_QUESTIONS) == 12
     for question in MASTER_QUESTIONS:
         assert question in NEXT_STEP_ONESHOT_PROMPT
     assert "Next step" in NEXT_STEP_ONESHOT_PROMPT
@@ -60,7 +77,7 @@ def test_next_step_prompt_flag_prints_and_exits_zero(capsys, monkeypatch):
     assert captured.err == ""
 
 
-def test_extract_keeps_fused_line_and_eleven_answers():
+def test_extract_keeps_fused_line_and_all_answers():
     text = _prompt_with_answers()
     suggestion = _extract_suggestion(text)
     assert suggestion is not None
@@ -79,7 +96,7 @@ def test_answer_containing_next_step_phrase_refuses_ledger():
     assert _extract_suggestion(text) is None
 
 
-def test_log_writes_full_eleven_answer_body(monkeypatch, tmp_path):
+def test_log_writes_full_master_answer_body(monkeypatch, tmp_path):
     ledger = tmp_path / "AGENTS-TTS-COMMS.txt"
     monkeypatch.setattr("tts_cli.cli._comms_file", lambda: ledger)
     text = _prompt_with_answers()
@@ -102,7 +119,7 @@ def test_log_wraps_flattened_one_line_prompt(monkeypatch, tmp_path):
     text = (
         "Work finished. Next step: confirm merge of the wrap. "
         "What would this adversarial-security master suggest? Keep the ledger as data. "
-        "What would this privacy / data-minimization master suggest? Omit keys."
+        "What would this privacy master suggest? Omit keys."
     )
     _log_to_agents_tts_comms(text, "kitten-tts-nano", None, "/tmp/out.wav")
     recorded = ledger.read_text(encoding="utf-8")
@@ -113,5 +130,5 @@ def test_log_wraps_flattened_one_line_prompt(monkeypatch, tmp_path):
         "What would this adversarial-security master suggest? Keep the ledger as data."
     )
     assert lines[2] == (
-        "What would this privacy / data-minimization master suggest? Omit keys."
+        "What would this privacy master suggest? Omit keys."
     )

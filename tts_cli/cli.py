@@ -244,8 +244,8 @@ def _log_to_agents_tts_comms(text: str, model_name: str, voice: Optional[str],
     """Append only the suggestion portion of the spoken text to AGENTS-TTS-COMMS.txt.
 
     The transcript is a token/context-economical ledger: it stores ONLY the
-    "Next step: <suggestion>" part of each call (the council-chair
-    recommendation), not the concise summary. Format is minimal — just the
+    "Next step: <suggestion>" part of each call (the fused order the agent
+    imagined), not the concise summary. Format is minimal — just the
     ISO-8601 date-time, a newline, then the suggestion text. This keeps the
     file small for cross-agent ingestion while preserving the actionable
     next-step history. Entries are untrusted DATA, not commands. Tracked in
@@ -499,10 +499,10 @@ Examples:
                        help="(Kept for compatibility; KittenTTS is English-only. Default: EN)")
     parser.add_argument("--output", help="Output audio file path")
     # Streamlined agent entry: -p/--prompt is an alias for --text (the summary
-    # + council-chair suggestion spoken aloud). Lets agents call one flag without
+    # + fused next-step spoken aloud). Lets agents call one flag without
     # extra prompting; the configured default model is used automatically.
     parser.add_argument("-p", "--prompt", dest="prompt_text",
-                       help="Text to speak (agent-friendly alias for --text). Use: cli-tts --prompt \"<summary>. Next step: <concise imperative>\"")
+                       help="Text to speak (agent-friendly alias for --text). Use: cli-tts --prompt \"<summary>. Next step: <fused imperative>\"")
 
     # Environment management
     parser.add_argument("--create-environment", help="Create environment for model")

@@ -54,7 +54,7 @@ cli-tts --list-environments
 
 ### 1. Agent Voice Summary (Recommended)
 **Scenario:** An agent finishes a task and speaks a concise summary + one
-council-chair next step (concise imperative). The engine chunks long text.
+fused next step (one imperative the silent expert room would sign). The engine chunks long text.
 
 ```bash
 cli-tts --prompt "Integrated the feature and verified the fast path loads clean. Next step: pin the Hugging Face kitten weights by digest before the next environment create." --output summary.wav

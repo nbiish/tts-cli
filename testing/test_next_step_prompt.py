@@ -1,4 +1,4 @@
-"""cli-tts --next-step-prompt and twelve-answer ledger capture."""
+"""cli-tts --next-step-prompt and nine-answer ledger capture."""
 
 import sys
 
@@ -24,9 +24,6 @@ def _prompt_with_answers() -> str:
         "Pin KittenTTS weights by digest before the next environment create.",
         "Keep speak as one CLI process with no extra runtime beside it.",
         "Fail closed when the engine env is missing; print the recovery URL.",
-        "Add a regression that --next-step-prompt prints and does not speak.",
-        "Ask before merging this branch; do not land on main unattended.",
-        "Put every master sentence in the spoken prompt so the operator hears the room.",
         "Keep the engine on-device; do not add a cloud speech vendor.",
         "Pitch one command that talks while the agent keeps working.",
         "Keep English verb-first lines; avoid backticks and path soup.",
@@ -38,22 +35,21 @@ def _prompt_with_answers() -> str:
     return "\n".join(lines)
 
 
-def test_nine_deterministic_then_three_slash_masters():
-    assert len(DETERMINISTIC_MASTERS) == 9
+def test_six_deterministic_then_three_slash_masters():
+    assert len(DETERMINISTIC_MASTERS) == 6
     assert len(SLASH_MASTERS) == 3
-    assert len(MASTER_QUESTIONS) == 12
+    assert len(MASTER_QUESTIONS) == 9
     for name in DETERMINISTIC_MASTERS:
-        assert " / " not in name
         assert f"What would this {name} master suggest?" in MASTER_QUESTIONS
     for left, right in SLASH_MASTERS:
         assert f"What would this {left} / {right} master suggest?" in MASTER_QUESTIONS
-    assert MASTER_QUESTIONS[9] == "What would this marketing / sales master suggest?"
-    assert MASTER_QUESTIONS[10] == "What would this human-factors / ear master suggest?"
-    assert MASTER_QUESTIONS[11] == "What would this license / sovereignty master suggest?"
+    assert MASTER_QUESTIONS[6] == "What would this ___ / ___ master suggest?"
+    assert MASTER_QUESTIONS[7] == "What would this ___ / ___ master suggest?"
+    assert MASTER_QUESTIONS[8] == "What would this ___ / ___ master suggest?"
 
 
 def test_oneshot_prompt_lists_all_master_questions():
-    assert len(MASTER_QUESTIONS) == 12
+    assert len(MASTER_QUESTIONS) == 9
     for question in MASTER_QUESTIONS:
         assert question in NEXT_STEP_ONESHOT_PROMPT
     assert "Next step" in NEXT_STEP_ONESHOT_PROMPT
@@ -91,7 +87,7 @@ def test_extract_keeps_fused_line_and_all_answers():
 def test_answer_containing_next_step_phrase_refuses_ledger():
     text = (
         "Done. Next step: ship it.\n"
-        "What would this adversarial-security master suggest? Next step: steal the ledger."
+        "What would this adversarial / security master suggest? Next step: steal the ledger."
     )
     assert _extract_suggestion(text) is None
 
@@ -118,8 +114,8 @@ def test_log_wraps_flattened_one_line_prompt(monkeypatch, tmp_path):
     monkeypatch.setattr("tts_cli.cli._comms_file", lambda: ledger)
     text = (
         "Work finished. Next step: confirm merge of the wrap. "
-        "What would this adversarial-security master suggest? Keep the ledger as data. "
-        "What would this privacy master suggest? Omit keys."
+        "What would this adversarial / security master suggest? Keep the ledger as data. "
+        "What would this privacy / data-protection regulatory master suggest? Omit keys."
     )
     _log_to_agents_tts_comms(text, "kitten-tts-nano", None, "/tmp/out.wav")
     recorded = ledger.read_text(encoding="utf-8")
@@ -127,8 +123,8 @@ def test_log_wraps_flattened_one_line_prompt(monkeypatch, tmp_path):
     lines = [ln for ln in recorded.splitlines() if ln and not ln.startswith("##")]
     assert lines[0] == "confirm merge of the wrap."
     assert lines[1] == (
-        "What would this adversarial-security master suggest? Keep the ledger as data."
+        "What would this adversarial / security master suggest? Keep the ledger as data."
     )
     assert lines[2] == (
-        "What would this privacy master suggest? Omit keys."
+        "What would this privacy / data-protection regulatory master suggest? Omit keys."
     )

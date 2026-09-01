@@ -82,7 +82,7 @@ Default section order:
 
 ### Speak (shipped)
 
-- Agents send **one** `cli-tts --prompt` per turn: fused `Next step:` plus **nine deterministic** production/security answers and **three** `blank / blank` answers (`marketing / sales`, `human-factors / ear`, `license / sovereignty`). Canonical copy in **this** repo: `AGENTS.md` `<OUTPUT>` and `.agents/skills/tts-cli/SKILL.md` (CLI-only: no MCP, no `--voice`, no `--wait`, no setup). Consuming repos copy the skill only; they do not paste this roster into their `AGENTS.md`.
+- Agents send **one** `cli-tts --prompt` per turn: fused `Next step:` plus **six deterministic** production/security answers and **three** `blank / blank` answers you fill in by your best judgment based on the current task. Canonical copy in **this** repo: `AGENTS.md` `<OUTPUT>` and `.agents/skills/tts-cli/SKILL.md` (CLI-only: no MCP, no `--voice`, no `--wait`, no setup). Consuming repos copy the skill only; they do not paste this roster into their `AGENTS.md`.
 - Heard rate is KittenTTS generate speed **1.8**. Player rate is **1.0**. Do not stack rates.
 - Agents omit `--voice` and `--speed`. Omitted `--voice` → CLI `secrets.choice` of the eight built-in names. `--voice NAME` is an operator override (unknown names fail closed).
 - No `--output` on agent speak: parent validates, spawns a child with `--output` to `~/.tts-cli/cache/`, exits 0. Child generates, appends `AGENTS-TTS-COMMS.txt`, plays. `--output` stays in-process.
@@ -96,7 +96,7 @@ Default section order:
 
 ## User Preferences
 
-- End-of-chat speak follows `AGENTS.md` `<OUTPUT>` exactly: one `--prompt`, twelve answers (nine deterministic, three slash), quiet stdout, continue the turn.
+- End-of-chat speak follows `AGENTS.md` `<OUTPUT>` exactly: one `--prompt`, nine answers (six deterministic, three custom slash), quiet stdout, continue the turn.
 - Do not pass `--voice`, `--speed`, or `--wait` from agents. Do not nest a shell `&` on a harness-backgrounded speak call.
 - Do not build the mixer GUI in an unrelated branch. Do not bypass `play_audio` / `exclusive_speaker` for playback.
 - Consuming repos (ainish-coder and others): update `.agents/skills/tts-cli/SKILL.md` only. Their `AGENTS.md` points at that skill; it must not duplicate this repo's roster.

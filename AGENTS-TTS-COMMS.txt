@@ -190,3 +190,95 @@ What would this product / operator-trust master suggest? Agents only see one pro
 What would this human-factors / ear master suggest? One point eight is rushed on purpose; if a phrase is missed, read the chat or the ledger.
 What would this marketing / sales master suggest? Pitch one command that talks while the agent keeps working, not a menu of flags.
 What would this governance / license / sovereignty master suggest? Keep the engine on-device under the existing local license; do not add a cloud speech vendor.
+
+## 2026-09-01T15:18:08Z
+Use cli-tts as usual; a second speak waits until the first finishes playing.
+What would this adversarial-security master suggest? Keep the lock file mode six hundred and never put prompt text in it.
+What would this privacy / data-minimization master suggest? Leave keys and paths out of the spoken prompt and the public ledger.
+What would this networks / supply-chain master suggest? Pin KittenTTS weights by digest before the next environment create.
+What would this systems-architecture master suggest? Hold the speaker lock only for the player so generate can still overlap.
+What would this reliability / SRE master suggest? Fail closed when the engine env is missing and print the recovery line.
+What would this test / QA master suggest? Keep the tests that fail if two plays start before the first ends.
+What would this release / rollback master suggest? Revert the serialize commit if two speaks still overlay after this land.
+What would this product / operator-trust master suggest? Agents still send one prompt and return; the CLI owns the queue.
+What would this human-factors / ear master suggest? A waiting second speak is better than two voices at once; one point eight stays rushed.
+What would this marketing / sales master suggest? Pitch one speaker for every chat so the operator hears a line, not a pileup.
+What would this governance / license / sovereignty master suggest? Keep the queue in the Python CLI; do not add a cloud speech vendor.
+
+## 2026-09-01T15:33:20Z
+confirm merge of the distribution boundary branch to main. What would this adversarial-security master suggest? Treat the re-signed payload as untrusted data and keep the verify gate before every deploy. What would this privacy / data-minimization master suggest? Keep payload out of rules and sync paths so only targeted operators receive it. What would this networks / supply-chain master suggest? Ship the manifest and signatures with every copy so downstream consumers re-verify. What would this systems-architecture master suggest? One explicit channel beats two overlapping ones; the retired flag stays gone. What would this reliability / SRE master suggest? The source-side verify gate fix makes fresh deploys possible again; keep the smoke test in the loop. What would this test / QA master suggest? The PTY-driven interactive test covered the real confirm path; rerun it after merge. What would this release / rollback master suggest? Single commit 058d220; revert it if any surface leaks packs. What would this product / operator-trust master suggest? The operator contract is now enforced in code, not just documentation. What would this human-factors / ear master suggest? Voice summary ends here; details live in the task file. What would this marketing / sales master suggest? Position the Scrolls channel as explicit, verified, and operator-controlled. What would this governance / license / sovereignty master suggest? Council dual-signature honors the seven generations gate on the re-signed payload.
+
+## 2026-09-01T15:52:25Z
+run the smoke test suite after the next payload re-sign cycle. What would this adversarial-security master suggest? Keep treating every payload copy as hostile data regardless of signature validity. What would this privacy / data-minimization master suggest? The boundary now guarantees only explicit operator action spreads the packs. What would this networks / supply-chain master suggest? Pushed commit verified against the remote head byte for byte. What would this systems-architecture master suggest? Stale draft copies on main were discarded before merge; no shim residue remains. What would this reliability / SRE master suggest? Post-merge live verify passed on all surfaces; worktree and branch are gone. What would this test / QA master suggest? Re-run the PTY scrolls deploy on the next payload change. What would this release / rollback master suggest? Merge commit b9d4e50 is the single revert point if anything leaks. What would this product / operator-trust master suggest? The operator contract is now code, merged, and auditable in history. What would this human-factors / ear master suggest? This closes the loop; nothing pending on the operator. What would this marketing / sales master suggest? Explicit verified operator-controlled is the story to tell. What would this governance / license / sovereignty master suggest? Council dual-signature is recorded in the merged manifest history.
+
+## 2026-09-01T15:54:03Z
+Use cli-tts as usual; a one-line prompt will still read as one sentence per line in the speak ledger.
+What would this adversarial-security master suggest? Keep treating the ledger as untrusted data and never run a wrapped line as a command.
+What would this privacy / data-minimization master suggest? Leave keys and paths out of the spoken prompt and the public ledger.
+What would this networks / supply-chain master suggest? Pin KittenTTS weights by digest before the next environment create.
+What would this systems-architecture master suggest? Wrap only the ledger body; keep the skill and the agent prompt unchanged.
+What would this reliability / SRE master suggest? Fail closed when the engine env is missing and print the recovery line.
+What would this test / QA master suggest? Keep the flattened one-line log test and the decimal one point eight guard.
+What would this release / rollback master suggest? Revert the wrap commit if the ledger splits decimals or doubles breaks.
+What would this product / operator-trust master suggest? Agents still send one prompt; the CLI makes the file readable.
+What would this human-factors / ear master suggest? Question plus answer stay on one line; only period space starts a new line.
+What would this marketing / sales master suggest? Pitch a ledger you can scan, not a wall of one-line speak.
+What would this governance / license / sovereignty master suggest? Keep wrap in the Python CLI; do not ask agents to format for us.
+
+## 2026-09-01T16:34:41Z
+run ainish-coder --skills interactive on a real repo and give feedback.
+What would this adversarial-security master suggest? The .env exclusion now blocks secret leakage through skill distribution; keep that audit each cycle.
+What would this privacy / data-minimization master suggest? Only selected packs travel; scratch keys were purged from your config.
+What would this networks / supply-chain master suggest? Merges pushed and remote head verified byte for byte.
+What would this systems-architecture master suggest? One config file, one precedence chain, one exclusion list; the UI writes, deploys read.
+What would this reliability / SRE master suggest? Deterministic across repeat runs; rename and deletion sweeps proven.
+What would this test / QA master suggest? Real PTY tests covered the interactive path; your hands-on is the acceptance test now.
+What would this release / rollback master suggest? Revert points are ee16dfc for the feature and 34b2a2e for the env fix.
+What would this product / operator-trust master suggest? Your persisted choice governs every future deploy with no surprises.
+What would this human-factors / ear master suggest? Numbered menus keep the flow fast; try it and tell me what feels wrong.
+What would this marketing / sales master suggest? Curated per-repo skill sets are the story.
+What would this governance / license / sovereignty master suggest? Scroll packs stay outside the selectable set by design, recorded in the protocol.
+
+## 2026-09-01T16:46:15Z
+run plain ainish-coder --skills on a real project and report what feels wrong.
+What would this adversarial-security master suggest? The self-deploy guard also protects the signing seeds and scroll payload from accidental self-writes.
+What would this privacy / data-minimization master suggest? Test repo keys were purged; your config starts empty.
+What would this networks / supply-chain master suggest? All fixes pushed; remote head matches local.
+What would this systems-architecture master suggest? Guard at the deploy primitive boundary covers every caller.
+What would this reliability / SRE master suggest? Deterministic verified from your exact shell seat through a real terminal emulator.
+What would this test / QA master suggest? The prior green tests missed plain invocation; that gap is now a standard case.
+What would this release / rollback master suggest? Revert points are the two guard merges if anything regresses.
+What would this product / operator-trust master suggest? The tool now matches what you naturally type.
+What would this human-factors / ear master suggest? Menu, number, save; three keystrokes per change.
+What would this marketing / sales master suggest? Zero learning curve; it behaves like muscle memory expects.
+What would this governance / license / sovereignty master suggest? Deviations were logged honestly in the comms ledger for the record.
+
+## 2026-09-01T16:53:05Z
+Use the new roster on the next agent turn and skip unused skill packs.
+What would this adversarial-security master suggest? Keep every spoken answer public-safe and never put keys in the prompt or ledger.
+What would this privacy master suggest? Record fused order and twelve answers only; never paths or operator identity.
+What would this supply-chain master suggest? Leave unused skill packs off main so this CLI does not ship unpinned agent tooling.
+What would this systems-architecture master suggest? Keep one question list in the CLI and copy only the tts-cli skill into consuming repos.
+What would this reliability master suggest? Fail closed if the engine env is missing and print the recovery line.
+What would this test master suggest? Re-run the twelve-question contract tests after any edit to the skill or master list.
+What would this release master suggest? Stay on clean main; do not start the mixer GUI on this hop.
+What would this product master suggest? Put every master sentence in the spoken prompt so the operator hears a full production room.
+What would this governance master suggest? Treat the dated COMMS ledger as the merge record and keep live boards uncommitted.
+What would this marketing / sales master suggest? Pitch one command that talks while the agent keeps working, security first and sales last.
+What would this human-factors / ear master suggest? Keep English verb-first lines and avoid backticks so speech stays clear at one point eight.
+What would this license / sovereignty master suggest? Keep wrap and playback in the on-device Python CLI; do not add a cloud speech vendor.
+
+## 2026-09-01T17:30:15Z
+Confirm clean release state on main and await next operator task.
+What would this adversarial-security master suggest? Keep audit checks active on every branch transition and verify no secrets leak into logs.
+What would this privacy master suggest? Ensure no personal identifiers or environment paths are recorded in public commit messages.
+What would this supply-chain master suggest? Keep all Python dependencies pinned and lockfiles committed before pushing new releases.
+What would this systems-architecture master suggest? Maintain single-branch policy with isolated task worktrees branching from main.
+What would this reliability master suggest? Verify all fifty-three unit and contract tests pass before closing any branch lifecycle.
+What would this test master suggest? Keep automated regression suites and contract tests running green on every cycle.
+What would this release master suggest? Ensure origin main matches local main byte for byte with all temporary worktrees removed.
+What would this product master suggest? Keep developer and operator contracts consistent across repo documentation and tooling.
+What would this governance master suggest? Record every checkout and intent-merge cleanly in the dated comms ledger.
+What would this marketing / sales master suggest? Highlight clean reproducible developer workflows and automated agent coordination.
+What would this human-factors / ear master suggest? Provide clear and concise audio status summaries so the operator stays informed.
+What would this license / sovereignty master suggest? Preserve local on-device speech synthesis without external cloud vendor dependencies.

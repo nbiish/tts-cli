@@ -13,7 +13,7 @@ Cleaning** entirely locally, ensuring data privacy and zero latency.
 | Feature | Flag | Description | Engine |
 | :--- | :--- | :--- | :--- |
 | **TTS** | `--text "..."` / `--prompt "..."` | Generate speech from text | KittenTTS nano |
-| **Agent summary** | `--prompt` (fused Next-step + nine deterministic and three slash answers; omit `--voice` / `--speed`) | Singular speak path | KittenTTS nano |
+| **Agent summary** | `--prompt` (fused Next-step + six deterministic and three custom slash answers; omit `--voice` / `--speed`) | Singular speak path | KittenTTS nano |
 | **Built-in voice** | `--voice NAME` | Operator override (8 names). Agents omit this. Next chat: omitted → random | KittenTTS nano |
 | **Default model** | `--set-default kitten-tts-nano` / `--list` | Choose/show the default for `auto` | KittenTTS nano |
 | **Clean Voice** | `--clean-voice [file]` | **Best Practice**: Isolate vocals + Remove silence | Demucs + Silero VAD |

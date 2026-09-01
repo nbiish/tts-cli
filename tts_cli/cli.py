@@ -42,22 +42,19 @@ SUGGESTION_LEDGER_MAX = 5000
 
 # Printed by ``cli-tts --next-step-prompt``. Binding copy lives in AGENTS.md
 # ``<OUTPUT>`` and `.agents/skills/tts-cli/SKILL.md` — keep this list aligned.
-# Nine deterministic production/security chairs, then three dual-hat chairs.
+# Six deterministic production/security chairs, then three dual-hat chairs.
 DETERMINISTIC_MASTERS = (
-    "adversarial-security",
-    "privacy",
-    "supply-chain",
-    "systems-architecture",
-    "reliability",
-    "test",
-    "release",
-    "product",
-    "governance",
+    "adversarial / security",
+    "privacy / data-protection regulatory",
+    "supply-chain / third-party-risk",
+    "systems-architecture / devops / infrastructure",
+    "reliability / verification",
+    "governance / sovereignty",
 )
 SLASH_MASTERS = (
-    ("marketing", "sales"),
-    ("human-factors", "ear"),
-    ("license", "sovereignty"),
+    ("___", "___"),
+    ("___", "___"),
+    ("___", "___"),
 )
 
 

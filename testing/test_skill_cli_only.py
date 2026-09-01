@@ -24,12 +24,16 @@ def test_skill_names_cli_and_every_master_question():
     assert "cli-tts --next-step-prompt" in text
     for question in MASTER_QUESTIONS:
         assert question in text
-    assert len(MASTER_QUESTIONS) == 12
-    assert len(DETERMINISTIC_MASTERS) == 9
+    assert len(MASTER_QUESTIONS) == 9
+    assert len(DETERMINISTIC_MASTERS) == 6
     assert len(SLASH_MASTERS) == 3
-    assert "marketing / sales" in text
-    assert "human-factors / ear" in text
-    assert "license / sovereignty" in text
+    assert "adversarial / security" in text
+    assert "privacy / data-protection regulatory" in text
+    assert "supply-chain / third-party-risk" in text
+    assert "systems-architecture / devops / infrastructure" in text
+    assert "reliability / verification" in text
+    assert "governance / sovereignty" in text
+    assert "___ / ___" in text
     assert "craft / next-agent" not in text
     assert "data-minimization" not in text
     assert "--voice" not in text

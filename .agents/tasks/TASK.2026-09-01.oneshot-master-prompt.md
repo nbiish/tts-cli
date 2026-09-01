@@ -1,23 +1,26 @@
-# TASK 2026-09-01 — one-shot master-suggest prompt
+# TASK 2026-09-01 — tts-cli skill is CLI-only
 
-**Branch:** `feat/tts-oneshot-master-prompt`
-**Worktree:** `../tts-oneshot-master-prompt`
+**Branch:** `feat/tts-cli-oneshot-prompt`
+**Worktree:** `../tts-cli-oneshot-prompt`
 **Classification:** Confidential — no secrets
 
 ## Goal
 
-The tts-cli skill and MCP tool blurb present **one** prompt: each master
-answers in one sentence, then one fused `Next step:`. Agents make **one**
-speak call. No per-expert tool loops.
+`.agents/skills/tts-cli/SKILL.md` teaches the `cli-tts` CLI only: commands,
+expected `--prompt` shape, ledger, voices, setup. **Zero MCP mentions**
+(not even a "there is no MCP" disclaimer). End-of-chat output is one
+`--prompt` whose Next-step body is the fused order plus one sentence per
+master (`AGENTS.md` `<OUTPUT>` is the binding copy).
 
 ## Done when
 
-- Skill contains the copy-paste one-shot prompt.
-- YAML `description` and `MCP_AUDIO_GUIDE.md` tell harnesses: one tool,
-  one call.
-- `AGENTS.md` `<OUTPUT>` points at that prompt.
+- Skill file has no `MCP` / `mcp` substring.
+- YAML description, command table, and HEREDOC are CLI-only.
+- `cli-tts --next-step-prompt` prints the eleven questions.
+- Tests lock the skill invariant and the eleven-answer ledger capture.
+- Ledger cap is 5000 so a valid `--prompt` is not truncated.
 
 ## Non-goals
 
-- No new MCP server.
-- No panel in `AGENTS-TTS-COMMS.txt`.
+- Do not add a TTS server of any kind.
+- Do not invent a panel format in `AGENTS-TTS-COMMS.txt`.

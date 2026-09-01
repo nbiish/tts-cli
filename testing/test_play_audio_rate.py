@@ -4,7 +4,14 @@ import inspect
 import subprocess
 from unittest.mock import MagicMock
 
+import pytest
+
 from tts_cli.cli import PLAY_AUDIO_RATE, play_audio
+
+
+@pytest.fixture(autouse=True)
+def _isolate_play_lock(tmp_path, monkeypatch):
+    monkeypatch.setenv("TTS_CLI_PLAY_LOCK", str(tmp_path / "play.lock"))
 
 
 def test_play_audio_default_rate_is_unity():

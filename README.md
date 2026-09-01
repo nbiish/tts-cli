@@ -64,7 +64,7 @@ cli-tts --text "Hello world" --output speech.wav
 - **🔒 Isolated Environments**: The engine runs in its own UV environment (Python 3.11)
 - **🎵 Built-in Voices**: 8 fixed voices; agent speak omits `--voice` (CLI picks at random, 1.8× WAV); operator `--voice` pins
 - **📋 Clipboard | Text | Text File | Pipe Support**: Flexible input methods
-- **🔊 Auto-Playback**: Automatically plays generated audio
+- **🔊 Auto-Playback**: Plays generated audio; concurrent `cli-tts` calls wait on one speaker lock instead of overlaying
 - **💾 Smart Caching**: Auto-manages output files with rotation
 - **🔄 Cross-Platform**: Works on macOS, Linux, and Windows
 
@@ -248,12 +248,13 @@ cli-tts --list-environments
 ## Roadmap
 
 **Now:** on-device KittenTTS CLI. Agent speak detaches, 1.8× WAV tempo, random
-built-in voice when `--voice` is omitted.
+built-in voice when `--voice` is omitted. Playback is sequential: every
+`cli-tts` play waits on `~/.tts-cli/play.lock` so CLI, agents, and a future
+GUI cannot overlay.
 
 **Later (not this release):** a **Rust mixer GUI** that pops up for tts-cli,
-watches tts-cli PIDs, plays every agent call as a sequential track list
-(skip forward/back), owns volume for those plays, and sets the permanent
-WAV generate speed for all tts-cli calls. Spec:
+watches tts-cli PIDs, exposes skip forward/back and volume, and sets the
+permanent WAV generate speed. The backend already queues plays. Spec:
 `.agents/tasks/TASK.2026-09-01.tts-mixer-gui.md`.
 
 ## 📚 Examples

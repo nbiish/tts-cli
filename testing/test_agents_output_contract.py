@@ -26,8 +26,9 @@ def test_agents_output_names_shipped_cli_behavior():
     assert "Do not add IndexTTS" in _AGENTS
 
 
-def test_agents_output_does_not_claim_serialized_play():
-    assert "not serialized yet" in _AGENTS
+def test_agents_output_claims_serialized_play():
+    assert "Sequential plays" in _AGENTS
+    assert "not serialized yet" not in _AGENTS
     assert "Do not build the Rust mixer GUI" in _AGENTS
 
 
@@ -37,6 +38,6 @@ def test_llms_is_kitten_prd_not_indextts():
     assert "marketing / sales" in _LLMS
     assert "repo_docs/PRD.md" in _LLMS
     assert "Ignore it" in _LLMS
-    assert "Sequential speaker lock" in _LLMS
+    assert "Sequential speaker lock (shipped)" in _LLMS
     assert "One KittenTTS ONNX session per call" in _LLMS
     assert "1.8" in _LLMS

@@ -23,6 +23,7 @@ import pyperclip
 from .core.model_registry import model_registry
 from .core.environment_manager import env_manager
 from .core.audio_processor import audio_processor
+from .core.play_queue import exclusive_speaker
 from .models.kitten_tts_model import (
     BUILT_IN_VOICES,
     DEFAULT_GENERATE_SPEED,
@@ -484,32 +485,34 @@ def play_audio(file_path: str, speed: float = PLAY_AUDIO_RATE) -> None:
     """Play audio file using system default player at the given speed.
 
     Heard tempo is baked into KittenTTS generate (default 1.8). The player
-    default is 1.0 so we do not stack rates.
+    default is 1.0 so we do not stack rates. The speaker lock is held for
+    the whole player so concurrent CLI, agent, and GUI plays cannot overlay.
     """
     logger.debug("Playing audio: %s (player rate: %sx)", file_path, speed)
     try:
-        system = platform.system()
-        if system == "Darwin":  # macOS
-            subprocess.run(["afplay", "--rate", str(speed), file_path], check=True)
-        elif system == "Linux":
-            # Use ffplay for speed control if available, else fall back
-            if shutil.which("ffplay"):
-                subprocess.run(
-                    ["ffplay", "-nodisp", "-autoexit",
-                     "-af", f"atempo={speed}", file_path],
-                    check=True,
-                )
-            elif shutil.which("aplay"):
-                subprocess.run(["aplay", file_path], check=True)
-            elif shutil.which("paplay"):
-                subprocess.run(["paplay", file_path], check=True)
+        with exclusive_speaker():
+            system = platform.system()
+            if system == "Darwin":  # macOS
+                subprocess.run(["afplay", "--rate", str(speed), file_path], check=True)
+            elif system == "Linux":
+                # Use ffplay for speed control if available, else fall back
+                if shutil.which("ffplay"):
+                    subprocess.run(
+                        ["ffplay", "-nodisp", "-autoexit",
+                         "-af", f"atempo={speed}", file_path],
+                        check=True,
+                    )
+                elif shutil.which("aplay"):
+                    subprocess.run(["aplay", file_path], check=True)
+                elif shutil.which("paplay"):
+                    subprocess.run(["paplay", file_path], check=True)
+                else:
+                    print("❌ No audio player found (ffplay/aplay/paplay)")
+            elif system == "Windows":
+                # Use PowerShell to play sound (no native speed control)
+                subprocess.run(["powershell", "-c", f"(New-Object Media.SoundPlayer '{file_path}').PlaySync()"], check=True)
             else:
-                print("❌ No audio player found (ffplay/aplay/paplay)")
-        elif system == "Windows":
-            # Use PowerShell to play sound (no native speed control)
-            subprocess.run(["powershell", "-c", f"(New-Object Media.SoundPlayer '{file_path}').PlaySync()"], check=True)
-        else:
-            print(f"❌ Unsupported platform for audio playback: {system}")
+                print(f"❌ Unsupported platform for audio playback: {system}")
     except subprocess.CalledProcessError as e:
         print(f"❌ Failed to play audio: {e}")
     except Exception as e:

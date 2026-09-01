@@ -25,9 +25,11 @@ every agent on the machine.
 
 ## Why later
 
-Today the CLI detaches, bakes **1.8×** into the WAV, and lets `afplay` /
-`ffplay` / `SoundPlayer` fight if two agents speak at once. The mixer is
-how the operator gets one ear, one volume, one tempo, one queue.
+The CLI now serializes playback on `~/.tts-cli/play.lock` (see
+`tts_cli/core/play_queue.py`). The mixer is still how the operator gets one
+volume, skippable tracks, PID watch, and a durable generate-speed knob.
+Do not re-implement the speaker mutex in the GUI — take the same lock file
+or become the sole player that holds it.
 
 ## Constraints (when an implement chat opens)
 

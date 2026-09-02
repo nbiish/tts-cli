@@ -97,25 +97,27 @@ def setup_models() -> None:
     """Register all available TTS models.
 
     One-shot execution (subprocess exits immediately after writing the output WAV):
-      - ``moss-tts-nano`` / ``moss-tts`` / ``auto`` (default): MOSS-TTS-Nano (100M+20M) —
-        48 kHz stereo zero-shot voice cloning and speech synthesis ONNX CPU model.
-      - ``kitten-tts-nano``: KittenTTS nano int8 (15M) — ultra-lightweight CPU ONNX TTS
-        with fixed built-in voices.
+      - ``kitten-tts-nano`` / ``kitten-tts`` / ``auto`` (default): KittenTTS nano
+        int8 (15M) — ultra-lightweight CPU ONNX TTS with fixed built-in voices;
+        the fastest engine (cold ~7.9s, RTF ~0.47) and the primary default.
+      - ``moss-tts-nano`` / ``moss-tts`` / ``moss``: MOSS-TTS-Nano (100M+20M) —
+        48 kHz stereo zero-shot voice cloning ONNX CPU model (secondary,
+        opt-in via ``--model`` or ``--set-default``).
     """
-    model_registry.register_model("moss-tts-nano", MossTTSModel)         # primary default (48kHz stereo, CPU ONNX)
+    model_registry.register_model("kitten-tts-nano", KittenTTSModel)     # primary default (CPU, fixed voices, 15M int8)
+    model_registry.register_model("kitten-tts", KittenTTSModel)          # alias
+    model_registry.register_model("auto", KittenTTSModel)                # default alias (resolved via get_default_model)
+    model_registry.register_model("moss-tts-nano", MossTTSModel)         # secondary zero-shot cloning engine (48kHz stereo, CPU ONNX)
     model_registry.register_model("moss-tts", MossTTSModel)              # alias
     model_registry.register_model("moss", MossTTSModel)                  # alias
-    model_registry.register_model("auto", MossTTSModel)                  # default alias
-    model_registry.register_model("kitten-tts-nano", KittenTTSModel)     # lightweight engine (CPU, fixed voices, 15M int8)
-    model_registry.register_model("kitten-tts", KittenTTSModel)          # alias
 
 
 # --- Default-model selection (user-configurable; `auto` resolves to this) ---
-DEFAULT_MODEL_FALLBACK = "moss-tts-nano"
-# Selectable engines for --set-default / --list.
+DEFAULT_MODEL_FALLBACK = "kitten-tts-nano"
+# Selectable engines for --set-default / --list (first entry = built-in default).
 SELECTABLE_MODELS = (
-    "moss-tts-nano",
     "kitten-tts-nano",
+    "moss-tts-nano",
 )
 
 # Canonical remote — printed as the single concise "not installed" hint so any
@@ -141,8 +143,9 @@ def get_default_model() -> str:
     """Resolve the configured default model.
 
     Precedence: ``TTS_CLI_DEFAULT_MODEL`` env var, then the user config file,
-    then the built-in fallback (``pocket-tts``). The value is validated against
-    the selectable engine list; an invalid stored value falls back silently.
+    then the built-in fallback (``kitten-tts-nano``). The value is validated
+    against the selectable engine list; an invalid stored value falls back
+    silently.
     """
     env_val = os.environ.get("TTS_CLI_DEFAULT_MODEL", "").strip().lower()
     if env_val in SELECTABLE_MODELS:
@@ -179,9 +182,9 @@ def set_default_model(model_name: str) -> bool:
 def create_environment(model_name: str) -> bool:
     """Create environment for a specific model."""
     model_configs = {
-        # KittenTTS: the sole engine — ultra-lightweight CPU ONNX TTS (fixed
-        # voices). Installed from the GitHub release wheel (not on PyPI). Pulls
-        # onnxruntime + spaCy for text preprocessing.
+        # KittenTTS: the default engine — ultra-lightweight CPU ONNX TTS
+        # (fixed voices). Installed from the GitHub release wheel (not on
+        # PyPI). Pulls onnxruntime + spaCy for text preprocessing.
         "kitten-tts": [
             "kittentts @ https://github.com/KittenML/KittenTTS/releases/download/0.8.1/kittentts-0.8.1-py3-none-any.whl",
             "onnxruntime",
@@ -228,7 +231,8 @@ def list_models() -> None:
             status = "✅ Available" if available else "❌ Not Available"
             if not available:
                 any_unavailable = True
-            print(f"{model_name:15} | {status:15} | {info['description']}")
+            default_marker = " (default)" if model_name == get_default_model() else ""
+            print(f"{model_name:15} | {status:15} | {info['description']}{default_marker}")
         else:
             print(f"{model_name:15} | ❌ Not Loaded")
             any_unavailable = True
@@ -738,7 +742,7 @@ Examples:
 
     # Model and voice options
     parser.add_argument("--model", default="auto",
-                       help="TTS model to use: auto (default = kitten-tts-nano) or kitten-tts-nano")
+                       help="TTS model to use: auto (default = kitten-tts-nano), kitten-tts-nano, or moss-tts-nano")
     parser.add_argument(
         "--voice",
         help="Built-in KittenTTS voice name (e.g. expr-voice-5-f). "
@@ -775,7 +779,7 @@ Examples:
     parser.add_argument("--list-models", action="store_true",
                        help="List available models and their status")
     parser.add_argument("--set-default", metavar="MODEL",
-                       help="Set the default TTS model for `auto` (persists to ~/.tts-cli/default_model). Choose: kitten-tts-nano")
+                       help="Set the default TTS model for `auto` (persists to ~/.tts-cli/default_model). Default: kitten-tts-nano; choose: kitten-tts-nano, moss-tts-nano")
     parser.add_argument("--list-environments", action="store_true",
                        help="List environment status")
     parser.add_argument("--list-voices", action="store_true",
@@ -984,12 +988,9 @@ Examples:
         print("=== tts-cli Audio Pipeline Diagnostics ===")
         print(f"Default Model:           {get_default_model()}")
         print(f"Play Audio Rate:         {PLAY_AUDIO_RATE}x")
-        print(f"MOSS Output Speedup:     1.8x (WSOLA time-stretch)")
-        print(f"MOSS Sample Rate:        48000 Hz Stereo")
-        print(f"MOSS Default Voice:      en_narrator")
+        print(f"KittenTTS (default):     24000 Hz Mono, generate speed 1.8, voice expr-voice-3-f (calm woman voice)")
+        print(f"MOSS-TTS (secondary):    48000 Hz Stereo, 1.8x output speedup (WSOLA), voice en_narrator")
         print(f"MOSS Acoustic Filters:   highpass (60 Hz), lowpass (18 kHz), loudnorm (-16 LUFS)")
-        print(f"KittenTTS Sample Rate:   24000 Hz Mono")
-        print(f"KittenTTS Default Voice: expr-voice-3-f (calm woman voice)")
         print(f"Caller Repository Root:  {_find_repo_root()}")
         print(f"COMMS Ledger Path:       {_comms_file()}")
         print("==========================================")

@@ -469,11 +469,15 @@ def _speak_request_error(text: str, voice: Optional[str], speed: float) -> Optio
         return f"Text too long ({len(text)} > {MAX_TEXT_LENGTH} chars)."
     if not math.isfinite(speed) or speed <= 0:
         return "--speed must be a positive finite number."
-    if voice is not None and voice not in BUILT_IN_VOICES:
-        return (
-            f"Unknown KittenTTS voice: {voice!r}. "
-            f"Choose from: {', '.join(BUILT_IN_VOICES)}"
-        )
+    if voice is not None and voice not in BUILT_IN_VOICES and voice not in KITTEN_BUILT_IN_VOICES:
+        # Also accept file paths for voice cloning
+        voice_path = Path(voice).expanduser().resolve()
+        if not voice_path.is_file():
+            all_voices = sorted(set(BUILT_IN_VOICES) | set(KITTEN_BUILT_IN_VOICES))
+            return (
+                f"Unknown voice: {voice!r}. "
+                f"Choose from: {', '.join(all_voices)}"
+            )
     return None
 
 

@@ -50,7 +50,7 @@ Conflict → fail closed, explain, ask.
 
 **Ship and keep:**
 - One `cli-tts --prompt` per turn: fused `Next step:` plus **six deterministic** production/security chairs, then **three** `blank / blank` chairs you fill in by your best judgment based on the current task.
-- Default engine `moss-tts-nano` with bundled calm studio narrator reference prompt (`en_calm_female`); KittenTTS calm woman voice fallback (`expr-voice-3-f`); speedup support; fire-and-forget parent; one ONNX session per call; sequential `play.lock`; period-space ledger wrap.
+- Default engine `moss-tts-nano` with bundled narrator reference prompt (`en_narrator`, 1.8× output speedup, peak-normalized); KittenTTS calm woman voice fallback (`expr-voice-3-f`); fire-and-forget parent; one ONNX session per call; sequential `play.lock`; period-space ledger wrap.
 - Vendored skills only: `tts-cli`, `pqc-secrets`, `pqc-signatures-security`, `production-security`, `code-security`, `llm-security`. Hub skill: `wtf skill install`, not vendored here.
 
 **Not this repo:**

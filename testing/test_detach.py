@@ -77,4 +77,4 @@ def test_unknown_name_fails_in_parent(monkeypatch, capsys):
     with pytest.raises(SystemExit) as exited:
         main()
     assert exited.value.code == 1
-    assert "Unknown KittenTTS voice" in capsys.readouterr().out
+    assert "Unknown voice" in capsys.readouterr().out

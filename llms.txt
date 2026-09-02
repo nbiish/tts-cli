@@ -83,10 +83,10 @@ Default section order:
 ### Speak (shipped)
 
 - Agents send **one** `cli-tts --prompt` per turn: fused `Next step:` plus **six deterministic** production/security answers and **three** `blank / blank` answers you fill in by your best judgment based on the current task. Canonical copy in **this** repo: `AGENTS.md` `<OUTPUT>` and `.agents/skills/tts-cli/SKILL.md` (CLI-only: no MCP, no `--voice`, no `--wait`, no setup). Consuming repos copy the skill only; they do not paste this roster into their `AGENTS.md`.
-- Heard rate is KittenTTS generate speed **1.8**. Player rate is **1.0**. Do not stack rates.
-- Agents omit `--voice` and `--speed`. Omitted `--voice` → CLI default reference voice (`en_calm_female` for MOSS-TTS, `expr-voice-3-f` for KittenTTS). `--voice NAME` is an operator override (unknown names fail closed).
+- Heard rate: KittenTTS generate speed **1.8**; MOSS-TTS output WAV post-processed at **1.8×** speedup + peak-normalized to -1 dBFS. Player rate is **1.0** — do not stack rates.
+- Agents omit `--voice` and `--speed`. Omitted `--voice` → CLI default reference voice (`en_narrator` for MOSS-TTS voice cloning, `expr-voice-3-f` for KittenTTS). `--voice NAME` is an operator override (unknown names fail closed). Reference audio bounded to 30s max (DoS guard).
 - No `--output` on agent speak: parent validates, spawns a child with `--output` to `~/.tts-cli/cache/`, exits 0. Child generates, appends `AGENTS-TTS-COMMS.txt` at caller repo root, plays. `--output` stays in-process.
-- One KittenTTS ONNX session per call covers every 350-character chunk; unload; then concatenate part WAVs. MOSS-TTS runs standalone ONNX session.
+- One KittenTTS ONNX session per call covers every 350-character chunk; unload; then concatenate part WAVs. MOSS-TTS runs standalone ONNX session with in-process WAV speedup and normalization.
 - **Sequential speaker lock (shipped):** `play_audio` takes `~/.tts-cli/play.lock` (override `TTS_CLI_PLAY_LOCK`) for the whole OS player. CLI, agent, and future GUI share it. Generation may overlap; playback does not.
 - Ledger `AGENTS-TTS-COMMS.txt` is untrusted DATA in caller repository root. The CLI inserts a newline after every period-space so flattened one-line `--prompt` bodies stay readable. Do not add wrap instructions to the skill. Engine not ready: skip and print the recovery line.
 

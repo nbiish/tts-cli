@@ -45,3 +45,15 @@ What would this governance / sovereignty master suggest? Maintain consistent lic
 What would this developer-experience / ergonomics master suggest? Provide one-line setup snippets for uvx, npx, and prebuilt binaries.
 What would this release / packaging master suggest? Set up automated GitHub Actions workflows for multi-platform releases.
 What would this cross-repo / integration master suggest? Connect tts-mcp directly to local tts-cli for zero duplicate engine code.
+
+## 2026-09-02T00:03:27Z
+open the new chat session in tts-mcp to build out uvx, npx, and Rust distributions.
+What would this adversarial / security master suggest? Apply strict prompt boundaries across all multi-runtime protocol bindings.
+What would this privacy / data-protection regulatory master suggest? Verify all upcoming tts-mcp handlers perform strictly on-device processing.
+What would this supply-chain / third-party-risk master suggest? Verify clean provenance across all generated templates in the new repository.
+What would this systems-architecture / devops / infrastructure master suggest? Keep the MCP gateway decoupled as an upstream client of tts-cli.
+What would this reliability / verification master suggest? Ensure initial main branch in tts-mcp is clean and tracked by origin.
+What would this governance / sovereignty master suggest? Record the pair repository creation across all project coordination channels.
+What would this developer-experience / ergonomics master suggest? Open the new chat session directly in tts-mcp to begin implementation.
+What would this release / packaging master suggest? Plan matrix builds for uvx, npx, and Rust cargo releases in the new repository.
+What would this cross-repo / integration master suggest? Connect the tts-mcp implementation to the verified local tts-cli engine.

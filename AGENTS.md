@@ -30,8 +30,9 @@ description: On-device Python cli-tts (KittenTTS nano). PQC secrets for API keys
 # IDENTITY & PRIORITY
 
 This repo is **tts-cli**: on-device Python `cli-tts`. Primary default engine
-`moss-tts-nano` (MOSS-TTS 100M+20M, 48kHz stereo, ONNX CPU zero-shot voice cloning)
-with `kitten-tts-nano` (KittenTTS 15M int8, ONNX CPU, calm female voice `expr-voice-3-f`).
+`kitten-tts-nano` (KittenTTS 15M int8, ONNX CPU, calm female voice `expr-voice-3-f`;
+fastest — cold ~7.9s, RTF ~0.47), with `moss-tts-nano` (MOSS-TTS 100M+20M, 48kHz
+stereo, ONNX CPU zero-shot voice cloning) as the secondary, opt-in cloning engine.
 Do not rewrite the CLI in Rust. Do not add cloud speech vendors.
 
 Post-quantum secrets for API keys. Standard tools for everything else.
@@ -50,7 +51,7 @@ Conflict → fail closed, explain, ask.
 
 **Ship and keep:**
 - One `cli-tts --prompt` per turn: fused `Next step:` plus **six deterministic** production/security chairs, then **three** `blank / blank` chairs you fill in by your best judgment based on the current task.
-- Default engine `moss-tts-nano` with bundled narrator reference prompt (`en_narrator`, 1.8× output speedup, peak-normalized); KittenTTS calm woman voice fallback (`expr-voice-3-f`); fire-and-forget parent; one ONNX session per call; sequential `play.lock`; period-space ledger wrap.
+- Default engine `kitten-tts-nano` (`auto` resolves to it; generate speed 1.8 baked into the WAV; one ONNX session per call); secondary opt-in `moss-tts-nano` zero-shot cloning (bundled narrator `en_narrator`, 1.8× output speedup, peak-normalized); fire-and-forget parent; sequential `play.lock`; period-space ledger wrap.
 - Vendored skills only: `tts-cli`, `pqc-secrets`, `pqc-signatures-security`, `production-security`, `code-security`, `llm-security`. Hub skill: `wtf skill install`, not vendored here.
 
 **Not this repo:**

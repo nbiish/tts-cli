@@ -76,7 +76,7 @@ Default section order:
 
 ## Product contract (this repo is the PRD)
 
-`cli-tts` is an on-device Python CLI. Native language: **Python**. Do not rewrite the CLI in Rust. `moss-tts-nano` (MOSS-TTS 100M+20M, 48kHz stereo, zero-shot voice cloning, CPU ONNX) is the primary default engine (`auto` aliases it). `kitten-tts-nano` is the lightweight secondary engine (KittenTTS 15M int8, ONNX CPU, calm female voice `expr-voice-3-f`). Isolated `uv` environments under `.model-envs/`. Weights download from Hugging Face on first run.
+`cli-tts` is an on-device Python CLI. Native language: **Python**. Do not rewrite the CLI in Rust. `kitten-tts-nano` (KittenTTS 15M int8, ONNX CPU, fixed built-in voices, default voice `expr-voice-3-f`) is the primary default engine (`auto` resolves to it; fastest cold ~7.9s, RTF ~0.47). `moss-tts-nano` (MOSS-TTS 100M+20M, 48kHz stereo, zero-shot voice cloning, CPU ONNX) is the secondary, opt-in cloning engine (`--model` / `--set-default moss-tts-nano`). Isolated `uv` environments under `.model-envs/`. Weights download from Hugging Face on first run.
 
 `repo_docs/PRD.md` still describes IndexTTS as the sole engine. **Ignore it.** This file and `README.md` win.
 

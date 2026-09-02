@@ -45,7 +45,7 @@ cli-tts --text "Hello world" --output speech.wav
 
 1. **KittenTTS nano int8** (KittenML) - Ultra-lightweight CPU ONNX TTS. The fastest engine on this machine (cold ~7.9s, RTF ~0.47) and the most portable (no accelerator; macOS/Linux/Windows/WSL). Fixed built-in voices (no zero-shot cloning).
 
-**IMPLEMENTATION RULE:** `kitten-tts-nano` is the sole engine (`auto` is an alias). It runs one-shot in an isolated `uv` env (Python 3.11) and fully unloads from RAM after each call.
+**IMPLEMENTATION RULE:** `kitten-tts-nano` is the default engine (`auto` resolves to it; `--set-default moss-tts-nano` opts into the secondary zero-shot cloning engine). It runs one-shot in an isolated `uv` env (Python 3.11) and fully unloads from RAM after each call.
 
 ## 🚀 **Current Status**
 
@@ -53,7 +53,7 @@ cli-tts --text "Hello world" --output speech.wav
 - **Core CLI Infrastructure**: Complete tiered architecture implemented
 - **Environment Management**: UV-based isolated environments working (per-model Python pinning — KittenTTS → 3.11)
 - **Model Registry**: Dynamic model loading and registration system
-- **KittenTTS Implementation**: Ultra-lightweight CPU ONNX TTS (fixed voices) - **SOLE ENGINE**
+- **KittenTTS Implementation**: Ultra-lightweight CPU ONNX TTS (fixed voices) - **DEFAULT ENGINE**
 - **Audio Generation**: Working audio output with auto-playback
 - **Voice Management**: Built-in voices; agents omit `--voice`, operators pin with `--voice`
 - **CLI Interface**: Full command-line interface operational
@@ -138,7 +138,7 @@ cli-tts --remove-silence input.wav --output trimmed.wav
 
 ```bash
 # Create environment (Required first time)
-cli-tts --create-environment kitten-tts   # sole engine (CPU, fixed voices)
+cli-tts --create-environment kitten-tts   # default engine (CPU, fixed voices)
 
 # List available models
 cli-tts --list
@@ -149,7 +149,7 @@ cli-tts --cleanup-environment kitten-tts
 
 ## 🤖 Available Models
 
-### 1. KittenTTS nano int8 (KittenML) — SOLE ENGINE (`auto` / `kitten-tts-nano`)
+### 1. KittenTTS nano int8 (KittenML) — DEFAULT ENGINE (`auto` / `kitten-tts-nano`)
 - **Speed**: ⚡ Fastest on this machine — cold ~7.9s, RTF ~0.47 (Apple Silicon CPU).
 - **Quality**: ✅ Natural speech from 8 fixed built-in voices (no zero-shot cloning)
 - **Features**: Ultra-lightweight (15M / 25MB), CPU-only (no accelerator), cross-platform, English
@@ -158,7 +158,13 @@ cli-tts --cleanup-environment kitten-tts
 - **Requirements**: None (CPU). Weights download from HF on first run.
 - **Best for**: Fast, portable agent voice summaries on any OS without an accelerator.
 
-### 2. Audio Processing Tools (Demucs & VAD)
+### 2. MOSS-TTS nano — SECONDARY, OPT-IN ZERO-SHOT CLONING (`moss-tts-nano`)
+- **Speed**: Larger model, heavier than KittenTTS (output WAV post-processed at 1.8× and peak-normalized).
+- **Quality**: 48 kHz stereo; zero-shot voice cloning from a reference clip (≤30s) or the bundled narrator `en_narrator`.
+- **Select**: `cli-tts --model moss-tts-nano` per call, or persist with `cli-tts --set-default moss-tts-nano`.
+- **Best for**: cloning a specific voice when generation speed is not the priority.
+
+### 3. Audio Processing Tools (Demucs & VAD)
 - **Demucs**: Hybrid Transformer for state-of-the-art music source separation (isolates vocals).
 - **Silero VAD**: Enterprise-grade Voice Activity Detection to remove silence.
 - **Use Case**: Cleaning noisy audio for voice cloning datasets.
@@ -172,7 +178,7 @@ cli-tts --cleanup-environment kitten-tts
 
 2. **Create environment**:
    ```bash
-   cli-tts --create-environment kitten-tts   # sole engine
+   cli-tts --create-environment kitten-tts   # default engine
    ```
 
 3. **Test it works**:
@@ -190,7 +196,8 @@ TTS CLI
 ├── Model Registry (core/model_registry.py)
 ├── Environment Manager (core/environment_manager.py)
 └── Model Implementations
-    └── KittenTTSModel      (KittenTTS nano int8, sole engine)
+    ├── KittenTTSModel      (KittenTTS nano int8, default engine)
+    └── MossTTSModel        (MOSS-TTS nano, secondary opt-in cloning)
 ```
 
 ### Environment Isolation

@@ -33,3 +33,15 @@ What would this governance / sovereignty master suggest? Keep authoritative spea
 What would this developer-experience / ergonomics master suggest? Prefer zero-configuration PATH discovery across all agent tools and harnesses.
 What would this release / packaging master suggest? Keep distribution simple via pip editable installs and shell aliases.
 What would this cross-repo / integration master suggest? Preserve automatic caller cwd discovery for repo-local ledger routing.
+
+## 2026-09-02T00:01:13Z
+design tts-mcp repository architecture supporting uvx, npx, and Rust cargo releases.
+What would this adversarial / security master suggest? Enforce input sanitization across all three protocol bindings before execution.
+What would this privacy / data-protection regulatory master suggest? Guarantee zero cloud exfiltration across uvx, npx, and Rust wrappers.
+What would this supply-chain / third-party-risk master suggest? Publish signed checksums and provenance manifests to PyPI, npm, and crates.io.
+What would this systems-architecture / devops / infrastructure master suggest? Keep tts-cli as the core engine while tts-mcp handles protocol adapters.
+What would this reliability / verification master suggest? Verify stdio protocol conformance across Claude Desktop, Cursor, and Antigravity.
+What would this governance / sovereignty master suggest? Maintain consistent licensing and author attribution across all distribution channels.
+What would this developer-experience / ergonomics master suggest? Provide one-line setup snippets for uvx, npx, and prebuilt binaries.
+What would this release / packaging master suggest? Set up automated GitHub Actions workflows for multi-platform releases.
+What would this cross-repo / integration master suggest? Connect tts-mcp directly to local tts-cli for zero duplicate engine code.

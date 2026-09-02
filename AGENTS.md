@@ -29,9 +29,10 @@ description: On-device Python cli-tts (KittenTTS nano). PQC secrets for API keys
 
 # IDENTITY & PRIORITY
 
-This repo is **tts-cli**: on-device Python `cli-tts`. Sole engine
-`kitten-tts-nano` (KittenTTS 15M int8, ONNX, CPU, English). Do not rewrite
-the CLI in Rust. Do not add IndexTTS or a cloud speech vendor.
+This repo is **tts-cli**: on-device Python `cli-tts`. Primary default engine
+`moss-tts-nano` (MOSS-TTS 100M+20M, 48kHz stereo, ONNX CPU zero-shot voice cloning)
+with `kitten-tts-nano` (KittenTTS 15M int8, ONNX CPU, calm female voice `expr-voice-3-f`).
+Do not rewrite the CLI in Rust. Do not add cloud speech vendors.
 
 Post-quantum secrets for API keys. Standard tools for everything else.
 Working production code above dogma.
@@ -49,7 +50,7 @@ Conflict → fail closed, explain, ask.
 
 **Ship and keep:**
 - One `cli-tts --prompt` per turn: fused `Next step:` plus **six deterministic** production/security chairs, then **three** `blank / blank` chairs you fill in by your best judgment based on the current task.
-- Heard generate speed **1.8**; player **1.0**; default built-in woman voice (`expr-voice-5-f`) when `--voice` is omitted; fire-and-forget parent; one ONNX session per call; sequential `play.lock`; period-space ledger wrap.
+- Default engine `moss-tts-nano` with bundled calm studio narrator reference prompt (`en_calm_female`); KittenTTS calm woman voice fallback (`expr-voice-3-f`); speedup support; fire-and-forget parent; one ONNX session per call; sequential `play.lock`; period-space ledger wrap.
 - Vendored skills only: `tts-cli`, `pqc-secrets`, `pqc-signatures-security`, `production-security`, `code-security`, `llm-security`. Hub skill: `wtf skill install`, not vendored here.
 
 **Not this repo:**

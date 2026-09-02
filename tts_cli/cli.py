@@ -26,10 +26,15 @@ from .core.audio_processor import audio_processor
 from .core.play_queue import exclusive_speaker
 from .core.text_utils import break_after_period_space
 from .models.kitten_tts_model import (
-    BUILT_IN_VOICES,
+    BUILT_IN_VOICES as KITTEN_BUILT_IN_VOICES,
     DEFAULT_GENERATE_SPEED,
     KittenTTSModel,
     MAX_TEXT_LENGTH,
+)
+from .models.moss_tts_model import (
+    BUILT_IN_VOICES,
+    DEFAULT_VOICE as MOSS_DEFAULT_VOICE,
+    MossTTSModel,
 )
 
 logger = logging.getLogger("tts_cli.cli")
@@ -76,6 +81,7 @@ NEXT_STEP_ONESHOT_PROMPT = (
     + "\n"
 )
 
+
 # Heard tempo lives in the WAV. The OS player must not stack a second rate.
 PLAY_AUDIO_RATE = 1.0
 
@@ -90,21 +96,25 @@ def print_next_step_prompt() -> None:
 def setup_models() -> None:
     """Register all available TTS models.
 
-    Single engine, one-shot (subprocess exits immediately after writing the
-    output WAV — no daemon, no warm cache, no model state held in RAM/VRAM):
-      - ``kitten-tts-nano`` / ``auto`` (default): KittenTTS nano int8 (15M) —
-        ultra-lightweight CPU ONNX TTS with fixed built-in voices. The fastest
-        engine on this machine (cold ~7.9s, RTF ~0.47) and the most portable
-        (CPU-only, no accelerator, cross-platform macOS/Linux/Windows/WSL).
+    One-shot execution (subprocess exits immediately after writing the output WAV):
+      - ``moss-tts-nano`` / ``moss-tts`` / ``auto`` (default): MOSS-TTS-Nano (100M+20M) —
+        48 kHz stereo zero-shot voice cloning and speech synthesis ONNX CPU model.
+      - ``kitten-tts-nano``: KittenTTS nano int8 (15M) — ultra-lightweight CPU ONNX TTS
+        with fixed built-in voices.
     """
-    model_registry.register_model("kitten-tts-nano", KittenTTSModel)     # sole engine (CPU, fixed voices, 15M int8)
-    model_registry.register_model("auto", KittenTTSModel)                # alias for kitten-tts-nano
+    model_registry.register_model("moss-tts-nano", MossTTSModel)         # primary default (48kHz stereo, CPU ONNX)
+    model_registry.register_model("moss-tts", MossTTSModel)              # alias
+    model_registry.register_model("moss", MossTTSModel)                  # alias
+    model_registry.register_model("auto", MossTTSModel)                  # default alias
+    model_registry.register_model("kitten-tts-nano", KittenTTSModel)     # lightweight engine (CPU, fixed voices, 15M int8)
+    model_registry.register_model("kitten-tts", KittenTTSModel)          # alias
 
 
 # --- Default-model selection (user-configurable; `auto` resolves to this) ---
-DEFAULT_MODEL_FALLBACK = "kitten-tts-nano"
+DEFAULT_MODEL_FALLBACK = "moss-tts-nano"
 # Selectable engines for --set-default / --list.
 SELECTABLE_MODELS = (
+    "moss-tts-nano",
     "kitten-tts-nano",
 )
 
@@ -529,7 +539,8 @@ def generate_speech(text: str, model_name: str, voice: Optional[str],
         return False
 
     if not model.check_availability():
-        _not_installed_hint("tts-cli engine not ready (run: cli-tts --create-environment kitten-tts)")
+        env_key = getattr(model, "_env_key", model_name)
+        _not_installed_hint(f"tts-cli engine not ready (run: cli-tts --create-environment {env_key})")
         return False
 
     print(f"Generating speech with {model_name}...")

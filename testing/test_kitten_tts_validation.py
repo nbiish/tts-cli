@@ -101,7 +101,7 @@ def test_no_voice_defaults_to_expr_voice_5_f(model_with_env, monkeypatch):
     assert ok is True
     assert popen.call_count == 1
     payload = _payload_from_popen(popen)
-    assert payload["voice"] == "expr-voice-5-f"
+    assert payload["voice"] == "expr-voice-3-f"
     assert payload["speed"] == DEFAULT_GENERATE_SPEED
     assert payload["speed"] == 1.8
 

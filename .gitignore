@@ -200,6 +200,7 @@ AGENTS/*.COMMS.live.md
 *.wav
 !assets/audio_samples/*.wav
 !assets/audio_samples/**/*.wav
+!assets/voices/*.wav
 *.xz
 *.zip
 *~

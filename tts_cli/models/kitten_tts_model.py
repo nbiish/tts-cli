@@ -44,8 +44,8 @@ BUILT_IN_VOICES = (
     "expr-voice-4-m", "expr-voice-4-f",
     "expr-voice-5-m", "expr-voice-5-f",
 )
-# Default built-in voice: last woman voice (expr-voice-5-f) across the whole system.
-DEFAULT_VOICE = "expr-voice-5-f"
+# Default built-in voice: calm, normal-sounding English female voice (expr-voice-3-f).
+DEFAULT_VOICE = "expr-voice-3-f"
 # Heard tempo is baked into the WAV so every OS player can run at 1.0.
 DEFAULT_GENERATE_SPEED = 1.8
 

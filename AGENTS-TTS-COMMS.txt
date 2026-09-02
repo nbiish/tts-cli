@@ -57,3 +57,8 @@ What would this governance / sovereignty master suggest? Record the pair reposit
 What would this developer-experience / ergonomics master suggest? Open the new chat session directly in tts-mcp to begin implementation.
 What would this release / packaging master suggest? Plan matrix builds for uvx, npx, and Rust cargo releases in the new repository.
 What would this cross-repo / integration master suggest? Connect the tts-mcp implementation to the verified local tts-cli engine.
+
+## 2026-09-02T02:14:06Z
+Verify downstream audio fidelity.
+What would this adversarial / security master suggest? Sanitize inputs.
+What would this privacy / data-protection regulatory master suggest? Protect user acoustic data.

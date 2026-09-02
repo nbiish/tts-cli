@@ -102,8 +102,15 @@ def _speedup_and_normalize_wav(wav_path: Path, speed: float) -> bool:
             os.close(fd)
 
             # Build the audio filter chain.
+            # 1. High-pass filter at 60 Hz to eliminate sub-bass rumble/whoosh artifacts.
+            # 2. Low-pass filter at 18 kHz to remove ultrasonic quantization noise.
+            filters: list[str] = [
+                "highpass=f=60",
+                "lowpass=f=18000",
+            ]
+
+            # 3. WSOLA time-stretch (preserves pitch without chipmunk distortion).
             # atempo supports 0.5–100.0; for speed > 2.0 chain multiple.
-            filters: list[str] = []
             if speed != 1.0 and speed > 0:
                 remaining = speed
                 while remaining > 2.0:
@@ -112,7 +119,7 @@ def _speedup_and_normalize_wav(wav_path: Path, speed: float) -> bool:
                 if remaining != 1.0:
                     filters.append(f"atempo={remaining:.4f}")
 
-            # EBU R128 loudness normalization (-16 LUFS integrated, -1 dBTP)
+            # 4. EBU R128 broadcast loudness normalization (-16 LUFS integrated, -1 dBTP)
             filters.append("loudnorm=I=-16:TP=-1:LRA=11")
 
             af = ",".join(filters)

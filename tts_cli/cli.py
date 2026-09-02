@@ -361,17 +361,22 @@ def _find_repo_root(start_dir: Optional[Path] = None) -> Path:
     except (FileNotFoundError, subprocess.SubprocessError, OSError):
         pass
 
-    # Fallback: walk up hierarchy looking for .git (dir or file)
+    # Fallback: walk up hierarchy looking for repo/project root markers
     curr = candidate
     while True:
-        if (curr / ".git").exists():
+        if (
+            (curr / ".git").exists()
+            or (curr / "AGENTS.md").exists()
+            or (curr / "llms.txt").exists()
+            or (curr / ".agents").is_dir()
+        ):
             return curr
         parent = curr.parent
         if parent == curr:
             break
         curr = parent
 
-    # Fallback if no git repo found: return candidate directory
+    # Fallback if no project root found: return candidate directory
     return candidate
 
 

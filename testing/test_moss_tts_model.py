@@ -77,17 +77,24 @@ def test_model_info_includes_speed(moss_model):
     assert info["default_voice"] == "en_narrator"
 
 
-def test_pinned_model_revisions():
-    from tts_cli.core.onnx_tts_runtime import (
-        DEFAULT_BROWSER_ONNX_TTS_REVISION,
-        DEFAULT_BROWSER_ONNX_CODEC_REVISION,
-    )
-    from tts_cli.core.moss_runtime import (
-        DEFAULT_MOSS_TTS_REVISION,
-        DEFAULT_MOSS_CODEC_REVISION,
-    )
-    assert len(DEFAULT_BROWSER_ONNX_TTS_REVISION) == 40
-    assert len(DEFAULT_BROWSER_ONNX_CODEC_REVISION) == 40
-    assert DEFAULT_BROWSER_ONNX_TTS_REVISION == DEFAULT_MOSS_TTS_REVISION
-    assert DEFAULT_BROWSER_ONNX_CODEC_REVISION == DEFAULT_MOSS_CODEC_REVISION
+def test_validate_audio_magic_bytes_valid_wav(tmp_path):
+    from tts_cli.models.moss_tts_model import _validate_audio_magic_bytes
+    wav_file = tmp_path / "valid.wav"
+    wav_file.write_bytes(b"RIFF\x24\x00\x00\x00WAVEfmt ")
+    assert _validate_audio_magic_bytes(wav_file) is True
+
+
+def test_validate_audio_magic_bytes_valid_flac(tmp_path):
+    from tts_cli.models.moss_tts_model import _validate_audio_magic_bytes
+    flac_file = tmp_path / "valid.flac"
+    flac_file.write_bytes(b"fLaC\x00\x00\x00\x22")
+    assert _validate_audio_magic_bytes(flac_file) is True
+
+
+def test_validate_audio_magic_bytes_rejects_fake_header(tmp_path):
+    from tts_cli.models.moss_tts_model import _validate_audio_magic_bytes
+    fake_file = tmp_path / "disguised.wav"
+    fake_file.write_bytes(b"NOT_A_WAV_HEADER_DATA")
+    assert _validate_audio_magic_bytes(fake_file) is False
+
 

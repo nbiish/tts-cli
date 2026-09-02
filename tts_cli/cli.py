@@ -771,6 +771,12 @@ Examples:
     parser.add_argument("--next-step-prompt", action="store_true",
                        help="Print the AGENTS.md master-suggest questions (one sentence each). No speech. Fill them, then call --prompt once.")
     parser.add_argument("--test-model", help="Test a specific model")
+    parser.add_argument("--check-skills", action="store_true",
+                       help="Verify that tts-cli SKILL.md is byte-identical and in sync across consuming repositories")
+    parser.add_argument("--sync-skills", action="store_true",
+                       help="Atomically synchronize tts-cli SKILL.md to consuming repositories with SHA-256 validation")
+    parser.add_argument("--diagnostics", action="store_true",
+                       help="Print active audio pipeline diagnostics, model configurations, and filter parameters")
     
     # Voice cloning
     parser.add_argument("--voice-clone", help="Reference audio file for voice cloning")
@@ -950,6 +956,31 @@ Examples:
     if args.test_model:
         test_model(args.test_model)
         return
+
+    if args.check_skills:
+        from scripts.sync_skills import main as sync_main
+        sys.argv = ["sync_skills", "--check"]
+        sys.exit(sync_main())
+
+    if args.sync_skills:
+        from scripts.sync_skills import main as sync_main
+        sys.argv = ["sync_skills", "--sync"]
+        sys.exit(sync_main())
+
+    if args.diagnostics:
+        print("=== tts-cli Audio Pipeline Diagnostics ===")
+        print(f"Default Model:           {get_default_model()}")
+        print(f"Play Audio Rate:         {PLAY_AUDIO_RATE}x")
+        print(f"MOSS Output Speedup:     1.8x (WSOLA time-stretch)")
+        print(f"MOSS Sample Rate:        48000 Hz Stereo")
+        print(f"MOSS Default Voice:      en_narrator")
+        print(f"MOSS Acoustic Filters:   highpass (60 Hz), lowpass (18 kHz), loudnorm (-16 LUFS)")
+        print(f"KittenTTS Sample Rate:   24000 Hz Mono")
+        print(f"KittenTTS Default Voice: expr-voice-3-f (calm woman voice)")
+        print(f"Caller Repository Root:  {_find_repo_root()}")
+        print(f"COMMS Ledger Path:       {_comms_file()}")
+        print("==========================================")
+        sys.exit(0)
 
     if args.list_voices:
         list_voices(args.model)

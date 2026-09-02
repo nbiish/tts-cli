@@ -176,8 +176,46 @@ ALLOWED_AUDIO_EXTENSIONS = {".wav", ".flac", ".ogg", ".mp3", ".m4a"}
 MAX_REFERENCE_FILE_SIZE_BYTES = 25 * 1024 * 1024  # 25 MB max
 
 
+def _validate_audio_magic_bytes(audio_path: Path) -> bool:
+    """Validate that the file header begins with genuine audio container magic bytes.
+
+    Protects against polyglot file attacks and malicious executable masquerading (CWE-434).
+    """
+    try:
+        with open(audio_path, "rb") as f:
+            header = f.read(32)
+        if len(header) < 4:
+            return False
+
+        # WAV: RIFF....WAVE
+        if header[:4] == b"RIFF" and len(header) >= 12 and header[8:12] == b"WAVE":
+            return True
+
+        # FLAC: fLaC
+        if header[:4] == b"fLaC":
+            return True
+
+        # OGG: OggS
+        if header[:4] == b"OggS":
+            return True
+
+        # MP3: ID3 or frame sync 0xFF 0xFB/0xF3/0xF2
+        if header[:3] == b"ID3" or (header[0] == 0xFF and (header[1] & 0xE0) == 0xE0):
+            return True
+
+        # M4A/MP4: ....ftyp
+        if len(header) >= 8 and header[4:8] == b"ftyp":
+            return True
+
+        logger.error("MOSS-TTS: File header does not match audio magic bytes: %s", audio_path)
+        return False
+    except Exception as exc:
+        logger.warning("MOSS-TTS: Could not read magic bytes from %s: %s", audio_path, exc)
+        return False
+
+
 def _check_reference_duration(audio_path: Path, max_secs: float) -> bool:
-    """Validate that reference audio file format, size, and duration are within safe bounds.
+    """Validate that reference audio file format, magic bytes, size, and duration are within safe bounds.
 
     Prevents denial-of-service through oversized reference clips or unhandled formats
     that would cause excessive tokenizer/decoder computation or memory exhaustion.
@@ -192,6 +230,10 @@ def _check_reference_duration(audio_path: Path, max_secs: float) -> bool:
             "MOSS-TTS: Unsupported audio format '%s' for reference audio: %s (allowed: %s)",
             audio_path.suffix, audio_path, ", ".join(sorted(ALLOWED_AUDIO_EXTENSIONS))
         )
+        return False
+
+    # Check magic bytes
+    if not _validate_audio_magic_bytes(audio_path):
         return False
 
     # Check file size bound
@@ -320,6 +362,7 @@ class MossTTSModel(BaseTTSModel):
 
         runner_script = f"""
 import sys
+import os
 import json
 from pathlib import Path
 
@@ -343,7 +386,10 @@ def run():
         enable_wetext=False,
         enable_normalize_tts_text=True,
     )
-    print(f"MOSS-TTS: Generated {{out_path}}")
+    print("MOSS-TTS: Generated " + str(out_path))
+    sys.stdout.flush()
+    sys.stderr.flush()
+    os._exit(0)
 
 if __name__ == "__main__":
     run()

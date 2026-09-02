@@ -434,10 +434,26 @@ class OnnxTtsRuntime(OrtCpuRuntime):
                     normalized_piece = piece.strip()
                     if normalized_piece:
                         sentence_slices.append((self.count_text_tokens(normalized_piece), normalized_piece))
+        # Pair questions with their immediate answers so questions are never orphaned at chunk boundaries
+        paired_slices: list[tuple[int, str]] = []
+        slice_idx = 0
+        while slice_idx < len(sentence_slices):
+            curr_tokens, curr_text = sentence_slices[slice_idx]
+            if curr_text.endswith("?") and slice_idx + 1 < len(sentence_slices):
+                next_tokens, next_text = sentence_slices[slice_idx + 1]
+                combined = _join_sentence_parts(curr_text, next_text)
+                combined_tokens = self.count_text_tokens(combined)
+                if combined_tokens <= safe_max_tokens:
+                    paired_slices.append((combined_tokens, combined))
+                    slice_idx += 2
+                    continue
+            paired_slices.append((curr_tokens, curr_text))
+            slice_idx += 1
+
         chunks: list[str] = []
         current_chunk = ""
         current_chunk_token_count = 0
-        for sentence_token_count, sentence_text in sentence_slices:
+        for sentence_token_count, sentence_text in paired_slices:
             if not current_chunk:
                 current_chunk = sentence_text
                 current_chunk_token_count = sentence_token_count
@@ -451,7 +467,7 @@ class OnnxTtsRuntime(OrtCpuRuntime):
                 current_chunk_token_count = self.count_text_tokens(current_chunk)
         if current_chunk:
             chunks.append(current_chunk.strip())
-        return chunks if len(chunks) > 1 else [normalized_text]
+        return chunks if chunks else [normalized_text]
 
     def estimate_voice_clone_inter_chunk_pause_seconds(self, text_chunk: str) -> float:
         word_count = len([item for item in str(text_chunk or "").strip().split() if item])
@@ -558,6 +574,12 @@ class OnnxTtsRuntime(OrtCpuRuntime):
         streaming: bool,
     ) -> dict[str, Any]:
         text_token_ids = self.encode_text(text)
+        # Dynamically scale frame generation budget based on text tokens to avoid cut-offs
+        required_frames = max(450, len(text_token_ids) * 22 + 100)
+        self.manifest["generation_defaults"]["max_new_frames"] = max(
+            int(self.manifest["generation_defaults"].get("max_new_frames", 375)),
+            required_frames,
+        )
         request_rows = self.build_voice_clone_request_rows(prompt_audio_codes, text_token_ids)
         if not streaming:
             generated_frames = self.generate_audio_frames(request_rows)

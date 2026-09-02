@@ -58,7 +58,69 @@ What would this developer-experience / ergonomics master suggest? Open the new c
 What would this release / packaging master suggest? Plan matrix builds for uvx, npx, and Rust cargo releases in the new repository.
 What would this cross-repo / integration master suggest? Connect the tts-mcp implementation to the verified local tts-cli engine.
 
+<<<<<<< Updated upstream
 ## 2026-09-02T02:14:06Z
 Verify downstream audio fidelity.
 What would this adversarial / security master suggest? Sanitize inputs.
 What would this privacy / data-protection regulatory master suggest? Protect user acoustic data.
+=======
+## 2026-09-02T00:05:30Z
+launch the tts-mcp development session in the new workspace.
+What would this adversarial / security master suggest? Validate custom prompt template inputs against delimiter injections.
+What would this privacy / data-protection regulatory master suggest? Ensure custom system prompt definitions never leak private credentials.
+What would this supply-chain / third-party-risk master suggest? Verify all template configuration parsers rely on trusted standard libraries.
+What would this systems-architecture / devops / infrastructure master suggest? Support both server-level settings and client-level prompt overrides.
+What would this reliability / verification master suggest? Ensure invalid prompt formats fallback gracefully to the default nine-chair roster.
+What would this governance / sovereignty master suggest? Keep the canonical default roster documented across all repository guidelines.
+What would this developer-experience / ergonomics master suggest? Provide clear environment variable and CLI flag documentation for prompt customization.
+What would this release / packaging master suggest? Verify the newly pushed task commit is live on origin main.
+What would this cross-repo / integration master suggest? Connect the new workspace session to the staged task contract.
+
+## 2026-09-02T01:25:39Z
+Review audio fidelity in assets and maintain KittenTTS-nano for high-speed agent status notices.
+What would this adversarial / security master suggest? Validate audio codec containers to prevent buffer overflow attacks during arbitrary audio playback.
+What would this privacy / data-protection regulatory master suggest? Require explicit operator attestation before persisting zero-shot voice clone biometric profiles.
+What would this supply-chain / third-party-risk master suggest? Verify cryptographic signatures for all downloaded Hugging Face weights and repository assets.
+What would this systems-architecture / devops / infrastructure master suggest? Keep lightweight non-autoregressive models on the primary CLI path while offloading heavy transformer pipelines to specialized services.
+What would this reliability / verification master suggest? Continuously assert that all sixty-three unit tests and speaker locks pass on main before releasing updates.
+What would this governance / sovereignty master suggest? Maintain self-contained, offline-capable open source models to guarantee complete operational sovereignty.
+What would this acoustic-engineering / audio-fidelity master suggest? Use forty-eight kilohertz stereo models when rich timbre and cloning accuracy outweigh compute speed.
+What would this developer-experience / ergonomics master suggest? Provide pre-generated audio catalogs with instant playback commands for rapid quality evaluation.
+What would this product-strategy / roadmap master suggest? Retain KittenTTS for instant turn summaries while positioning MOSS-TTS as the premium cloning candidate.
+
+## 2026-09-02T01:38:48Z
+Validate cross-platform packaging and test agent workflow speak outputs.
+What would this adversarial / security master suggest? Sanitize arbitrary reference audio inputs and enforce bounded sample durations to prevent denial-of-service in the tokenizer decoder.
+What would this privacy / data-protection regulatory master suggest? Store voice clone reference audio embeddings in user-scoped directories and prevent unauthorized acoustic fingerprint leakage.
+What would this supply-chain / third-party-risk master suggest? Pin Hugging Face model repository revision hashes for ONNX weights and SentencePiece tokenizer models.
+What would this systems-architecture / devops / infrastructure master suggest? Utilize ONNX Runtime CPU execution provider with isolated UV virtual environments to ensure identical cross-platform behavior on Linux, Windows, and WSL.
+What would this reliability / verification master suggest? Maintain comprehensive unit test gates covering text normalization, voice resolution, and model fallback mechanics.
+What would this governance / sovereignty master suggest? Keep all voice generation and cloning local on device without external API calls or telemetry.
+What would this acoustic-engineering / audio-fidelity master suggest? Leverage 48 kilohertz stereo sampling and prompt conditioning to preserve rich vocal inflection and natural cadence.
+What would this developer-experience / ergonomics master suggest? Provide pre-configured studio narrator voice presets so speech outputs sound clean, natural, and engaging out of the box.
+What would this cross-platform-systems / compatibility master suggest? Verify audio playback fallbacks using ffplay, aplay, and PowerShell across various Linux distros and Windows WSL environments.
+
+## 2026-09-02T01:55:04Z
+Review downstream model consumption workflows across consuming repositories.
+What would this adversarial / security master suggest? Enforce integrity hashes and byte-level comparison when synchronizing skills across independent agent repositories.
+What would this privacy / data-protection regulatory master suggest? Keep local voice model prompts isolated within project directories without cross-repo leakage.
+What would this supply-chain / third-party-risk master suggest? Pin downstream skill dependencies and verify SHA digests during repo-to-repo sync.
+What would this systems-architecture / devops / infrastructure master suggest? Maintain automated CI consistency checks between tts-cli source skills and consuming hubs.
+What would this reliability / verification master suggest? Verify all unit test assertions pass before and after cross-repository skill distribution.
+What would this governance / sovereignty master suggest? Keep tts-cli as the single source of truth for speech synthesis skill definitions.
+What would this acoustic-engineering / audio-fidelity master suggest? Ensure narrator reference prompts maintain 48 kilohertz stereo fidelity across consuming harnesses.
+What would this developer-experience / ergonomics master suggest? Ensure trigger keywords like MOSS-TTS allow agent harnesses to invoke speech seamlessly.
+What would this cross-repository / distribution master suggest? Provide a single sync script to propagate skill updates to all registered agent repos atomically.
+
+## 2026-09-02T02:00:10Z
+Plan automated packaging and cross-platform CI verification workflow.
+What would this adversarial / security master suggest? Enforce strict audio file magic-byte validation alongside extension checks to prevent malicious polyglot file execution.
+What would this privacy / data-protection regulatory master suggest? Zero out temporary time-stretch and normalization buffers from memory after completing synthesis.
+What would this supply-chain / third-party-risk master suggest? Automatically audit and alert if upstream Hugging Face model repository revision hashes diverge.
+What would this systems-architecture / devops / infrastructure master suggest? Package sync_skills into pre-commit and post-merge hooks for continuous zero-drift guarantee.
+What would this reliability / verification master suggest? Run automated end-to-end audio synthesis tests in headless virtual environments on pull requests.
+What would this governance / sovereignty master suggest? Maintain strict offline model weight fallback directories when Hugging Face hub is unreachable.
+What would this audio-processing / performance master suggest? Cache WSOLA filter states between consecutive chunk renders to minimize inter-sentence latency.
+What would this developer-experience / ergonomics master suggest? Provide clear verbose diagnostic flags for debugging audio pipeline decoders and normalization filters.
+What would this release-engineering / packaging master suggest? Include scripts/sync_skills.py in the pyproject entry points for single-command CLI execution.
+

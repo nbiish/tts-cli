@@ -157,3 +157,114 @@ def test_spawn_detached_child_passes_caller_dir(monkeypatch, tmp_path):
 
     assert captured_kwargs.get("cwd") == str(repo_dir)
     assert captured_kwargs.get("env", {}).get("TTS_CLI_CALLER_DIR") == str(repo_dir)
+
+
+def test_caller_dir_param_takes_priority_over_env(tmp_path, monkeypatch):
+    """--caller-dir (explicit param) beats TTS_CLI_CALLER_DIR env var."""
+    env_repo = tmp_path / "env_repo"
+    env_repo.mkdir()
+    (env_repo / ".git").mkdir()
+
+    explicit_repo = tmp_path / "explicit_repo"
+    explicit_repo.mkdir()
+    (explicit_repo / ".git").mkdir()
+
+    monkeypatch.setenv("TTS_CLI_CALLER_DIR", str(env_repo))
+
+    _log_to_agents_tts_comms(
+        "Test. Next step: verify priority.",
+        "kitten-tts-nano",
+        None,
+        "/tmp/out.wav",
+        caller_dir=str(explicit_repo),
+    )
+
+    # Ledger should land in explicit_repo, NOT env_repo
+    assert (explicit_repo / "AGENTS-TTS-COMMS.txt").exists()
+    assert not (env_repo / "AGENTS-TTS-COMMS.txt").exists()
+
+
+def test_detached_child_argv_includes_caller_dir():
+    """_detached_child_argv propagates --caller-dir to the child argv."""
+    from tts_cli.cli import _detached_child_argv
+
+    argv = _detached_child_argv(
+        "hello",
+        model="kitten-tts-nano",
+        voice=None,
+        speed=1.8,
+        lang=None,
+        output_path="/tmp/out.wav",
+        caller_dir="/some/caller/dir",
+    )
+    assert "--caller-dir" in argv
+    idx = argv.index("--caller-dir")
+    assert argv[idx + 1] == "/some/caller/dir"
+
+
+def test_detached_child_argv_omits_caller_dir_when_none():
+    """_detached_child_argv omits --caller-dir when not provided."""
+    from tts_cli.cli import _detached_child_argv
+
+    argv = _detached_child_argv(
+        "hello",
+        model="kitten-tts-nano",
+        voice=None,
+        speed=1.8,
+        lang=None,
+        output_path="/tmp/out.wav",
+    )
+    assert "--caller-dir" not in argv
+
+
+def test_read_last_suggestion_respects_caller_dir(tmp_path):
+    """read_last_suggestion uses caller_dir to find the right ledger."""
+    repo_a = tmp_path / "repo_a"
+    repo_a.mkdir()
+    (repo_a / ".git").mkdir()
+
+    repo_b = tmp_path / "repo_b"
+    repo_b.mkdir()
+    (repo_b / ".git").mkdir()
+
+    _log_to_agents_tts_comms(
+        "From A. Next step: do A stuff.",
+        "kitten-tts-nano",
+        None,
+        "/tmp/out.wav",
+        caller_dir=str(repo_a),
+    )
+    _log_to_agents_tts_comms(
+        "From B. Next step: do B stuff.",
+        "kitten-tts-nano",
+        None,
+        "/tmp/out.wav",
+        caller_dir=str(repo_b),
+    )
+
+    assert read_last_suggestion(caller_dir=str(repo_a)) == "do A stuff."
+    assert read_last_suggestion(caller_dir=str(repo_b)) == "do B stuff."
+
+
+def test_log_with_caller_dir_creates_header(tmp_path):
+    """caller_dir creates the ledger with header in the right repo."""
+    repo_dir = tmp_path / "fresh"
+    repo_dir.mkdir()
+    (repo_dir / ".git").mkdir()
+
+    ledger = repo_dir / "AGENTS-TTS-COMMS.txt"
+    assert not ledger.exists()
+
+    _log_to_agents_tts_comms(
+        "Init. Next step: bootstrap.",
+        "kitten-tts-nano",
+        None,
+        "/tmp/out.wav",
+        caller_dir=str(repo_dir),
+    )
+
+    assert ledger.exists()
+    content = ledger.read_text(encoding="utf-8")
+    assert "# AGENTS-TTS-COMMS.txt" in content
+    assert "bootstrap." in content
+

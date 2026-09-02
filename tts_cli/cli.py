@@ -381,7 +381,8 @@ def _find_repo_root(start_dir: Optional[Path] = None) -> Path:
 
 
 def _log_to_agents_tts_comms(text: str, model_name: str, voice: Optional[str],
-                            output_path: str, **kwargs) -> None:
+                            output_path: str, caller_dir: Optional[str] = None,
+                            **kwargs) -> None:
     """Append only the suggestion portion of the spoken text to AGENTS-TTS-COMMS.txt.
 
     The transcript stores everything after the single ``Next step:`` marker
@@ -400,7 +401,8 @@ def _log_to_agents_tts_comms(text: str, model_name: str, voice: Optional[str],
             return  # no unambiguous suggestion to record
 
         suggestion = break_after_period_space(suggestion)
-        comms_path = _comms_file()
+        start = Path(caller_dir).resolve() if caller_dir else None
+        comms_path = _comms_file(start) if start is not None else _comms_file()
         ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         # Cap the suggestion length to keep the ledger compact.
         if len(suggestion) <= SUGGESTION_LEDGER_MAX:
@@ -435,14 +437,15 @@ def _comms_file(start_dir: Optional[Path] = None) -> Path:
     return repo_root / "AGENTS-TTS-COMMS.txt"
 
 
-def read_last_suggestion() -> Optional[str]:
+def read_last_suggestion(caller_dir: Optional[str] = None) -> Optional[str]:
     """Return the most recent suggestion block from AGENTS-TTS-COMMS.txt.
 
     Entries are blocks beginning with a `## <ISO-8601 timestamp>` line followed
     by the suggestion text. Returns the last suggestion text (stripped), or
     None if the file is missing/empty/has no entries.
     """
-    path = _comms_file()
+    start = Path(caller_dir).resolve() if caller_dir else None
+    path = _comms_file(start) if start is not None else _comms_file()
     try:
         text = path.read_text(encoding="utf-8")
     except OSError:
@@ -494,6 +497,7 @@ def _detached_child_argv(
     speed: float,
     lang: Optional[str],
     output_path: str,
+    caller_dir: Optional[str] = None,
 ) -> list[str]:
     argv = [
         sys.executable,
@@ -512,6 +516,10 @@ def _detached_child_argv(
         argv.extend(["--voice", voice])
     if lang:
         argv.extend(["--lang", lang])
+    # Propagate caller directory to the detached child via argv so the
+    # AGENTS-TTS-COMMS.txt ledger lands in the caller's repo root.
+    if caller_dir:
+        argv.extend(["--caller-dir", caller_dir])
     return argv
 
 
@@ -540,7 +548,8 @@ def _spawn_detached_child(argv: list[str], caller_dir: Optional[str] = None) -> 
 
 
 def generate_speech(text: str, model_name: str, voice: Optional[str], 
-                   output_path: str, **kwargs) -> bool:
+                   output_path: str, caller_dir: Optional[str] = None,
+                   **kwargs) -> bool:
     """Generate speech from text."""
     model = model_registry.get_model(model_name)
     if not model:
@@ -557,7 +566,8 @@ def generate_speech(text: str, model_name: str, voice: Optional[str],
     
     if success:
         print(f"✅ Speech generated successfully: {output_path}")
-        _log_to_agents_tts_comms(text, model_name, voice, output_path, **kwargs)
+        _log_to_agents_tts_comms(text, model_name, voice, output_path,
+                                caller_dir=caller_dir, **kwargs)
     else:
         print("❌ Failed to generate speech")
     
@@ -748,6 +758,10 @@ Examples:
     # Call ONCE per turn. Binding copy: AGENTS.md <OUTPUT> and the tts-cli skill.
     parser.add_argument("-p", "--prompt", dest="prompt_text",
                        help="One call per turn: \"<summary>. Next step: <fused>\" then one-sentence answers to every master from --next-step-prompt. Never call per expert.")
+    parser.add_argument("--caller-dir", default=None,
+                       help="Caller's working directory ($PWD at invocation). "
+                            "Routes AGENTS-TTS-COMMS.txt to the caller's repo root. "
+                            "Takes priority over TTS_CLI_CALLER_DIR env and cwd.")
 
     # Environment management
     parser.add_argument("--create-environment", help="Create environment for model")
@@ -851,7 +865,6 @@ Examples:
         
         # Check if input is a name in the custom voices dir
         # Only treat as a name if it's NOT a path (no separators) and exists in the dir
-        import os
         is_name_only = os.sep not in input_voice
         potential_path = CUSTOM_VOICES_DIR / input_voice
         
@@ -934,7 +947,7 @@ Examples:
         return
 
     if args.last_suggestion:
-        suggestion = read_last_suggestion()
+        suggestion = read_last_suggestion(caller_dir=args.caller_dir)
         if suggestion:
             print(suggestion)
             sys.exit(0)
@@ -1027,7 +1040,6 @@ Examples:
              return
 
         import tempfile
-        import os
         
         try:
             temp_files = []
@@ -1116,7 +1128,6 @@ Examples:
         
         print(f"Preprocessing voice clone source: {voice_clone_path}")
         import tempfile
-        import os
         
         current_path = voice_clone_path
         
@@ -1215,6 +1226,14 @@ Examples:
             print(f"❌ {err}")
             sys.exit(1)
 
+        # Resolve caller directory: --caller-dir > TTS_CLI_CALLER_DIR > cwd.
+        # Survives the detach because it travels via argv, not just env/cwd.
+        caller_dir = (
+            args.caller_dir
+            or os.environ.get("TTS_CLI_CALLER_DIR")
+            or os.getcwd()
+        )
+
         # No --output: parent exits immediately; child gets --output so it
         # generates, logs, and plays without spawning another child.
         if not args.output:
@@ -1226,7 +1245,9 @@ Examples:
                     speed=args.speed,
                     lang=args.lang,
                     output_path=output_path,
-                )
+                    caller_dir=caller_dir,
+                ),
+                caller_dir=caller_dir,
             )
             sys.exit(0)
 
@@ -1236,6 +1257,7 @@ Examples:
             model_name=effective_model,
             voice=args.voice,
             output_path=output_path,
+            caller_dir=caller_dir,
             voice_clone=voice_clone_path,
             lang=args.lang,
             speed=args.speed,

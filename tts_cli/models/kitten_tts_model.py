@@ -44,6 +44,8 @@ BUILT_IN_VOICES = (
     "expr-voice-4-m", "expr-voice-4-f",
     "expr-voice-5-m", "expr-voice-5-f",
 )
+# Default built-in voice: last woman voice (expr-voice-5-f) across the whole system.
+DEFAULT_VOICE = "expr-voice-5-f"
 # Heard tempo is baked into the WAV so every OS player can run at 1.0.
 DEFAULT_GENERATE_SPEED = 1.8
 
@@ -101,10 +103,9 @@ class KittenTTSModel(BaseTTSModel):
         # `voice` for KittenTTS is a built-in voice name (not a path). Fail
         # closed on an unrecognized name (do NOT silently fall back) so a
         # typo'd voice can never produce unexpected audio. Omitted voice
-        # picks one of the eight built-in names once per call (same voice
-        # for every chunk of this generation).
+        # defaults to the system default voice (expr-voice-5-f).
         if voice is None:
-            chosen_voice = secrets.choice(BUILT_IN_VOICES)
+            chosen_voice = DEFAULT_VOICE
         else:
             chosen_voice = voice
         if chosen_voice not in BUILT_IN_VOICES:

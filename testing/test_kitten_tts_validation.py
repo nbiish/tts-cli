@@ -94,18 +94,14 @@ def test_valid_voice_reaches_runner(model_with_env, monkeypatch):
     assert sent_stdin is subprocess.PIPE
 
 
-def test_no_voice_picks_with_secrets_choice(model_with_env, monkeypatch):
-    """Omitted voice uses secrets.choice once; generate speed defaults to 1.8."""
+def test_no_voice_defaults_to_expr_voice_5_f(model_with_env, monkeypatch):
+    """Omitted voice defaults to expr-voice-5-f (the last woman voice); generate speed defaults to 1.8."""
     popen = _stub_popen(monkeypatch)
-    monkeypatch.setattr(
-        "tts_cli.models.kitten_tts_model.secrets.choice",
-        lambda seq: "expr-voice-3-f",
-    )
     ok = model_with_env.generate_speech("hello world", output_path="/tmp/out.wav")
     assert ok is True
     assert popen.call_count == 1
     payload = _payload_from_popen(popen)
-    assert payload["voice"] == "expr-voice-3-f"
+    assert payload["voice"] == "expr-voice-5-f"
     assert payload["speed"] == DEFAULT_GENERATE_SPEED
     assert payload["speed"] == 1.8
 

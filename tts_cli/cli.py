@@ -711,8 +711,8 @@ Examples:
                        help="TTS model to use: auto (default = kitten-tts-nano) or kitten-tts-nano")
     parser.add_argument(
         "--voice",
-        help="Built-in KittenTTS voice name (e.g. expr-voice-2-f). "
-             "Omit to pick one of the eight at random per call. "
+        help="Built-in KittenTTS voice name (e.g. expr-voice-5-f). "
+             "Omit to use the default voice (expr-voice-5-f). "
              "Unknown names fail closed. Use --list-voices to see all.",
     )
     parser.add_argument(

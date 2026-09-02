@@ -198,6 +198,7 @@ AGENTS/*.COMMS.live.md
 *.tflite
 *.tgz
 *.wav
+!assets/audio_samples/*.wav
 *.xz
 *.zip
 *~

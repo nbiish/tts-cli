@@ -60,7 +60,34 @@ def test_reference_duration_bound():
     assert MAX_REFERENCE_DURATION_SECS == 30.0
 
 
+def test_reference_audio_validation_rejects_unsupported_extensions(tmp_path):
+    bad_file = tmp_path / "voice.exe"
+    bad_file.write_bytes(b"MZ\x00\x00")
+    assert _check_reference_duration(bad_file, 30.0) is False
+
+
+def test_reference_audio_validation_rejects_nonexistent_file(tmp_path):
+    nonexistent = tmp_path / "ghost.wav"
+    assert _check_reference_duration(nonexistent, 30.0) is False
+
+
 def test_model_info_includes_speed(moss_model):
     info = moss_model.get_model_info()
     assert info["output_speed"] == 1.8
     assert info["default_voice"] == "en_narrator"
+
+
+def test_pinned_model_revisions():
+    from tts_cli.core.onnx_tts_runtime import (
+        DEFAULT_BROWSER_ONNX_TTS_REVISION,
+        DEFAULT_BROWSER_ONNX_CODEC_REVISION,
+    )
+    from tts_cli.core.moss_runtime import (
+        DEFAULT_MOSS_TTS_REVISION,
+        DEFAULT_MOSS_CODEC_REVISION,
+    )
+    assert len(DEFAULT_BROWSER_ONNX_TTS_REVISION) == 40
+    assert len(DEFAULT_BROWSER_ONNX_CODEC_REVISION) == 40
+    assert DEFAULT_BROWSER_ONNX_TTS_REVISION == DEFAULT_MOSS_TTS_REVISION
+    assert DEFAULT_BROWSER_ONNX_CODEC_REVISION == DEFAULT_MOSS_CODEC_REVISION
+

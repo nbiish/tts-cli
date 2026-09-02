@@ -43,6 +43,8 @@ DEFAULT_BROWSER_ONNX_TTS_DIR = DEFAULT_BROWSER_ONNX_MODEL_DIR / "MOSS-TTS-Nano-1
 DEFAULT_BROWSER_ONNX_CODEC_DIR = DEFAULT_BROWSER_ONNX_MODEL_DIR / "MOSS-Audio-Tokenizer-Nano-ONNX"
 DEFAULT_BROWSER_ONNX_TTS_REPO_ID = "OpenMOSS-Team/MOSS-TTS-Nano-100M-ONNX"
 DEFAULT_BROWSER_ONNX_CODEC_REPO_ID = "OpenMOSS-Team/MOSS-Audio-Tokenizer-Nano-ONNX"
+DEFAULT_BROWSER_ONNX_TTS_REVISION = "f52645cb467506d8e18e746ddd59482685b74e58"
+DEFAULT_BROWSER_ONNX_CODEC_REVISION = "ceff0d0749bfb3fa2d61149794ec6feef0d1e1ae"
 DEFAULT_BROWSER_ONNX_TTS_REPO_URL = f"https://huggingface.co/{DEFAULT_BROWSER_ONNX_TTS_REPO_ID}"
 DEFAULT_BROWSER_ONNX_CODEC_REPO_URL = f"https://huggingface.co/{DEFAULT_BROWSER_ONNX_CODEC_REPO_ID}"
 DEFAULT_BROWSER_ONNX_OUTPUT_PATH = DEFAULT_OUTPUT_DIR / "infer_onnx_output.wav"
@@ -120,6 +122,7 @@ def _snapshot_download_repo(
     repo_id: str,
     local_dir: Path,
     allow_patterns: Sequence[str],
+    revision: str | None = None,
 ) -> None:
     try:
         from huggingface_hub import snapshot_download
@@ -128,29 +131,34 @@ def _snapshot_download_repo(
             "huggingface_hub is required to auto-download ONNX assets. Install it with `pip install huggingface_hub`."
         ) from exc
     local_dir.mkdir(parents=True, exist_ok=True)
-    snapshot_download(
-        repo_id=repo_id,
-        local_dir=str(local_dir),
-        local_dir_use_symlinks=False,
-        allow_patterns=list(allow_patterns),
-    )
+    download_kwargs: dict[str, Any] = {
+        "repo_id": repo_id,
+        "local_dir": str(local_dir),
+        "local_dir_use_symlinks": False,
+        "allow_patterns": list(allow_patterns),
+    }
+    if revision:
+        download_kwargs["revision"] = revision
+    snapshot_download(**download_kwargs)
 
 
 def _download_default_browser_onnx_assets(model_dir: Path) -> None:
     logging.info("browser_onnx assets missing under %s; downloading from Hugging Face.", model_dir)
-    logging.info("browser_onnx TTS repo: %s", DEFAULT_BROWSER_ONNX_TTS_REPO_URL)
-    logging.info("browser_onnx codec repo: %s", DEFAULT_BROWSER_ONNX_CODEC_REPO_URL)
+    logging.info("browser_onnx TTS repo: %s (revision: %s)", DEFAULT_BROWSER_ONNX_TTS_REPO_URL, DEFAULT_BROWSER_ONNX_TTS_REVISION)
+    logging.info("browser_onnx codec repo: %s (revision: %s)", DEFAULT_BROWSER_ONNX_CODEC_REPO_URL, DEFAULT_BROWSER_ONNX_CODEC_REVISION)
     tts_dir = model_dir / DEFAULT_BROWSER_ONNX_TTS_DIR.name
     codec_dir = model_dir / DEFAULT_BROWSER_ONNX_CODEC_DIR.name
     _snapshot_download_repo(
         repo_id=DEFAULT_BROWSER_ONNX_TTS_REPO_ID,
         local_dir=tts_dir,
         allow_patterns=("*.onnx", "*.data", "*.json", "tokenizer.model"),
+        revision=DEFAULT_BROWSER_ONNX_TTS_REVISION,
     )
     _snapshot_download_repo(
         repo_id=DEFAULT_BROWSER_ONNX_CODEC_REPO_ID,
         local_dir=codec_dir,
         allow_patterns=("*.onnx", "*.data", "*.json"),
+        revision=DEFAULT_BROWSER_ONNX_CODEC_REVISION,
     )
     _normalize_download_layout(
         tts_dir,

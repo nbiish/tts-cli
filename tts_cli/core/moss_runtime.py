@@ -32,6 +32,8 @@ EXECUTION_PROVIDER_CPU = "cpu"
 
 DEFAULT_MOSS_TTS_REPO_ID = "OpenMOSS-Team/MOSS-TTS-Nano-100M-ONNX"
 DEFAULT_MOSS_CODEC_REPO_ID = "OpenMOSS-Team/MOSS-Audio-Tokenizer-Nano-ONNX"
+DEFAULT_MOSS_TTS_REVISION = "f52645cb467506d8e18e746ddd59482685b74e58"
+DEFAULT_MOSS_CODEC_REVISION = "ceff0d0749bfb3fa2d61149794ec6feef0d1e1ae"
 
 SENTENCE_END_PUNCTUATION = set(".!?。！？；;")
 CLAUSE_SPLIT_PUNCTUATION = set(",，、；;：:")
@@ -66,8 +68,16 @@ def ensure_moss_models_downloaded(model_dir: Path | None = None) -> Path:
     tts_dir.mkdir(parents=True, exist_ok=True)
     codec_dir.mkdir(parents=True, exist_ok=True)
 
-    snapshot_download(DEFAULT_MOSS_TTS_REPO_ID, local_dir=str(tts_dir))
-    snapshot_download(DEFAULT_MOSS_CODEC_REPO_ID, local_dir=str(codec_dir))
+    snapshot_download(
+        DEFAULT_MOSS_TTS_REPO_ID,
+        local_dir=str(tts_dir),
+        revision=DEFAULT_MOSS_TTS_REVISION,
+    )
+    snapshot_download(
+        DEFAULT_MOSS_CODEC_REPO_ID,
+        local_dir=str(codec_dir),
+        revision=DEFAULT_MOSS_CODEC_REVISION,
+    )
     return target_dir
 
 

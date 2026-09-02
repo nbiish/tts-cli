@@ -165,12 +165,40 @@ def _speedup_and_normalize_wav(wav_path: Path, speed: float) -> bool:
         return False
 
 
-def _check_reference_duration(audio_path: Path, max_secs: float) -> bool:
-    """Validate that reference audio duration is within bounds.
+ALLOWED_AUDIO_EXTENSIONS = {".wav", ".flac", ".ogg", ".mp3", ".m4a"}
+MAX_REFERENCE_FILE_SIZE_BYTES = 25 * 1024 * 1024  # 25 MB max
 
-    Prevents denial-of-service through oversized reference clips that would
-    cause excessive tokenizer/decoder computation.
+
+def _check_reference_duration(audio_path: Path, max_secs: float) -> bool:
+    """Validate that reference audio file format, size, and duration are within safe bounds.
+
+    Prevents denial-of-service through oversized reference clips or unhandled formats
+    that would cause excessive tokenizer/decoder computation or memory exhaustion.
     """
+    if not audio_path.exists() or not audio_path.is_file():
+        logger.error("MOSS-TTS: Reference audio file does not exist: %s", audio_path)
+        return False
+
+    # Check extension
+    if audio_path.suffix.lower() not in ALLOWED_AUDIO_EXTENSIONS:
+        logger.error(
+            "MOSS-TTS: Unsupported audio format '%s' for reference audio: %s (allowed: %s)",
+            audio_path.suffix, audio_path, ", ".join(sorted(ALLOWED_AUDIO_EXTENSIONS))
+        )
+        return False
+
+    # Check file size bound
+    try:
+        file_size = audio_path.stat().st_size
+        if file_size > MAX_REFERENCE_FILE_SIZE_BYTES:
+            logger.error(
+                "MOSS-TTS: Reference audio file size (%d bytes) exceeds maximum limit (%d bytes): %s",
+                file_size, MAX_REFERENCE_FILE_SIZE_BYTES, audio_path
+            )
+            return False
+    except Exception as exc:
+        logger.warning("MOSS-TTS: Could not verify file size for %s: %s", audio_path, exc)
+
     try:
         import soundfile as sf
         info = sf.info(str(audio_path))

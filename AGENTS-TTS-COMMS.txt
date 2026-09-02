@@ -58,12 +58,6 @@ What would this developer-experience / ergonomics master suggest? Open the new c
 What would this release / packaging master suggest? Plan matrix builds for uvx, npx, and Rust cargo releases in the new repository.
 What would this cross-repo / integration master suggest? Connect the tts-mcp implementation to the verified local tts-cli engine.
 
-<<<<<<< Updated upstream
-## 2026-09-02T02:14:06Z
-Verify downstream audio fidelity.
-What would this adversarial / security master suggest? Sanitize inputs.
-What would this privacy / data-protection regulatory master suggest? Protect user acoustic data.
-=======
 ## 2026-09-02T00:05:30Z
 launch the tts-mcp development session in the new workspace.
 What would this adversarial / security master suggest? Validate custom prompt template inputs against delimiter injections.
@@ -75,6 +69,11 @@ What would this governance / sovereignty master suggest? Keep the canonical defa
 What would this developer-experience / ergonomics master suggest? Provide clear environment variable and CLI flag documentation for prompt customization.
 What would this release / packaging master suggest? Verify the newly pushed task commit is live on origin main.
 What would this cross-repo / integration master suggest? Connect the new workspace session to the staged task contract.
+
+## 2026-09-02T02:14:06Z
+Verify downstream audio fidelity.
+What would this adversarial / security master suggest? Sanitize inputs.
+What would this privacy / data-protection regulatory master suggest? Protect user acoustic data.
 
 ## 2026-09-02T01:25:39Z
 Review audio fidelity in assets and maintain KittenTTS-nano for high-speed agent status notices.

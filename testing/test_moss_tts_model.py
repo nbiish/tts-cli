@@ -77,6 +77,12 @@ def test_model_info_includes_speed(moss_model):
     assert info["default_voice"] == "en_narrator"
 
 
+def test_model_info_includes_description(moss_model):
+    """`--list` prints info['description'] — every registered row must have it."""
+    info = moss_model.get_model_info()
+    assert "MOSS-TTS" in info["description"]
+
+
 def test_validate_audio_magic_bytes_valid_wav(tmp_path):
     from tts_cli.models.moss_tts_model import _validate_audio_magic_bytes
     wav_file = tmp_path / "valid.wav"

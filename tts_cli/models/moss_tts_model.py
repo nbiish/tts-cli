@@ -300,6 +300,10 @@ class MossTTSModel(BaseTTSModel):
     def get_model_info(self) -> Dict[str, Any]:
         return {
             "name": self.model_name,
+            "description": (
+                "MOSS-TTS nano — 48 kHz stereo zero-shot voice cloning "
+                "ONNX CPU engine (secondary, opt-in)"
+            ),
             "sample_rate": 48000,
             "channels": 2,
             "supports_voice_cloning": True,

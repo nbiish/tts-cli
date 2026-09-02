@@ -199,6 +199,7 @@ AGENTS/*.COMMS.live.md
 *.tgz
 *.wav
 !assets/audio_samples/*.wav
+!assets/audio_samples/**/*.wav
 *.xz
 *.zip
 *~

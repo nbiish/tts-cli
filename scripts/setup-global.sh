@@ -35,10 +35,23 @@ echo -e "${YELLOW}🔗 Creating global symlink...${NC}"
 
 # Use the wrapper script from the scripts directory
 # We use symlink instead of cp so updates are immediate
-sudo ln -sf "$SCRIPT_DIR/tts-cli-global.sh" /usr/local/bin/cli-tts
-# Ensure execution permissions on the source
 chmod +x "$SCRIPT_DIR/tts-cli-global.sh"
 chmod +x "$SCRIPT_DIR/tts-cli-wrapper.py"
+
+# Sudo-free install: prefer ~/.local/bin when it is on PATH; only reach for
+# sudo /usr/local/bin when passwordless sudo is actually available.
+if [[ ":$PATH:" == *":$HOME/.local/bin:"* ]]; then
+    ln -sf "$SCRIPT_DIR/tts-cli-global.sh" "$HOME/.local/bin/cli-tts"
+    echo -e "${GREEN}✅ Installed shim: $HOME/.local/bin/cli-tts${NC}"
+elif command -v sudo >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
+    sudo ln -sf "$SCRIPT_DIR/tts-cli-global.sh" /usr/local/bin/cli-tts
+    echo -e "${GREEN}✅ Installed shim: /usr/local/bin/cli-tts${NC}"
+else
+    mkdir -p "$HOME/.local/bin"
+    ln -sf "$SCRIPT_DIR/tts-cli-global.sh" "$HOME/.local/bin/cli-tts"
+    echo -e "${YELLOW}⚠️  Installed $HOME/.local/bin/cli-tts but it is not on PATH. Add:"${NC}
+    echo '  export PATH="$HOME/.local/bin:$PATH"'
+fi
 
 # Test the installation
 echo -e "${YELLOW}🧪 Testing installation...${NC}"
@@ -66,3 +79,6 @@ echo "  $PROJECT_ROOT/.model-envs/"
 echo ""
 echo -e "${YELLOW}This keeps everything centralized in the repo while providing global access.${NC}"
 echo -e "${YELLOW}Changes to the code are immediately available everywhere!${NC}"
+echo -e "${YELLOW}Native Windows: run scripts/tts-cli-global.ps1 via PowerShell (or use WSL).${NC}"
+echo -e "${YELLOW}WSL on /mnt/* drives: model envs auto-redirect to ~/.tts-cli/model-envs${NC}"
+echo -e "${YELLOW}(override anywhere with TTS_CLI_MODEL_ENVS_DIR).${NC}"

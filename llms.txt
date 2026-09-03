@@ -76,7 +76,7 @@ Default section order:
 
 ## Product contract (this repo is the PRD)
 
-`cli-tts` is an on-device Python CLI. Native language: **Python**. Do not rewrite the CLI in Rust. `kitten-tts-nano` (KittenTTS 15M int8, ONNX CPU, fixed built-in voices, default voice `expr-voice-3-f`) is the primary default engine (`auto` resolves to it; fastest cold ~7.9s, RTF ~0.47). `moss-tts-nano` (MOSS-TTS 100M+20M, 48kHz stereo, zero-shot voice cloning, CPU ONNX) is the secondary, opt-in cloning engine (`--model` / `--set-default moss-tts-nano`). Isolated `uv` environments under `.model-envs/`. Weights download from Hugging Face on first run.
+`cli-tts` is an on-device Python CLI. Native language: **Python**. Do not rewrite the CLI in Rust. `kitten-tts-nano` (KittenTTS 15M int8, ONNX CPU, fixed built-in voices, default voice `expr-voice-3-f`) is the primary default engine (`auto` resolves to it; fastest cold ~7.9s, RTF ~0.47). `moss-tts-nano` (MOSS-TTS 100M+20M, 48kHz stereo, zero-shot voice cloning, CPU ONNX) is the secondary, opt-in cloning engine (`--model` / `--set-default moss-tts-nano`). Isolated `uv` environments under `.model-envs/` (auto-redirected to `~/.tts-cli/model-envs` for WSL checkouts on Windows drives, since drvfs cannot host venvs; `TTS_CLI_MODEL_ENVS_DIR` overrides on every platform). Weights download from Hugging Face on first run. `onnxruntime` is cross-platform (Windows x64, macOS x86_64/arm64, Linux manylinux x86_64/aarch64) — no engine step is OS-specific.
 
 `repo_docs/PRD.md` still describes IndexTTS as the sole engine. **Ignore it.** This file and `README.md` win.
 
@@ -114,7 +114,7 @@ No nested `llms.txt` yet. Root owns the product contract. Scan before adding a c
 | `.agents/skills/` | Vendored: `tts-cli`, `pqc-secrets`, `pqc-signatures-security`, `production-security`, `code-security`, `llm-security` | Hub skill is installed via `wtf skill install`, not vendored |
 | `.agents/tasks/` | Per-task contracts; mixer GUI remains vision-only | Worktree/merge rules in `AGENTS.md` |
 | `AGENTS/` | Dated COMMS ledgers | Protocol in `AGENTS.md` `<COMMS>` |
-| `scripts/` | Install/wrapper (`cli-tts` shim) | PATH/install narrative in `README.md` / `INSTALLATION.md` |
+| `scripts/` | Install/wrapper: sudo-free `~/.local/bin` `cli-tts` shim (sudo `/usr/local/bin` fallback), native-Windows `tts-cli-global.ps1`, `sync_skills.py` distribution | PATH/install narrative in `README.md` / `INSTALLATION.md` |
 | `repo_docs/` | Historical notes. `PRD.md` is stale IndexTTS | This file overrides |
 | `README.md` | Human product surface (engine, flags, roadmap) | Agent speak skill stays slim |
 

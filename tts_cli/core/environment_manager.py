@@ -10,6 +10,7 @@ import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 import json
+import os
 import shutil
 
 
@@ -30,12 +31,25 @@ class EnvironmentManager:
                 current_dir = current_dir.parent
             
             if project_root:
-                # Always use the project root's .model-envs directory
-                self.base_path = project_root / ".model-envs"
+                # Platform-safe env location. WSL checkouts on a Windows
+                # drive (/mnt/*) cannot host venvs reliably (drvfs symlinks,
+                # slow 9p I/O) — redirect those to ~/.tts-cli/model-envs.
+                override = os.environ.get("TTS_CLI_MODEL_ENVS_DIR")
+                if override:
+                    self.base_path = Path(override).expanduser().resolve()
+                elif self._is_wsl_windows_drive(project_root):
+                    self.base_path = Path.home() / ".tts-cli" / "model-envs"
+                    print(
+                        "ℹ️  WSL Windows-drive checkout detected; model envs "
+                        f"redirected to {self.base_path} "
+                        "(set TTS_CLI_MODEL_ENVS_DIR to override)."
+                    )
+                else:
+                    # Always use the project root's .model-envs directory
+                    self.base_path = project_root / ".model-envs"
                 self.project_root = project_root
             else:
                 # Fallback if project root not found (shouldn't happen in normal usage)
-                import os
                 home_dir = Path.home()
                 self.base_path = home_dir / ".tts-cli" / "model-envs"
                 self.project_root = None
@@ -46,6 +60,20 @@ class EnvironmentManager:
         self.base_path.mkdir(parents=True, exist_ok=True)
         self._environment_configs = self._load_configs()
     
+    @staticmethod
+    def _is_wsl_windows_drive(path: Path) -> bool:
+        """True when `path` sits on a Windows drive mounted inside WSL (/mnt/*)."""
+        try:
+            resolved = path.resolve()
+            if not resolved.is_relative_to(Path("/mnt")):
+                return False
+            proc_version = Path("/proc/version")
+            if proc_version.exists():
+                return "microsoft" in proc_version.read_text(errors="ignore").lower()
+        except Exception:
+            pass
+        return False
+
     def _load_configs(self) -> Dict[str, Dict]:
         """Load environment configurations from config file."""
         config_file = self.base_path / "environments.json"
@@ -79,25 +107,37 @@ class EnvironmentManager:
             }
             python_version = model_python_versions.get(model_name)
             
+            # A globally exported UV_PROJECT_ENVIRONMENT (e.g. a stale
+            # per-project cache path) must not leak into these isolated
+            # per-model environments.
+            uv_env = {
+                k: v for k, v in os.environ.items()
+                if k != "UV_PROJECT_ENVIRONMENT"
+            }
+
             # Initialize UV environment
+            venv_cmd = ["uv", "venv", "--clear", str(env_path / ".venv")]
             if python_version:
-                result = subprocess.run([
-                    "uv", "venv", str(env_path / ".venv"), "--python", python_version
-                ], capture_output=True, text=True, check=True)
-            else:
-                result = subprocess.run([
-                    "uv", "venv", str(env_path / ".venv")
-                ], capture_output=True, text=True, check=True)
+                venv_cmd += ["--python", python_version]
+            result = subprocess.run(
+                venv_cmd, capture_output=True, text=True, check=True, env=uv_env
+            )
             
-            # Install dependencies
+            # Install dependencies: one resolver pass, streaming output
+            # (capturing hides progress, so a stall looks like a hang)
+            # with a hard timeout.
             venv_python = env_path / ".venv" / "bin" / "python"
             if not venv_python.exists():
                 venv_python = env_path / ".venv" / "Scripts" / "python.exe"
             
-            for dep in dependencies:
-                subprocess.run([
-                    "uv", "pip", "install", dep, "--python", str(venv_python)
-                ], capture_output=True, text=True, check=True)
+            install = subprocess.run(
+                ["uv", "pip", "install", *dependencies, "--python", str(venv_python)],
+                text=True,
+                timeout=900,
+                env=uv_env,
+            )
+            if install.returncode != 0:
+                raise subprocess.CalledProcessError(install.returncode, install.args)
             
             # Save configuration
             self._environment_configs[model_name] = {
@@ -111,6 +151,13 @@ class EnvironmentManager:
             
         except subprocess.CalledProcessError as e:
             print(f"Failed to create environment for {model_name}: {e}")
+            if getattr(e, "stderr", None):
+                print(str(e.stderr)[-2000:])
+            if env_path.exists():
+                shutil.rmtree(env_path)
+            return False
+        except subprocess.TimeoutExpired as e:
+            print(f"Timed out creating environment for {model_name}: {e}")
             if env_path.exists():
                 shutil.rmtree(env_path)
             return False

@@ -26,6 +26,25 @@ cd tts-cli
 pip install tts-cli
 ```
 
+## 🖥️ **Platform Support**
+
+| Platform | Status | Install path |
+| --- | --- | --- |
+| Linux (x86_64 / aarch64) | ✅ Supported | `./scripts/setup-global.sh` (sudo-free `~/.local/bin` shim) |
+| macOS (x86_64 / Apple silicon) | ✅ Supported | Same as Linux |
+| Windows (native) | ✅ Supported | Run `scripts/tts-cli-global.ps1` in PowerShell; requires `uv` on PATH |
+| WSL (any distro) | ✅ Supported | Same as Linux — see the redirect note below |
+
+**WSL on a Windows drive (`/mnt/c/...`, `/mnt/d/...`):** venvs cannot be
+created reliably there (drvfs symlinks, slow 9p I/O). The CLI detects this
+and automatically keeps model environments in `~/.tts-cli/model-envs`
+instead of the repo's `.model-envs/`. On any platform you can choose the
+location explicitly with `TTS_CLI_MODEL_ENVS_DIR=/some/path`.
+
+`onnxruntime` (both engines) ships cross-platform CPU wheels — Windows x64,
+macOS x86_64/arm64, Linux manylinux x86_64/aarch64 — so no engine step is
+platform-specific.
+
 ## ✅ **Verification**
 
 After installation, verify the CLI works from anywhere:

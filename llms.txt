@@ -116,6 +116,6 @@ No nested `llms.txt` yet. Root owns the product contract. Scan before adding a c
 | `AGENTS/` | Dated COMMS ledgers | Protocol in `AGENTS.md` `<COMMS>` |
 | `scripts/` | Install/wrapper: sudo-free `~/.local/bin` `cli-tts` shim (sudo `/usr/local/bin` fallback), native-Windows `tts-cli-global.ps1`, `sync_skills.py` distribution | PATH/install narrative in `README.md` / `INSTALLATION.md` |
 | `repo_docs/` | Historical notes. `PRD.md` is stale IndexTTS | This file overrides |
-| `README.md` | Human product surface (engine, flags, roadmap) | Agent speak skill stays slim |
+| `README.md` | Human product surface (engine, flags, roadmap), platform support matrix, corrected install paths (setup scripts, PowerShell wrapper, WSL redirect) | Agent speak skill stays slim |
 
 Verification: `python -m pytest testing/ -q` from the worktree. Parent `cli-tts --prompt` without `--output` must return immediately. Live 2026-09-04 (WSL, Windows-drive checkout): env redirect engaged, `--test-model kitten-tts` passed, synthesis produced a valid 24 kHz PCM WAV (ffplay-verified).

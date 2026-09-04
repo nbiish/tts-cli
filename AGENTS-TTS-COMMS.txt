@@ -165,3 +165,15 @@ What would this governance / sovereignty master suggest? Keep authoritative prom
 What would this developer-experience / ergonomics master suggest? Let agents focus solely on task execution and prompting without burdening them with path management options.
 What would this release / deployment master suggest? Push the clean release branch commit to origin main and verify repository mirrors.
 What would this cross-repo / integration master suggest? Verify that calling cli-tts from consuming repositories like ainish-coder routes transcripts locally without manual flags.
+
+## 2026-09-04T00:03:54Z
+clone tts-cli on the mac and windows nodes and run the setup script there.
+What would this adversarial / security master suggest? Keep the shim writing only under the user's own bin and treat downloaded wheels as pinned, reviewed artifacts.
+What would this privacy / data-protection regulatory master suggest? Synthesis remains fully on device with no telemetry, and the voice ledger stays local to each repo.
+What would this supply-chain / third-party risk master suggest? Digest-pin the kittentts wheel and onnxruntime release before the fleet-wide install pass.
+What would this systems-architecture / devops / infrastructure master suggest? Add a post-join smoke check that runs cli-tts dash list on every node so engine gaps surface at enrollment.
+What would this reliability / verification master suggest? Trust the streaming installer with its nine-hundred-second timeout so stalls fail loudly instead of hanging agents.
+What would this governance / sovereignty master suggest? The DOX now carries the live verification record, keeping the stewardship ledger current and auditable.
+What would this cross-platform packaging / distribution master suggest? Exercise the PowerShell wrapper once on native windows before marking that lane verified.
+What would this operator-experience / onboarding master suggest? Keep the one-line recovery pointer in the skill so any agent can repair an engine without hunting docs.
+What would this federation / multi-machine consistency master suggest? Sync the identical skill digest to mac, windows, and the pi edge node in a single rollout.

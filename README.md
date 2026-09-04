@@ -27,17 +27,30 @@ A modern, clean command-line TTS tool with isolated environments using the `uv` 
 ## 🚀 **Quick Start**
 
 ```bash
-# Clone and setup (keeps everything centralized)
+# Clone and setup (Linux / macOS / WSL)
 git clone https://github.com/nbiish/tts-cli.git
 cd tts-cli
-./setup-global.sh
+./scripts/setup-global.sh            # sudo-free ~/.local/bin shim
+
+# Native Windows (PowerShell): scripts\tts-cli-global.ps1
 
 # Use from anywhere!
 cd /tmp
 cli-tts --text "Hello world" --output speech.wav
 ```
 
-**🎯 Centralized Design**: All model environments stay in the repo directory - no cluttering your system! Changes are immediately available everywhere.
+**🎯 Centralized Design**: Model environments stay centralized by default (`repo/.model-envs/`; auto-redirected to `~/.tts-cli/model-envs/` on WSL `/mnt/*` checkouts). Changes are immediately available everywhere.
+
+## 🖥️ **Platform Support**
+
+| Platform | Install path |
+| --- | --- |
+| Linux (x86_64 / aarch64) | `./scripts/setup-global.sh` — sudo-free `~/.local/bin` shim |
+| macOS (x86_64 / Apple silicon) | Same as Linux |
+| Windows (native) | `scripts/tts-cli-global.ps1` in PowerShell (`uv` on PATH) |
+| WSL | Same as Linux; model envs auto-redirect to `~/.tts-cli/model-envs` on `/mnt/*` checkouts |
+
+`onnxruntime` ships cross-platform CPU wheels, so no engine step is OS-specific. WSL checkouts on a Windows drive cannot host venvs (drvfs symlinks, slow 9p I/O) — the CLI redirects those model envs automatically; set `TTS_CLI_MODEL_ENVS_DIR` to choose the location on any platform.
 
 ## ⚠️ **CRITICAL IMPLEMENTATION SCOPE**
 
@@ -66,7 +79,7 @@ cli-tts --text "Hello world" --output speech.wav
 - **📋 Clipboard | Text | Text File | Pipe Support**: Flexible input methods
 - **🔊 Auto-Playback**: Plays generated audio; concurrent `cli-tts` calls wait on one speaker lock instead of overlaying
 - **💾 Smart Caching**: Auto-manages output files with rotation
-- **🔄 Cross-Platform**: Works on macOS, Linux, and Windows
+- **🔄 Cross-Platform**: Works on macOS, Linux, and Windows (native + WSL)
 
 ## Usage
 
@@ -171,10 +184,11 @@ cli-tts --cleanup-environment kitten-tts
 
 ## 🔧 First-Time Setup
 
-1. **Install the CLI**:
+1. **Install the CLI** (Linux / macOS / WSL):
    ```bash
-   python setup-cli.py
+   ./scripts/setup-global.sh
    ```
+   Native Windows: run `scripts/tts-cli-global.ps1` via PowerShell.
 
 2. **Create environment**:
    ```bash
@@ -211,7 +225,7 @@ The engine runs in its own isolated UV environment:
 ```
 
 
-This prevents dependency conflicts between different models and ensures clean, reproducible environments.
+On WSL checkouts under `/mnt/*`, this directory lives at `~/.tts-cli/model-envs/` instead (override anywhere with `TTS_CLI_MODEL_ENVS_DIR`). This prevents dependency conflicts between different models and ensures clean, reproducible environments.
 
 ## 🐛 Troubleshooting
 
@@ -228,6 +242,11 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 # Create the required environment
 cli-tts --create-environment MODEL_NAME
 ```
+
+**Install stalls or "virtual environment already exists" error**:
+Environment creation streams `uv` output, clears pre-existing venvs
+(`--clear`), and times out after 900 s. If a run was interrupted, re-run
+`cli-tts --create-environment MODEL_NAME`.
 
 **"Model not working" error**:
 ```bash
